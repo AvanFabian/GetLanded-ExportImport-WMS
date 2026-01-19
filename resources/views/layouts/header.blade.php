@@ -1,12 +1,20 @@
-<header class="bg-white border-b">
+<header class="bg-white border-b sticky top-0 z-30">
    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
          <div class="flex items-center gap-4">
-            <button id="sidebarToggle" class="md:hidden p-2 rounded hover:bg-gray-100">☰</button>
+            {{-- Mobile Hamburger Menu --}}
+            <button @click="$dispatch('sidebar-toggle')" 
+                    class="md:hidden p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition touch-manipulation"
+                    aria-label="Toggle menu">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
             <a href="{{ url('/') }}" class="flex items-center gap-3">
                <img src="{{ asset('storage/avandigital-logo-2.png') }}" alt="Avan Digital Logo"
                   class="h-8 w-8 rounded-full">
-               <span class="text-lg font-semibold text-gray-800">Warehouse Inventory Management</span>
+               <span class="text-lg font-semibold text-gray-800 hidden sm:inline">Warehouse Inventory</span>
+               <span class="text-lg font-semibold text-gray-800 sm:hidden">AgroWMS</span>
             </a>
          </div>
 

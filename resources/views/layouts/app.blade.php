@@ -3,8 +3,29 @@
 
 <head>
    <meta charset="utf-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+   {{-- PWA Meta Tags --}}
+   <meta name="theme-color" content="#064E3B">
+   <meta name="mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+   <meta name="apple-mobile-web-app-title" content="AgroWMS">
+   <meta name="application-name" content="AgroWMS">
+   <meta name="msapplication-TileColor" content="#064E3B">
+   <meta name="msapplication-config" content="/browserconfig.xml">
+
+   {{-- PWA Manifest --}}
+   <link rel="manifest" href="/manifest.json">
+
+   {{-- iOS Icons --}}
+   <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
+   <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+
+   {{-- Favicon --}}
+   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
+   <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
 
    <title>@yield('title', config('app.name', 'Warehouse Inventory'))</title>
 
@@ -14,6 +35,21 @@
 
    <!-- Scripts -->
    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+   {{-- Service Worker Registration --}}
+   <script>
+      if ('serviceWorker' in navigator) {
+         window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+               .then((registration) => {
+                  console.log('SW registered:', registration.scope);
+               })
+               .catch((error) => {
+                  console.log('SW registration failed:', error);
+               });
+         });
+      }
+   </script>
 </head>
 
 <body class="font-sans antialiased bg-gray-100">
