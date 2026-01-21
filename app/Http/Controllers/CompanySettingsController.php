@@ -56,6 +56,10 @@ class CompanySettingsController extends Controller
             'tax_id' => 'nullable|string|max:100',
             'tax_registration_number' => 'nullable|string|max:100',
             'default_vat_percentage' => 'nullable|numeric|min:0|max:100',
+            'bank_name' => 'nullable|string|max:255',
+            'bank_account_number' => 'nullable|string|max:100',
+            'bank_swift_code' => 'nullable|string|max:50',
+            'invoice_terms' => 'nullable|string|max:2000',
             'logo' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
         ]);
 

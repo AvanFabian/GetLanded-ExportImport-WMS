@@ -12,7 +12,40 @@ class StockOut extends Model
     use HasFactory, BelongsToTenant;
     use LogsActivity;
 
-    protected $fillable = ['warehouse_id', 'transaction_code', 'date', 'customer', 'total', 'notes'];
+    protected $fillable = [
+        'warehouse_id', 
+        'transaction_code', 
+        'date', 
+        'customer', 
+        'total', 
+        'notes',
+        'document_uuid',
+        'status',
+        'approved_by',
+        'approved_at',
+    ];
+
+    protected $casts = [
+        'date' => 'date',
+        'approved_at' => 'datetime',
+    ];
+
+    /**
+     * Boot method to auto-generate document UUID.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (empty($model->document_uuid)) {
+                $model->document_uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
 
     public function warehouse()
     {

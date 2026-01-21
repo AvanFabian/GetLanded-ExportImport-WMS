@@ -171,6 +171,56 @@
             </div>
         </div>
 
+        {{-- Bank Details --}}
+        <div class="bg-white rounded-xl shadow-sm border p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span>🏦</span> Bank Details
+            </h2>
+            <p class="text-sm text-gray-500 mb-4">These details will appear in the footer of your invoices and commercial documents.</p>
+            
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div>
+                    <label for="bank_name" class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                    <input type="text" name="bank_name" id="bank_name" 
+                           value="{{ old('bank_name', $company->bank_name) }}"
+                           placeholder="e.g. Bank Central Asia"
+                           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label for="bank_account_number" class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                    <input type="text" name="bank_account_number" id="bank_account_number" 
+                           value="{{ old('bank_account_number', $company->bank_account_number) }}"
+                           placeholder="e.g. 1234567890"
+                           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label for="bank_swift_code" class="block text-sm font-medium text-gray-700 mb-1">SWIFT/BIC Code</label>
+                    <input type="text" name="bank_swift_code" id="bank_swift_code" 
+                           value="{{ old('bank_swift_code', $company->bank_swift_code) }}"
+                           placeholder="e.g. CENAIDJA"
+                           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+        </div>
+
+        {{-- Invoice Terms & Conditions --}}
+        <div class="bg-white rounded-xl shadow-sm border p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span>📄</span> Invoice Terms & Conditions
+            </h2>
+            <p class="text-sm text-gray-500 mb-4">Custom legal disclaimer that will appear at the bottom of your invoices.</p>
+            
+            <div>
+                <label for="invoice_terms" class="block text-sm font-medium text-gray-700 mb-1">Terms & Conditions</label>
+                <textarea name="invoice_terms" id="invoice_terms" rows="4"
+                          placeholder="e.g. Payment is due within 30 days. Goods remain the property of the seller until full payment is received..."
+                          class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500">{{ old('invoice_terms', $company->invoice_terms) }}</textarea>
+                <p class="mt-1 text-xs text-gray-500">This text will appear in the footer of all Commercial Invoices.</p>
+            </div>
+        </div>
+
         {{-- Submit --}}
         <div class="flex justify-end">
             <button type="submit"

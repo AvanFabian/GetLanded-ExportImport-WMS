@@ -139,6 +139,14 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     Route::middleware('permission:role.manage')->group(function () {
         Route::resource('roles', App\Http\Controllers\RoleController::class);
     });
+
+    // PDF Document Downloads
+    Route::prefix('pdf')->name('pdf.')->group(function () {
+        Route::get('sales-orders/{salesOrder}/invoice', [App\Http\Controllers\PdfController::class, 'invoice'])->name('invoice');
+        Route::get('sales-orders/{salesOrder}/packing-list', [App\Http\Controllers\PdfController::class, 'packingList'])->name('packing-list');
+        Route::get('stock-outs/{stockOut}/packing-list', [App\Http\Controllers\PdfController::class, 'stockOutPackingList'])->name('stock-out.packing-list');
+        Route::get('stock-ins/{stockIn}/receipt', [App\Http\Controllers\PdfController::class, 'warehouseReceipt'])->name('receipt');
+    });
 });
 
 // Super-Admin Platform Management (outside tenant scope)
