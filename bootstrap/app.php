@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'owner' => \App\Http\Middleware\OwnerMiddleware::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
+            'super-admin' => \App\Http\Middleware\SuperAdminMiddleware::class,
+            'subscription.active' => \App\Http\Middleware\CheckSubscriptionActive::class,
         ]);
 
         // Add security middleware to web group
@@ -23,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\BlockSuspiciousRequests::class,
             \App\Http\Middleware\LogUserActivity::class,
+            \App\Http\Middleware\CheckSubscriptionActive::class, // Subscription guard
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -107,6 +107,19 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     Route::post('notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
     Route::post('notifications/{id}/mark-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
 
+    // Company Settings (Owner/Admin only)
+    Route::get('company/settings', [App\Http\Controllers\CompanySettingsController::class, 'index'])->name('company.settings');
+    Route::put('company/settings', [App\Http\Controllers\CompanySettingsController::class, 'update'])->name('company.settings.update');
+    Route::post('company/settings/remove-logo', [App\Http\Controllers\CompanySettingsController::class, 'removeLogo'])->name('company.settings.remove-logo');
+
+    // Approval Center
+    Route::middleware('permission:transaction.approve')->group(function () {
+        Route::get('approvals', [App\Http\Controllers\ApprovalCenterController::class, 'index'])->name('approvals.index');
+        Route::post('approvals/{type}/{id}/approve', [App\Http\Controllers\ApprovalCenterController::class, 'approve'])->name('approvals.approve');
+        Route::post('approvals/{type}/{id}/reject', [App\Http\Controllers\ApprovalCenterController::class, 'reject'])->name('approvals.reject');
+    });
+    Route::get('api/approvals/counts', [App\Http\Controllers\ApprovalCenterController::class, 'counts'])->name('api.approvals.counts');
+
     // User Management (Admin only)
     Route::middleware('admin')->group(function () {
         Route::resource('users', App\Http\Controllers\UserController::class);
@@ -121,7 +134,26 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
         Route::put('currencies/{currency}', [App\Http\Controllers\CurrencyController::class, 'update'])->name('currencies.update');
         Route::post('currencies/sync', [App\Http\Controllers\CurrencyController::class, 'syncRates'])->name('currencies.sync');
     });
+
+    // Role Management (Permission-based)
+    Route::middleware('permission:role.manage')->group(function () {
+        Route::resource('roles', App\Http\Controllers\RoleController::class);
+    });
 });
+
+// Super-Admin Platform Management (outside tenant scope)
+Route::prefix('admin/platform')->middleware(['auth', 'super-admin'])->name('platform.')->group(function () {
+    Route::get('companies', [App\Http\Controllers\SuperAdmin\CompanyController::class, 'index'])->name('companies.index');
+    Route::get('companies/create', [App\Http\Controllers\SuperAdmin\CompanyController::class, 'create'])->name('companies.create');
+    Route::post('companies', [App\Http\Controllers\SuperAdmin\CompanyController::class, 'store'])->name('companies.store');
+    Route::get('companies/{company}', [App\Http\Controllers\SuperAdmin\CompanyController::class, 'show'])->name('companies.show');
+    Route::post('companies/{company}/toggle-active', [App\Http\Controllers\SuperAdmin\CompanyController::class, 'toggleActive'])->name('companies.toggle-active');
+});
+
+// Subscription Suspended Page (accessible without subscription check)
+Route::get('/subscription/suspended', function () {
+    return view('subscription.suspended');
+})->name('subscription.suspended')->middleware('auth');
 
 require __DIR__ . '/auth.php';
 

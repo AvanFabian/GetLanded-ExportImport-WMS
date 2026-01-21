@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Currency;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -20,7 +21,13 @@ class CurrencyService
     protected string $apiUrl = 'https://api.exchangerate-api.com/v4/latest/USD';
 
     /**
+     * Cache key for last known good rates.
+     */
+    protected const CACHE_KEY = 'currency:last_known_rates';
+
+    /**
      * Fetch latest exchange rates from external API.
+     * On success, caches rates. On failure, uses cached rates if available.
      * 
      * @return bool True if rates were updated successfully
      */
@@ -30,54 +37,84 @@ class CurrencyService
             $response = Http::timeout(10)->get($this->apiUrl);
 
             if (!$response->successful()) {
-                Log::error('Currency API request failed', [
+                Log::critical('Currency API request failed - using cached rates', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
-                return false;
+                return $this->useCachedRates();
             }
 
             $data = $response->json();
             
             if (!isset($data['conversion_rates']) && !isset($data['rates'])) {
-                Log::error('Invalid currency API response format', ['data' => $data]);
-                return false;
+                Log::critical('Invalid currency API response format - using cached rates', ['data' => $data]);
+                return $this->useCachedRates();
             }
 
             $rates = $data['conversion_rates'] ?? $data['rates'];
             
-            // Update rates in database
-            foreach ($rates as $code => $rateToUsd) {
-                $currency = Currency::where('code', $code)->first();
-                
-                if ($currency && !$currency->is_base) {
-                    // Convert rate to IDR base
-                    // API gives rates relative to USD
-                    // We need rates relative to IDR (our base)
-                    $idrRate = $rates['IDR'] ?? 15850; // Fallback
-                    
-                    if ($code === 'IDR') {
-                        $currency->update(['exchange_rate' => 1.00000000]);
-                    } else {
-                        // Rate = how many IDR per 1 unit of this currency
-                        // If 1 USD = 15900 IDR, then exchange_rate for USD = 15900
-                        $rateToIdr = $idrRate / $rateToUsd;
-                        $currency->update([
-                            'exchange_rate' => $rateToIdr,
-                            'rate_updated_at' => now(),
-                        ]);
-                    }
-                }
-            }
+            // Cache the raw rates for fallback
+            Cache::forever(self::CACHE_KEY, [
+                'rates' => $rates,
+                'fetched_at' => now()->toIso8601String(),
+            ]);
 
-            Log::info('Currency rates updated successfully');
+            // Update rates in database
+            $this->updateDatabaseRates($rates);
+
+            Log::info('Currency rates updated and cached successfully');
             return true;
 
         } catch (\Exception $e) {
-            Log::error('Currency rate fetch failed', [
+            Log::critical('Currency rate fetch failed - using cached rates', [
                 'error' => $e->getMessage(),
             ]);
+            return $this->useCachedRates();
+        }
+    }
+
+    /**
+     * Use cached rates when API is unavailable.
+     */
+    protected function useCachedRates(): bool
+    {
+        $cached = Cache::get(self::CACHE_KEY);
+        
+        if (!$cached || !isset($cached['rates'])) {
+            Log::error('No cached currency rates available - system may use stale data');
             return false;
+        }
+
+        Log::warning('Using cached currency rates', [
+            'fetched_at' => $cached['fetched_at'] ?? 'unknown',
+        ]);
+
+        $this->updateDatabaseRates($cached['rates']);
+        return true; // Partial success - using cached data
+    }
+
+    /**
+     * Update database with rate data.
+     */
+    protected function updateDatabaseRates(array $rates): void
+    {
+        foreach ($rates as $code => $rateToUsd) {
+            $currency = Currency::where('code', $code)->first();
+            
+            if ($currency && !$currency->is_base) {
+                // Convert rate to IDR base
+                $idrRate = $rates['IDR'] ?? 15850; // Fallback
+                
+                if ($code === 'IDR') {
+                    $currency->update(['exchange_rate' => 1.00000000]);
+                } else {
+                    $rateToIdr = $idrRate / $rateToUsd;
+                    $currency->update([
+                        'exchange_rate' => $rateToIdr,
+                        'rate_updated_at' => now(),
+                    ]);
+                }
+            }
         }
     }
 

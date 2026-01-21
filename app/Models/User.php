@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Traits\HasPermissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasPermissions;
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +24,8 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'is_super_admin',
+        'company_id',
     ];
 
     /**
@@ -49,6 +52,22 @@ class User extends Authenticatable
         ];
     }
 
+    // =====================================
+    // RELATIONSHIPS
+    // =====================================
+
+    /**
+     * Get the company this user belongs to.
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    // =====================================
+    // ROLE CHECKS
+    // =====================================
+
     /**
      * Check if user is admin.
      */
@@ -72,4 +91,13 @@ class User extends Authenticatable
     {
         return $this->role === 'staff';
     }
+
+    /**
+     * Check if user can approve transactions (admin or manager).
+     */
+    public function canApprove(): bool
+    {
+        return $this->isAdmin() || $this->isManager();
+    }
 }
+

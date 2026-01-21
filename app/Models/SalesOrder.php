@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class SalesOrder extends Model
 {
+    use BelongsToTenant;
     protected $fillable = [
         'so_number',
         'customer_id',

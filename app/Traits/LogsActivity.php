@@ -88,6 +88,9 @@ trait LogsActivity
             $newValues = null;
         }
 
+        // Create snapshot data for persistence after deletion
+        $snapshotData = static::createSnapshotData($model);
+
         // Create audit log entry
         AuditLog::create([
             'user_id' => Auth::id(),
@@ -96,11 +99,41 @@ trait LogsActivity
             'auditable_id' => $model->getKey(),
             'old_values' => $oldValues ? json_encode($oldValues) : null,
             'new_values' => $newValues ? json_encode($newValues) : null,
+            'snapshot_data' => $snapshotData,
             'url' => static::getCurrentUrl(),
             'ip_address' => static::getClientIp(),
             'user_agent' => static::getUserAgent(),
             'created_at' => now(),
         ]);
+    }
+
+    /**
+     * Create snapshot data for audit log persistence.
+     * This ensures logs remain readable after the source model is deleted.
+     */
+    protected static function createSnapshotData(Model $model): array
+    {
+        $snapshot = [
+            'model_class' => class_basename($model),
+            'model_id' => $model->getKey(),
+        ];
+
+        // Try to get a display name from common attributes
+        $displayNameAttributes = ['name', 'title', 'batch_number', 'transaction_code', 'code', 'so_number', 'po_number', 'invoice_number'];
+        
+        foreach ($displayNameAttributes as $attr) {
+            if ($model->$attr) {
+                $snapshot['display_name'] = $model->$attr;
+                break;
+            }
+        }
+
+        // Fall back to ID if no display name found
+        if (!isset($snapshot['display_name'])) {
+            $snapshot['display_name'] = class_basename($model) . ' #' . $model->getKey();
+        }
+
+        return $snapshot;
     }
 
     /**

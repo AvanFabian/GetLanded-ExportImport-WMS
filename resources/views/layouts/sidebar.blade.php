@@ -122,6 +122,20 @@
                 </div>
             </div>
 
+            {{-- Operations Section --}}
+            <div class="pt-4">
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operations</p>
+                <div class="mt-2 space-y-1">
+                    @can('transaction.approve')
+                        <a href="{{ route('approvals.index') }}" @click="sidebarOpen = false"
+                           class="flex items-center justify-between gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('approvals.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                            <span class="flex items-center gap-3"><span>📋</span><span>Approval Center</span></span>
+                            <span id="approval-badge" class="hidden px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold"></span>
+                        </a>
+                    @endcan
+                </div>
+            </div>
+
             {{-- Reports Section --}}
             <div class="pt-4">
                 <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.reports') }}</p>
@@ -133,22 +147,49 @@
                 </div>
             </div>
 
-            {{-- Administration (Admin Only) --}}
-            @if (auth()->user()->isAdmin())
+            {{-- Administration (Permission-based) --}}
+            @if (auth()->user()->hasPermissionTo('user.manage') || auth()->user()->hasPermissionTo('role.manage') || auth()->user()->isAdmin())
                 <div class="pt-4 pb-8">
                     <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.administration') }}</p>
                     <div class="mt-2 space-y-1">
-                        <a href="{{ route('users.index') }}" @click="sidebarOpen = false"
-                           class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('users.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                            <span>👤</span><span>{{ __('app.user_management') }}</span>
-                        </a>
-                        <a href="{{ route('currencies.index') }}" @click="sidebarOpen = false"
-                           class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('currencies.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                            <span>💱</span><span>Currency Settings</span>
-                        </a>
-                        <a href="{{ route('settings.index') }}" @click="sidebarOpen = false"
-                           class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('settings.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                            <span>⚙️</span><span>{{ __('app.settings') }}</span>
+                        @can('user.manage')
+                            <a href="{{ route('users.index') }}" @click="sidebarOpen = false"
+                               class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('users.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                                <span>👤</span><span>{{ __('app.user_management') }}</span>
+                            </a>
+                        @endcan
+                        @can('role.manage')
+                            <a href="{{ route('roles.index') }}" @click="sidebarOpen = false"
+                               class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('roles.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                                <span>🔐</span><span>Role Management</span>
+                            </a>
+                        @endcan
+                        @if (auth()->user()->hasPermissionTo('user.manage') || auth()->user()->isAdmin())
+                            <a href="{{ route('company.settings') }}" @click="sidebarOpen = false"
+                               class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('company.settings*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                                <span>🏢</span><span>Company Settings</span>
+                            </a>
+                            <a href="{{ route('currencies.index') }}" @click="sidebarOpen = false"
+                               class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('currencies.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                                <span>💱</span><span>Currency Settings</span>
+                            </a>
+                            <a href="{{ route('settings.index') }}" @click="sidebarOpen = false"
+                               class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('settings.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                                <span>⚙️</span><span>{{ __('app.settings') }}</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Super-Admin Platform --}}
+            @if (auth()->user()->is_super_admin)
+                <div class="pt-4 pb-8 border-t border-purple-100">
+                    <p class="px-4 text-xs font-semibold text-purple-500 uppercase tracking-wider">🔮 Platform Admin</p>
+                    <div class="mt-2 space-y-1">
+                        <a href="{{ route('platform.companies.index') }}" @click="sidebarOpen = false"
+                           class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('platform.*') ? 'bg-purple-600 text-white' : 'hover:bg-purple-50 text-purple-700' }}">
+                            <span>🏭</span><span>All Companies</span>
                         </a>
                     </div>
                 </div>
@@ -156,3 +197,21 @@
         </nav>
     </aside>
 </div>
+
+<script>
+// Load approval badge count
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/approvals/counts')
+        .then(r => r.json())
+        .then(data => {
+            if (data.total > 0) {
+                const badge = document.getElementById('approval-badge');
+                if (badge) {
+                    badge.textContent = data.total;
+                    badge.classList.remove('hidden');
+                }
+            }
+        })
+        .catch(() => {});
+});
+</script>

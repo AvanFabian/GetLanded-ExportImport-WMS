@@ -40,6 +40,7 @@ class AuditLog extends Model
         'auditable_id',
         'old_values',
         'new_values',
+        'snapshot_data',
         'url',
         'ip_address',
         'user_agent',
@@ -48,6 +49,7 @@ class AuditLog extends Model
 
     protected $casts = [
         'old_values' => 'array',
+        'snapshot_data' => 'array',
         'new_values' => 'array',
         'created_at' => 'datetime',
     ];
