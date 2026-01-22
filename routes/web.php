@@ -10,6 +10,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Legal Pages
+Route::get('/terms', fn() => view('legal.terms'))->name('terms');
+Route::get('/privacy', fn() => view('legal.privacy'))->name('privacy');
+
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -138,6 +142,97 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     // Role Management (Permission-based)
     Route::middleware('permission:role.manage')->group(function () {
         Route::resource('roles', App\Http\Controllers\RoleController::class);
+    });
+
+    // Phase M: Commercial Operations
+    
+    // Payments & AR
+    Route::resource('payments', App\Http\Controllers\PaymentController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('payments/{payment}/allocate', [App\Http\Controllers\PaymentController::class, 'allocate'])->name('payments.allocate');
+    Route::get('payments/aging-dashboard', [App\Http\Controllers\PaymentController::class, 'agingDashboard'])->name('payments.aging');
+
+    // Sales Returns
+    Route::resource('sales-returns', App\Http\Controllers\SalesReturnController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('sales-returns/{salesReturn}/approve', [App\Http\Controllers\SalesReturnController::class, 'approve'])->name('sales-returns.approve');
+    Route::post('sales-returns/{salesReturn}/process', [App\Http\Controllers\SalesReturnController::class, 'process'])->name('sales-returns.process');
+
+    // Stock Transfers
+    Route::resource('stock-transfers', App\Http\Controllers\StockTransferController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('stock-transfers/{stockTransfer}/dispatch', [App\Http\Controllers\StockTransferController::class, 'dispatch'])->name('stock-transfers.dispatch');
+    Route::post('stock-transfers/{stockTransfer}/receive', [App\Http\Controllers\StockTransferController::class, 'receive'])->name('stock-transfers.receive');
+
+    // Stock Takes (Blind Opname)
+    Route::resource('stock-takes', App\Http\Controllers\StockTakeController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('stock-takes/{stockTake}/update-counts', [App\Http\Controllers\StockTakeController::class, 'updateCounts'])->name('stock-takes.update-counts');
+    Route::post('stock-takes/{stockTake}/complete', [App\Http\Controllers\StockTakeController::class, 'complete'])->name('stock-takes.complete');
+    Route::get('stock-takes/{stockTake}/variance-report', [App\Http\Controllers\StockTakeController::class, 'varianceReport'])->name('stock-takes.variance-report');
+
+    // Claims
+    Route::resource('claims', App\Http\Controllers\ClaimController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('claims/{claim}/upload-evidence', [App\Http\Controllers\ClaimController::class, 'uploadEvidence'])->name('claims.upload-evidence');
+    Route::post('claims/{claim}/submit', [App\Http\Controllers\ClaimController::class, 'submit'])->name('claims.submit');
+    Route::post('claims/{claim}/settle', [App\Http\Controllers\ClaimController::class, 'settle'])->name('claims.settle');
+
+    // Operations
+    Route::get('sales-orders/{order}/picking-list', [App\Http\Controllers\OperationsController::class, 'pickingList'])->name('sales-orders.picking-list');
+    Route::post('sales-orders/{order}/confirm-picking', [App\Http\Controllers\OperationsController::class, 'confirmPicking'])->name('sales-orders.confirm-picking');
+    Route::post('batches/{batch}/split', [App\Http\Controllers\OperationsController::class, 'splitBatch'])->name('batches.split');
+    Route::post('batches/{batch}/quarantine', [App\Http\Controllers\OperationsController::class, 'quarantineBatch'])->name('batches.quarantine');
+    Route::post('batches/{batch}/release', [App\Http\Controllers\OperationsController::class, 'releaseBatch'])->name('batches.release');
+    Route::get('batches/{batch}/traceability', [App\Http\Controllers\OperationsController::class, 'batchTraceability'])->name('batches.traceability');
+
+    // Global Search
+    Route::get('api/search', [App\Http\Controllers\GlobalSearchController::class, 'search'])->name('api.search');
+    Route::get('api/deep-search', [App\Http\Controllers\GlobalSearchController::class, 'deepSearch'])->name('api.deep-search');
+
+    // Reports (Phase M)
+    Route::get('reports/inventory-aging', [App\Http\Controllers\GlobalSearchController::class, 'agingReport'])->name('reports.inventory-aging');
+    Route::get('reports/cbm', [App\Http\Controllers\GlobalSearchController::class, 'cbmReport'])->name('reports.cbm');
+    Route::get('reports/stock-reservation', [App\Http\Controllers\GlobalSearchController::class, 'reservationReport'])->name('reports.stock-reservation');
+
+    // Settings (Phase M)
+    Route::middleware('admin')->group(function () {
+        // Webhooks
+        Route::get('settings/webhooks', [App\Http\Controllers\WebhookController::class, 'index'])->name('webhooks.index');
+        Route::post('settings/webhooks', [App\Http\Controllers\WebhookController::class, 'store'])->name('webhooks.store');
+        Route::put('settings/webhooks/{webhook}', [App\Http\Controllers\WebhookController::class, 'update'])->name('webhooks.update');
+        Route::delete('settings/webhooks/{webhook}', [App\Http\Controllers\WebhookController::class, 'destroy'])->name('webhooks.destroy');
+        Route::post('settings/webhooks/{webhook}/test', [App\Http\Controllers\WebhookController::class, 'test'])->name('webhooks.test');
+        Route::get('settings/webhooks/{webhook}/logs', [App\Http\Controllers\WebhookController::class, 'logs'])->name('webhooks.logs');
+
+        // Bulk Import
+        Route::get('imports', [App\Http\Controllers\ImportController::class, 'index'])->name('imports.index');
+        Route::get('imports/create', [App\Http\Controllers\ImportController::class, 'create'])->name('imports.create');
+        Route::post('imports/upload', [App\Http\Controllers\ImportController::class, 'upload'])->name('imports.upload');
+        Route::post('imports/{job}/confirm-mapping', [App\Http\Controllers\ImportController::class, 'confirmMapping'])->name('imports.confirm-mapping');
+        Route::get('imports/{job}', [App\Http\Controllers\ImportController::class, 'show'])->name('imports.show');
+        Route::get('imports/{job}/progress', [App\Http\Controllers\ImportController::class, 'progress'])->name('imports.progress');
+        Route::get('imports/{job}/errors', [App\Http\Controllers\ImportController::class, 'errors'])->name('imports.errors');
+    });
+
+    // Phase M.Flex: Business Rules & Policies (Admin only)
+    Route::middleware('admin')->prefix('settings')->group(function () {
+        // Business Rules / Company Policies
+        Route::get('business-rules', [App\Http\Controllers\CompanyPoliciesController::class, 'index'])->name('settings.business-rules');
+        Route::put('business-rules', [App\Http\Controllers\CompanyPoliciesController::class, 'update'])->name('settings.business-rules.update');
+        Route::get('api/policies', [App\Http\Controllers\CompanyPoliciesController::class, 'current'])->name('api.policies');
+
+        // UoM Conversions
+        Route::get('uom-conversions', [App\Http\Controllers\UomConversionController::class, 'index'])->name('settings.uom-conversions');
+        Route::post('uom-conversions', [App\Http\Controllers\UomConversionController::class, 'store'])->name('settings.uom-conversions.store');
+        Route::put('uom-conversions/{conversion}', [App\Http\Controllers\UomConversionController::class, 'update'])->name('settings.uom-conversions.update');
+        Route::delete('uom-conversions/{conversion}', [App\Http\Controllers\UomConversionController::class, 'destroy'])->name('settings.uom-conversions.destroy');
+        Route::post('uom-conversions/add-common', [App\Http\Controllers\UomConversionController::class, 'addCommon'])->name('settings.uom-conversions.add-common');
+    });
+
+    // UoM Conversion API (accessible to all authenticated users)
+    Route::post('api/uom/convert', [App\Http\Controllers\UomConversionController::class, 'convert'])->name('api.uom.convert');
+    Route::get('api/uom/units', [App\Http\Controllers\UomConversionController::class, 'availableUnits'])->name('api.uom.units');
+
+    // Owner-only Reports
+    Route::middleware('owner')->group(function () {
+        Route::get('reports/business-health', [App\Http\Controllers\GlobalSearchController::class, 'businessHealth'])->name('reports.business-health');
+        Route::get('settings/security-logs', [App\Http\Controllers\OperationsController::class, 'securityLogs'])->name('settings.security-logs');
     });
 
     // PDF Document Downloads

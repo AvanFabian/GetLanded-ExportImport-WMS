@@ -7,6 +7,7 @@ use App\Models\Batch;
 use App\Models\Currency;
 use App\Models\Product;
 use App\Models\SalesOrder;
+use App\Models\SalesOrderItem;
 use App\Models\StockIn;
 use App\Models\StockInDetail;
 use App\Models\StockOut;
@@ -55,6 +56,21 @@ class DashboardController extends Controller
             return $this->getZoneDistribution();
         });
 
+        // Chart 3: Monthly Profit Data (NEW)
+        $monthlyProfit = Cache::remember('dashboard:monthly_profit', $cacheMinutes * 60, function () {
+            return $this->getMonthlyProfitData();
+        });
+
+        // Chart 4: Inventory Aging (NEW)
+        $inventoryAging = Cache::remember('dashboard:inventory_aging', $cacheMinutes * 60, function () {
+            return $this->getInventoryAgingData();
+        });
+
+        // Chart 5: Top Profitable Products (NEW)
+        $topProducts = Cache::remember('dashboard:top_products', $cacheMinutes * 60, function () {
+            return $this->getTopProfitableProducts();
+        });
+
         // List 1: Expiring Soon (Top 5)
         $expiringSoon = Batch::whereNotNull('expiry_date')
             ->where('expiry_date', '>=', now())
@@ -82,10 +98,92 @@ class DashboardController extends Controller
             'fillRate',
             'stockTrends',
             'zoneDistribution',
+            'monthlyProfit',
+            'inventoryAging',
+            'topProducts',
             'expiringSoon',
             'recentActivity',
             'usdRate'
         ));
+    }
+
+    /**
+     * Get monthly revenue vs net profit for last 6 months.
+     */
+    private function getMonthlyProfitData(): array
+    {
+        $labels = [];
+        $revenue = [];
+        $netProfit = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $labels[] = $date->format('M Y');
+
+            $monthData = SalesOrder::whereYear('order_date', $date->year)
+                ->whereMonth('order_date', $date->month)
+                ->selectRaw('COALESCE(SUM(total), 0) as revenue, COALESCE(SUM(net_amount), 0) as net')
+                ->first();
+
+            $revenue[] = (float) ($monthData->revenue ?? 0);
+            $netProfit[] = (float) ($monthData->net ?? 0);
+        }
+
+        return [
+            'labels' => $labels,
+            'revenue' => $revenue,
+            'netProfit' => $netProfit,
+        ];
+    }
+
+    /**
+     * Get inventory aging breakdown.
+     */
+    private function getInventoryAgingData(): array
+    {
+        $now = now();
+        
+        $fresh = Batch::where('status', 'available')
+            ->where('created_at', '>=', $now->copy()->subDays(30))
+            ->whereHas('stockLocations', fn($q) => $q->where('quantity', '>', 0))
+            ->count();
+
+        $medium = Batch::where('status', 'available')
+            ->whereBetween('created_at', [$now->copy()->subDays(90), $now->copy()->subDays(30)])
+            ->whereHas('stockLocations', fn($q) => $q->where('quantity', '>', 0))
+            ->count();
+
+        $slow = Batch::where('status', 'available')
+            ->where('created_at', '<', $now->copy()->subDays(90))
+            ->whereHas('stockLocations', fn($q) => $q->where('quantity', '>', 0))
+            ->count();
+
+        return [
+            'labels' => ['Fresh (<30 days)', 'Medium (30-90 days)', 'Slow Moving (>90 days)'],
+            'data' => [$fresh, $medium, $slow],
+            'colors' => ['#10B981', '#F59E0B', '#EF4444'],
+        ];
+    }
+
+    /**
+     * Get top 5 most profitable products.
+     */
+    private function getTopProfitableProducts(): array
+    {
+        $products = SalesOrderItem::join('sales_orders', 'sales_order_items.sales_order_id', '=', 'sales_orders.id')
+            ->join('products', 'sales_order_items.product_id', '=', 'products.id')
+            ->where('sales_orders.order_date', '>=', now()->subMonths(6))
+            ->selectRaw('products.name, products.code, SUM(sales_order_items.subtotal) as total_sales, COUNT(*) as order_count')
+            ->groupBy('products.id', 'products.name', 'products.code')
+            ->orderByDesc('total_sales')
+            ->take(5)
+            ->get();
+
+        return [
+            'labels' => $products->pluck('code')->toArray(),
+            'data' => $products->pluck('total_sales')->map(fn($v) => (float) $v)->toArray(),
+            'names' => $products->pluck('name')->toArray(),
+        ];
     }
 
     /**

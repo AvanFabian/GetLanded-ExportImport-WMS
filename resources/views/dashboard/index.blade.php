@@ -110,6 +110,42 @@
         </div>
     </div>
 
+    {{-- Analytics Charts Row (NEW) --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {{-- Monthly Profit Chart --}}
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Revenue vs Net Profit (6 Months)</h3>
+                <span class="text-xs text-gray-400">Financial Performance</span>
+            </div>
+            <div class="h-64">
+                <canvas id="monthlyProfitChart"></canvas>
+            </div>
+        </div>
+
+        {{-- Inventory Aging Chart --}}
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Inventory Aging</h3>
+                <span class="text-xs text-gray-400">Stock Health</span>
+            </div>
+            <div class="h-64">
+                <canvas id="inventoryAgingChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    {{-- Top Products Chart --}}
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Top 5 Products by Sales (6 Months)</h3>
+            <span class="text-xs text-gray-400">Best Performers</span>
+        </div>
+        <div class="h-64">
+            <canvas id="topProductsChart"></canvas>
+        </div>
+    </div>
+
     {{-- Operational Lists --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {{-- Expiring Soon --}}
@@ -325,6 +361,141 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             plugins: {
                 legend: { position: 'bottom', labels: { boxWidth: 12 } }
+            }
+        }
+    });
+
+    // Monthly Profit Line Chart (NEW)
+    const profitCtx = document.getElementById('monthlyProfitChart').getContext('2d');
+    new Chart(profitCtx, {
+        type: 'line',
+        data: {
+            labels: @json($monthlyProfit['labels'] ?? []),
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: @json($monthlyProfit['revenue'] ?? []),
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                },
+                {
+                    label: 'Net Profit',
+                    data: @json($monthlyProfit['netProfit'] ?? []),
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': Rp ' + context.raw.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
+                            if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'M';
+                            return 'Rp ' + value.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Inventory Aging Doughnut Chart (NEW)
+    const agingCtx = document.getElementById('inventoryAgingChart').getContext('2d');
+    new Chart(agingCtx, {
+        type: 'doughnut',
+        data: {
+            labels: @json($inventoryAging['labels'] ?? []),
+            datasets: [{
+                data: @json($inventoryAging['data'] ?? []),
+                backgroundColor: @json($inventoryAging['colors'] ?? ['#10B981', '#F59E0B', '#EF4444']),
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+            }
+        }
+    });
+
+    // Top Products Bar Chart (NEW)
+    const topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+    new Chart(topProductsCtx, {
+        type: 'bar',
+        data: {
+            labels: @json($topProducts['labels'] ?? []),
+            datasets: [{
+                label: 'Total Sales (Rp)',
+                data: @json($topProducts['data'] ?? []),
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(249, 115, 22, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                ],
+                borderColor: [
+                    'rgb(16, 185, 129)',
+                    'rgb(59, 130, 246)',
+                    'rgb(139, 92, 246)',
+                    'rgb(249, 115, 22)',
+                    'rgb(236, 72, 153)',
+                ],
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const names = @json($topProducts['names'] ?? []);
+                            return names[context[0].dataIndex] || context[0].label;
+                        },
+                        label: function(context) {
+                            return 'Sales: Rp ' + context.raw.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1) + 'B';
+                            if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(0) + 'M';
+                            return 'Rp ' + value.toLocaleString('id-ID');
+                        }
+                    }
+                }
             }
         }
     });

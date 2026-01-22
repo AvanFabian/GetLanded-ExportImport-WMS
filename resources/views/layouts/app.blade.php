@@ -90,6 +90,11 @@
        </div>
     </footer>
    </div>
+
+   {{-- Welcome Tour for New Users --}}
+   @auth
+      @include('components.welcome-tour')
+   @endauth
 </body>
 
 </html>
