@@ -16,6 +16,7 @@ class Batch extends Model
     use LogsActivity, BelongsToTenant;
 
     protected $fillable = [
+        'company_id',
         'batch_number',
         'product_id',
         'variant_id',
