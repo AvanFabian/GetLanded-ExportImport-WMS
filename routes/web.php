@@ -25,6 +25,7 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
 
     // API endpoints for AJAX
     Route::get('/api/products', [App\Http\Controllers\ProductController::class, 'getAll'])->name('api.products');
+    Route::get('/alerts', [App\Http\Controllers\Api\AlertController::class, 'index'])->name('alerts.index');
 
     // Master data
     Route::resource('categories', App\Http\Controllers\CategoryController::class);
@@ -115,6 +116,10 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     Route::get('company/settings', [App\Http\Controllers\CompanySettingsController::class, 'index'])->name('company.settings');
     Route::put('company/settings', [App\Http\Controllers\CompanySettingsController::class, 'update'])->name('company.settings.update');
     Route::post('company/settings/remove-logo', [App\Http\Controllers\CompanySettingsController::class, 'removeLogo'])->name('company.settings.remove-logo');
+
+    // Trash / Soft Deletes
+    Route::get('trash', [App\Http\Controllers\TrashController::class, 'index'])->name('trash.index');
+    Route::post('trash/{type}/{id}/restore', [App\Http\Controllers\TrashController::class, 'restore'])->name('trash.restore');
 
     // Approval Center
     Route::middleware('permission:transaction.approve')->group(function () {

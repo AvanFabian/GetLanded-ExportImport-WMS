@@ -29,7 +29,6 @@ Route::prefix('v1')->group(function () {
         ->name('api.v1.inventory.batches');
 });
 
-// Auth endpoint for API users (if using Sanctum)
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
