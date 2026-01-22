@@ -416,19 +416,20 @@ class DemoDataSeeder extends Seeder
                 'stock_in_id' => $stockIn->id,
                 'product_id' => $product->id,
                 'quantity' => $quantity,
-                'unit_price' => $unitPrice,
+                'purchase_price' => $unitPrice,
+                'total' => $quantity * $unitPrice,
             ]);
 
             // Create batch
             $batch = Batch::create([
                 'product_id' => $product->id,
                 'batch_number' => 'B-' . $date->format('Ymd') . '-' . strtoupper(Str::random(4)),
-                'manufacturing_date' => $date->copy()->subDays(rand(7, 30)),
+                'supplier_id' => $supplier->id,
+                'manufacture_date' => $date->copy()->subDays(rand(7, 30)),
                 'expiry_date' => $date->copy()->addMonths(rand(12, 24)),
-                'initial_quantity' => $quantity,
                 'cost_price' => $landedCost,
                 'status' => 'available',
-                'stock_in_detail_id' => $detail->id,
+                'stock_in_id' => $stockIn->id,
             ]);
 
             $this->batches[] = $batch;

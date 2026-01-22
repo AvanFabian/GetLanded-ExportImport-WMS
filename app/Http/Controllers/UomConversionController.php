@@ -3,9 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\UomConversion;
+<<<<<<< HEAD
 use App\Models\Product;
 use App\Services\UomConversionService;
 use Illuminate\Http\Request;
+=======
+use App\Services\UomConversionService;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+>>>>>>> fce7790e2850fa150eeb648931515a40e11b3149
 
 class UomConversionController extends Controller
 {
@@ -21,12 +27,20 @@ class UomConversionController extends Controller
             ->get();
 
         $commonConversions = UomConversionService::getCommonConversions();
+<<<<<<< HEAD
         
         $products = Product::where('company_id', auth()->user()->company_id)
             ->orderBy('name')
             ->get(['id', 'name', 'code']);
 
         return view('settings.uom-conversions', compact('conversions', 'commonConversions', 'products'));
+=======
+
+        return Inertia::render('Settings/UomConversions', [
+            'conversions' => $conversions,
+            'commonConversions' => $commonConversions,
+        ]);
+>>>>>>> fce7790e2850fa150eeb648931515a40e11b3149
     }
 
     public function store(Request $request)

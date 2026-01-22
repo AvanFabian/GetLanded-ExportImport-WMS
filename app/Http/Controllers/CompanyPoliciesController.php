@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class CompanyPoliciesController extends Controller
 {
@@ -66,14 +67,16 @@ class CompanyPoliciesController extends Controller
         // Group policies
         $groupedPolicies = collect($currentPolicies)->groupBy(fn($p) => $p['meta']['group']);
 
-        $groups = [
-            'workflow' => ['label' => 'Workflow & Approvals', 'icon' => 'check-circle'],
-            'documents' => ['label' => 'Document Generation', 'icon' => 'file-text'],
-            'products' => ['label' => 'Products & Units', 'icon' => 'package'],
-            'inventory' => ['label' => 'Inventory Management', 'icon' => 'box'],
-        ];
-
-        return view('settings.business-rules', compact('currentPolicies', 'groupedPolicies', 'groups'));
+        return Inertia::render('Settings/BusinessRules', [
+            'policies' => $currentPolicies,
+            'groupedPolicies' => $groupedPolicies,
+            'groups' => [
+                'workflow' => ['label' => 'Workflow & Approvals', 'icon' => 'check-circle'],
+                'documents' => ['label' => 'Document Generation', 'icon' => 'file-text'],
+                'products' => ['label' => 'Products & Units', 'icon' => 'package'],
+                'inventory' => ['label' => 'Inventory Management', 'icon' => 'box'],
+            ],
+        ]);
     }
 
     public function update(Request $request)
