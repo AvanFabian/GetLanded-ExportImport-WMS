@@ -2,613 +2,466 @@
 
 namespace Database\Seeders;
 
-use App\Models\Batch;
-use App\Models\Category;
-use App\Models\Company;
-use App\Models\Customer;
-use App\Models\Invoice;
-use App\Models\OrderExpense;
-use App\Models\Payment;
-use App\Models\Product;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderItem;
-use App\Models\StockIn;
-use App\Models\StockInDetail;
-use App\Models\StockLocation;
-use App\Models\StockOut;
-use App\Models\StockOutDetail;
-use App\Models\StockTake;
-use App\Models\StockTakeItem;
-use App\Models\Supplier;
-use App\Models\UomConversion;
-use App\Models\User;
-use App\Models\Warehouse;
-use App\Models\WarehouseBin;
-use App\Models\WarehouseRack;
-use App\Models\WarehouseZone;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 /**
- * DemoDataSeeder - Creates a realistic 6-month history for a multi-million dollar export company
- * 
- * Run: php artisan db:seed --class=DemoDataSeeder
+ * Robust Demo Data Seeder using DB::table() + Schema checks.
+ * Completely bypasses Model scopes and adapts to schema state.
  */
 class DemoDataSeeder extends Seeder
 {
-    protected $company;
+    protected $companyId;
+    protected $userId;
     protected $warehouses = [];
     protected $products = [];
-    protected $customers = [];
     protected $suppliers = [];
-    protected $batches = [];
-    protected $demoUser;
+    protected $customers = [];
+    protected $binIds = [];
 
     public function run(): void
     {
-        $this->command->info('🚀 Starting Demo Data Seeder...');
-        $this->command->info('Creating master data for demo...');
+        $this->command->info('🚀 Starting Robust Transactional Seeder...');
+        
+        DB::beginTransaction();
 
         try {
+            // 1. Company & User
             $this->createCompanyAndUser();
-            
-            // Authenticate as demo user so BelongsToTenant works
-            \Illuminate\Support\Facades\Auth::login($this->demoUser);
-            
-            $this->createWarehouseStructure();
-            $this->command->info('  ✓ Warehouses created: ' . count($this->warehouses));
-            
-            $this->createSuppliersAndCustomers();
-            $this->command->info('  ✓ Suppliers: ' . count($this->suppliers) . ', Customers: ' . count($this->customers));
-            
-            $this->createProducts();
-            $this->command->info('  ✓ Products created: ' . count($this->products));
-            
-            $this->createUomConversions();
-            $this->command->info('  ✓ UoM conversions created');
-            
-            // NOTE: Skipping transaction history to avoid schema issues
-            // Transaction history can be created manually or via a separate seeder
-            $this->command->warn('  ⚠ Transaction history skipped (run manually if needed)');
-            
-            // Log out after seeding
-            \Illuminate\Support\Facades\Auth::logout();
-            
-            $this->command->info('✅ Demo master data created successfully!');
-            $this->printSummary();
+
+            // 2. Master Data (Warehouses, Suppliers, Customers, Products, UoM)
+            $this->createMasterData();
+
+            // 3. Historical Transactions (StockIn, Sales, Payments, Expenses)
+            $this->createHistoricalTransactions();
+
+            DB::commit();
+            $this->command->info('✅ Demo environment created successfully!');
+            $this->command->info("Login: demo@avandigital.id / demo1234");
+            $this->command->info("Charts should now show 6 months of data.");
+
         } catch (\Exception $e) {
-            $this->command->error('❌ Error: ' . $e->getMessage());
-            $this->command->error('   Line: ' . $e->getLine() . ' in ' . basename($e->getFile()));
+            DB::rollBack();
+            $this->command->error('❌ Fatal Error: ' . $e->getMessage());
+            $this->command->error('   Location: ' . basename($e->getFile()) . ':' . $e->getLine());
             throw $e;
         }
     }
 
-    protected function createCompanyAndUser(): void
+    /**
+     * Dynamically insert data, stripping company_id if column missing.
+     */
+    protected function insertWithCompany(string $table, array $data): int
     {
-        $this->command->info('Creating demo company and user...');
+        if (!Schema::hasColumn($table, 'company_id')) {
+            unset($data['company_id']);
+        }
+        
+        if (!isset($data['created_at'])) {
+            $data['created_at'] = now();
+            $data['updated_at'] = now();
+        }
 
-        // Create or get company
-        $this->company = Company::firstOrCreate(
-            ['code' => 'DEMO-EXPORT'],
-            [
-                'uuid' => Str::uuid(),
+        return DB::table($table)->insertGetId($data);
+    }
+    
+    protected function insertSafe(string $table, array $data): void
+    {
+        if (!Schema::hasColumn($table, 'company_id')) {
+            unset($data['company_id']);
+        }
+        if (!isset($data['created_at'])) {
+            $data['created_at'] = now();
+            $data['updated_at'] = now();
+        }
+        DB::table($table)->insert($data);
+    }
+
+    protected function createCompanyAndUser()
+    {
+        $this->command->info('Creating Company Context...');
+
+        // Company
+        $companyId = DB::table('companies')->where('code', 'DEMO-GLOBAL')->value('id');
+        if (!$companyId) {
+            $companyId = DB::table('companies')->insertGetId([
+                'uuid' => Str::uuid()->toString(),
+                'code' => 'DEMO-GLOBAL',
                 'name' => 'PT. Nusantara Global Komoditas',
                 'base_currency_code' => 'IDR',
                 'subscription_plan' => 'enterprise',
-                'require_approval_workflow' => false,
-                'uom_conversion_enabled' => true,
-                'stock_limit_mode' => 'warning',
-            ]
-        );
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        $this->companyId = $companyId;
 
-        // Create demo user
-        $this->demoUser = User::firstOrCreate(
-            ['email' => 'demo@avandigital.id'],
-            [
-                'name' => 'Demo Export Manager',
+        // User
+        $userId = DB::table('users')->where('email', 'demo@avandigital.id')->value('id');
+        if (!$userId) {
+            $this->userId = $this->insertWithCompany('users', [
+                'company_id' => $this->companyId,
+                'name' => 'Demo Owner',
+                'email' => 'demo@avandigital.id',
                 'password' => Hash::make('demo1234'),
-                'company_id' => $this->company->id,
                 'role' => 'admin',
                 'is_active' => true,
-            ]
-        );
+            ]);
+        } else {
+            $this->userId = $userId;
+        }
     }
 
-    protected function createWarehouseStructure(): void
+    protected function createMasterData()
     {
-        $this->command->info('Creating warehouse structure...');
+        $this->command->info('Step A: Seeding Master Data...');
 
+        // 1. Warehouses
         $warehouseData = [
-            [
-                'name' => 'Gudang Utama Surabaya',
-                'code' => 'GU-SBY',
-                'address' => 'Jl. Rungkut Industri II No. 45, Surabaya',
-                'zones' => ['Dry Storage', 'Cold Storage', 'Staging Area', 'Quarantine']
-            ],
-            [
-                'name' => 'Gudang Transit Tanjung Priok',
-                'code' => 'GT-JKT',
-                'address' => 'Pelabuhan Tanjung Priok, Jakarta Utara',
-                'zones' => ['Container Yard', 'Bonded Zone', 'Loading Dock']
-            ],
-            [
-                'name' => 'Gudang Semarang',
-                'code' => 'GS-SMG',
-                'address' => 'Kawasan Industri Terboyo, Semarang',
-                'zones' => ['Bulk Storage', 'Packaging Area']
-            ],
+            ['code' => 'WH-SBY', 'name' => 'Surabaya Main Hub', 'zones' => ['Dry', 'Cold']],
+            ['code' => 'WH-JKT', 'name' => 'Jakarta Transit', 'zones' => ['Bonded', 'General']],
         ];
 
-        foreach ($warehouseData as $whData) {
-            $warehouse = Warehouse::firstOrCreate(
-                ['code' => $whData['code']],
-                [
-                    'name' => $whData['name'],
-                    'address' => $whData['address'],
+        foreach ($warehouseData as $w) {
+            $whId = DB::table('warehouses')->where('code', $w['code'])->value('id');
+            if (!$whId) {
+                $whId = $this->insertWithCompany('warehouses', [
+                    'company_id' => $this->companyId,
+                    'code' => $w['code'],
+                    'name' => $w['name'],
+                    'address' => 'Demo Location',
                     'is_active' => true,
-                ]
-            );
-            $this->warehouses[] = $warehouse;
+                ]);
+            }
+            $this->warehouses[] = $whId;
 
-            foreach ($whData['zones'] as $zoneName) {
-                $zoneCode = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $zoneName), 0, 3));
-                $zone = WarehouseZone::firstOrCreate(
-                    ['warehouse_id' => $warehouse->id, 'code' => $zoneCode . '-' . $warehouse->id],
-                    [
-                        'name' => $zoneName,
+            // Zones, Racks, Bins
+            foreach ($w['zones'] as $zName) {
+                $zoneCode = strtoupper(substr($zName, 0, 3)) . '-' . $whId;
+                $zoneId = DB::table('warehouse_zones')->where('code', $zoneCode)->where('warehouse_id', $whId)->value('id');
+                if (!$zoneId) {
+                    $zoneId = $this->insertWithCompany('warehouse_zones', [
+                        'warehouse_id' => $whId,
+                        'code' => $zoneCode,
+                        'name' => $zName,
                         'type' => 'storage',
                         'is_active' => true,
-                    ]
-                );
+                    ]);
+                }
 
-                // Create racks and bins
-                for ($r = 1; $r <= 3; $r++) {
-                    $rackCode = "{$zoneCode}-R{$r}";
-                    $rack = WarehouseRack::firstOrCreate(
-                        ['zone_id' => $zone->id, 'code' => $rackCode],
-                        [
-                            'name' => "Rack {$r}",
-                            'levels' => 5,
+                $rackCode = 'R1-' . $zoneId;
+                $rackId = DB::table('warehouse_racks')->where('code', $rackCode)->where('zone_id', $zoneId)->value('id');
+                if (!$rackId) {
+                    $rackId = $this->insertWithCompany('warehouse_racks', [
+                        'zone_id' => $zoneId,
+                        'code' => $rackCode,
+                        'name' => 'Rack 1',
+                        'levels' => 4,
+                        'is_active' => true,
+                    ]);
+                }
+
+                for ($i = 1; $i <= 3; $i++) {
+                    $binCode = $rackCode . '-B' . $i;
+                    $binId = DB::table('warehouse_bins')->where('code', $binCode)->where('rack_id', $rackId)->value('id');
+                    if (!$binId) {
+                        $binId = $this->insertWithCompany('warehouse_bins', [
+                            'rack_id' => $rackId,
+                            'code' => $binCode,
+                            'pick_priority' => 'medium',
                             'is_active' => true,
-                        ]
-                    );
-
-                    for ($b = 1; $b <= 5; $b++) {
-                        $binCode = "{$rackCode}-B{$b}";
-                        WarehouseBin::firstOrCreate(
-                            ['rack_id' => $rack->id, 'code' => $binCode],
-                            [
-                                'level' => $b,
-                                'max_capacity' => rand(100, 500),
-                                'pick_priority' => ['high', 'medium', 'low'][array_rand(['high', 'medium', 'low'])],
-                                'is_active' => true,
-                            ]
-                        );
+                        ]);
                     }
+                    $this->binIds[] = $binId;
                 }
             }
         }
-    }
 
-    protected function createSuppliersAndCustomers(): void
-    {
-        $this->command->info('Creating suppliers and customers...');
-
-        // Suppliers (Local farms and producers)
-        $supplierData = [
-            ['name' => 'Koperasi Kopi Gayo', 'address' => 'Takengon, Aceh', 'phone' => '081234567001', 'email' => 'kopi@gayocoop.id', 'contact_person' => 'Pak Ridwan'],
-            ['name' => 'PT. Kakao Sulawesi Mandiri', 'address' => 'Makassar, Sulawesi Selatan', 'phone' => '081234567002', 'email' => 'sales@kakaosulawesi.com', 'contact_person' => 'Ibu Fatimah'],
-            ['name' => 'UD. Rempah Nusantara', 'address' => 'Padang, Sumatera Barat', 'phone' => '081234567003', 'email' => 'info@rempahnusantara.id', 'contact_person' => 'Pak Hendra'],
-            ['name' => 'Koperasi Kopra Sulut', 'address' => 'Manado, Sulawesi Utara', 'phone' => '081234567004', 'email' => 'kopra@sulutcoop.id', 'contact_person' => 'Pak Jefri'],
-            ['name' => 'PT. Sawit Kalimantan Jaya', 'address' => 'Balikpapan, Kalimantan Timur', 'phone' => '081234567005', 'email' => 'procurement@sawitkalbar.co.id', 'contact_person' => 'Ibu Dewi'],
-            ['name' => 'CV. Vanili Papua', 'address' => 'Jayapura, Papua', 'phone' => '081234567006', 'email' => 'vanili@papuaspice.com', 'contact_person' => 'Pak Yohanes'],
-            ['name' => 'Koperasi Pala Maluku', 'address' => 'Ambon, Maluku', 'phone' => '081234567007', 'email' => 'pala@malukucoop.id', 'contact_person' => 'Ibu Martha'],
-            ['name' => 'PT. Lada Bangka Belitung', 'address' => 'Pangkal Pinang, Bangka Belitung', 'phone' => '081234567008', 'email' => 'lada@bangkapepper.com', 'contact_person' => 'Pak Arifin'],
-        ];
-
-        foreach ($supplierData as $data) {
-            $this->suppliers[] = Supplier::firstOrCreate(['email' => $data['email']], $data);
+        // 2. Suppliers
+        $suppliers = ['Agro Mandiri', 'Borneo Spices', 'Sumatra Coffee', 'Java Cocoa', 'Sulawesi Traders'];
+        foreach ($suppliers as $s) {
+            $email = Str::slug($s) . '@example.com';
+            $supId = DB::table('suppliers')->where('email', $email)->value('id');
+            if (!$supId) {
+                $supId = $this->insertWithCompany('suppliers', [
+                    'company_id' => $this->companyId,
+                    'name' => $s,
+                    'email' => $email,
+                    'phone' => '0812345678',
+                    'contact_person' => 'Manager',
+                ]);
+            }
+            $this->suppliers[] = $supId;
         }
 
-        // Customers (International buyers)
-        $customerData = [
-            ['name' => 'Starbucks Coffee Trading AG', 'address' => 'Zurich, Switzerland', 'phone' => '+41 44 123 4567', 'email' => 'procurement@starbucks-trading.ch'],
-            ['name' => 'Barry Callebaut Asia Pacific', 'address' => 'Singapore', 'phone' => '+65 6123 4567', 'email' => 'sourcing@barry-callebaut.com'],
-            ['name' => 'McCormick & Company Inc.', 'address' => 'Baltimore, Maryland, USA', 'phone' => '+1 410 123 4567', 'email' => 'global.sourcing@mccormick.com'],
-            ['name' => 'Olam International Ltd.', 'address' => 'Singapore', 'phone' => '+65 6339 4100', 'email' => 'indonesia@olamnet.com'],
-            ['name' => 'Cargill Tropical Palm Holdings', 'address' => 'Kuala Lumpur, Malaysia', 'phone' => '+60 3 2715 2000', 'email' => 'palm.trading@cargill.com'],
-            ['name' => 'Louis Dreyfus Company B.V.', 'address' => 'Rotterdam, Netherlands', 'phone' => '+31 10 411 0555', 'email' => 'commodities@ldc.com'],
-            ['name' => 'Nestle Oceania Pty Ltd', 'address' => 'Sydney, Australia', 'phone' => '+61 2 9000 1234', 'email' => 'procurement.au@nestle.com'],
-            ['name' => 'Mitsubishi Corporation', 'address' => 'Tokyo, Japan', 'phone' => '+81 3 3210 2121', 'email' => 'food.trading@mitsubishicorp.com'],
-            ['name' => 'COFCO International Trading', 'address' => 'Hong Kong', 'phone' => '+852 2521 6688', 'email' => 'agri.trading@cofcointl.com'],
-            ['name' => 'Wilmar International Limited', 'address' => 'Singapore', 'phone' => '+65 6216 0244', 'email' => 'derivatives@wilmar.com.sg'],
-        ];
-
-        foreach ($customerData as $data) {
-            $customer = Customer::firstOrCreate(
-                ['email' => $data['email']],
-                [
-                    'name' => $data['name'],
-                    'address' => $data['address'],
-                    'phone' => $data['phone'],
+        // 3. Customers
+        $customers = ['Starbucks Global', 'Nestle S.A.', 'Cargill Inc.', 'Olam Intl', 'Barry Callebaut'];
+        foreach ($customers as $c) {
+            $email = Str::slug($c) . '@example.com';
+            $custId = DB::table('customers')->where('email', $email)->value('id');
+            if (!$custId) {
+                $custId = $this->insertWithCompany('customers', [
+                    'company_id' => $this->companyId,
+                    'name' => $c,
+                    'email' => $email,
+                    'address' => 'Global HQ',
                     'is_active' => true,
-                ]
-            );
-
-            $this->customers[] = $customer;
+                ]);
+            }
+            $this->customers[] = $custId;
         }
-    }
 
-    protected function createProducts(): void
-    {
-        $this->command->info('Creating export commodity products...');
-
-        // Create categories first
+        // 4. Products & Categories
         $categories = [
-            'Coffee' => Category::firstOrCreate(['name' => 'Coffee'], ['description' => 'Coffee beans and products', 'status' => true]),
-            'Cocoa' => Category::firstOrCreate(['name' => 'Cocoa'], ['description' => 'Cocoa beans and products', 'status' => true]),
-            'Spices' => Category::firstOrCreate(['name' => 'Spices'], ['description' => 'Indonesian spices', 'status' => true]),
-            'Palm Oil' => Category::firstOrCreate(['name' => 'Palm Oil'], ['description' => 'Palm oil products', 'status' => true]),
-            'Coconut' => Category::firstOrCreate(['name' => 'Coconut'], ['description' => 'Coconut and derivatives', 'status' => true]),
+            'Coffee' => ['Arabica Gayo', 'Robusta Lampung'],
+            'Spices' => ['Black Pepper', 'Nutmeg', 'Cinnamon'],
+            'Cocoa' => ['Cocoa Beans', 'Cocoa Butter'],
+            'Palm Oil' => ['CPO', 'RBD Olein'],
         ];
 
-        $productData = [
-            // Coffee Products
-            ['code' => 'COF-GAYO-G1', 'name' => 'Arabica Gayo Grade 1', 'category' => 'Coffee', 'unit' => 'BAG', 'min_stock' => 100, 'purchase_price' => 850000, 'selling_price' => 1150000],
-            ['code' => 'COF-MAND-G1', 'name' => 'Arabica Mandheling Grade 1', 'category' => 'Coffee', 'unit' => 'BAG', 'min_stock' => 80, 'purchase_price' => 920000, 'selling_price' => 1250000],
-            ['code' => 'COF-TORAJA', 'name' => 'Arabica Toraja Sapan', 'category' => 'Coffee', 'unit' => 'BAG', 'min_stock' => 60, 'purchase_price' => 780000, 'selling_price' => 1050000],
-            ['code' => 'COF-JAVA-G1', 'name' => 'Java Robusta Grade 1', 'category' => 'Coffee', 'unit' => 'BAG', 'min_stock' => 150, 'purchase_price' => 420000, 'selling_price' => 580000],
-            ['code' => 'COF-LAMP-ELB', 'name' => 'Lampung Robusta ELB', 'category' => 'Coffee', 'unit' => 'BAG', 'min_stock' => 200, 'purchase_price' => 380000, 'selling_price' => 520000],
-            ['code' => 'COF-BALI-KINT', 'name' => 'Bali Kintamani Arabica', 'category' => 'Coffee', 'unit' => 'BAG', 'min_stock' => 40, 'purchase_price' => 1100000, 'selling_price' => 1450000],
-
-            // Cocoa Products
-            ['code' => 'COC-SUL-FERM', 'name' => 'Sulawesi Fermented Cocoa', 'category' => 'Cocoa', 'unit' => 'BAG', 'min_stock' => 100, 'purchase_price' => 650000, 'selling_price' => 880000],
-            ['code' => 'COC-SUL-SUN', 'name' => 'Sulawesi Sundried Cocoa', 'category' => 'Cocoa', 'unit' => 'BAG', 'min_stock' => 120, 'purchase_price' => 580000, 'selling_price' => 780000],
-            ['code' => 'COC-SUM-G1', 'name' => 'Sumatra Cocoa Grade 1', 'category' => 'Cocoa', 'unit' => 'BAG', 'min_stock' => 80, 'purchase_price' => 620000, 'selling_price' => 850000],
-            ['code' => 'COC-BUTTER', 'name' => 'Cocoa Butter (Deodorized)', 'category' => 'Cocoa', 'unit' => 'DRUM', 'min_stock' => 30, 'purchase_price' => 4500000, 'selling_price' => 5800000],
-            ['code' => 'COC-POWDER', 'name' => 'Cocoa Powder (Alkalized)', 'category' => 'Cocoa', 'unit' => 'BAG', 'min_stock' => 50, 'purchase_price' => 1800000, 'selling_price' => 2400000],
-
-            // Spices
-            ['code' => 'SPC-BLK-ASTA', 'name' => 'Black Pepper ASTA Grade', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 60, 'purchase_price' => 1250000, 'selling_price' => 1680000],
-            ['code' => 'SPC-WHT-FAQ', 'name' => 'White Pepper FAQ', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 40, 'purchase_price' => 2100000, 'selling_price' => 2750000],
-            ['code' => 'SPC-NUTMEG', 'name' => 'Whole Nutmeg Grade A', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 30, 'purchase_price' => 1800000, 'selling_price' => 2400000],
-            ['code' => 'SPC-MACE', 'name' => 'Mace Grade 1', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 20, 'purchase_price' => 3200000, 'selling_price' => 4200000],
-            ['code' => 'SPC-CLOVE', 'name' => 'Cloves Hand-Picked', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 25, 'purchase_price' => 2800000, 'selling_price' => 3600000],
-            ['code' => 'SPC-CINNAMON', 'name' => 'Cassia Cinnamon Sticks', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 50, 'purchase_price' => 850000, 'selling_price' => 1150000],
-            ['code' => 'SPC-VANILA', 'name' => 'Vanilla Bean Grade A', 'category' => 'Spices', 'unit' => 'KG', 'min_stock' => 10, 'purchase_price' => 8500000, 'selling_price' => 12000000],
-            ['code' => 'SPC-TURMERIC', 'name' => 'Dried Turmeric Finger', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 80, 'purchase_price' => 180000, 'selling_price' => 280000],
-            ['code' => 'SPC-GINGER', 'name' => 'Dried Ginger Sliced', 'category' => 'Spices', 'unit' => 'BAG', 'min_stock' => 60, 'purchase_price' => 220000, 'selling_price' => 340000],
-
-            // Palm Oil Products
-            ['code' => 'PLM-CPO-BULK', 'name' => 'Crude Palm Oil (CPO)', 'category' => 'Palm Oil', 'unit' => 'MT', 'min_stock' => 500, 'purchase_price' => 14500000, 'selling_price' => 16800000],
-            ['code' => 'PLM-RBD-OLEIN', 'name' => 'RBD Palm Olein IV-56', 'category' => 'Palm Oil', 'unit' => 'MT', 'min_stock' => 300, 'purchase_price' => 16200000, 'selling_price' => 18500000],
-            ['code' => 'PLM-STEARIN', 'name' => 'RBD Palm Stearin', 'category' => 'Palm Oil', 'unit' => 'MT', 'min_stock' => 200, 'purchase_price' => 15800000, 'selling_price' => 18000000],
-            ['code' => 'PLM-PKO', 'name' => 'Palm Kernel Oil (PKO)', 'category' => 'Palm Oil', 'unit' => 'MT', 'min_stock' => 150, 'purchase_price' => 18500000, 'selling_price' => 21500000],
-
-            // Coconut Products  
-            ['code' => 'COC-DESICCATED', 'name' => 'Desiccated Coconut Fine', 'category' => 'Coconut', 'unit' => 'BAG', 'min_stock' => 100, 'purchase_price' => 320000, 'selling_price' => 450000],
-            ['code' => 'COC-VCO', 'name' => 'Virgin Coconut Oil', 'category' => 'Coconut', 'unit' => 'DRUM', 'min_stock' => 40, 'purchase_price' => 2800000, 'selling_price' => 3800000],
-            ['code' => 'COC-CNO-RBD', 'name' => 'Coconut Oil RBD', 'category' => 'Coconut', 'unit' => 'MT', 'min_stock' => 80, 'purchase_price' => 22000000, 'selling_price' => 26000000],
-            ['code' => 'COC-CHARCOAL', 'name' => 'Coconut Shell Charcoal', 'category' => 'Coconut', 'unit' => 'MT', 'min_stock' => 100, 'purchase_price' => 4500000, 'selling_price' => 6200000],
-            ['code' => 'COC-FIBER', 'name' => 'Coco Fiber (Mattress Grade)', 'category' => 'Coconut', 'unit' => 'BALE', 'min_stock' => 200, 'purchase_price' => 180000, 'selling_price' => 280000],
-            ['code' => 'COC-WATER', 'name' => 'Coconut Water Concentrate', 'category' => 'Coconut', 'unit' => 'DRUM', 'min_stock' => 30, 'purchase_price' => 1500000, 'selling_price' => 2200000],
-        ];
-
-        foreach ($productData as $data) {
-            $category = $categories[$data['category']];
-            unset($data['category']);
-
-            $product = Product::firstOrCreate(
-                ['code' => $data['code']],
-                array_merge($data, [
-                    'category_id' => $category->id,
+        foreach ($categories as $catName => $prods) {
+            $catId = DB::table('categories')->where('name', $catName)->value('id');
+            if (!$catId) {
+                $catId = $this->insertWithCompany('categories', [
+                    'company_id' => $this->companyId,
+                    'name' => $catName,
+                    'slug' => Str::slug($catName),
                     'status' => true,
-                ])
-            );
-
-            // Attach to warehouses
-            foreach ($this->warehouses as $warehouse) {
-                try {
-                    $product->warehouses()->syncWithoutDetaching([
-                        $warehouse->id => [
-                            'stock' => 0,
-                            'rack_location' => 'TBD',
-                        ]
+                ]);
+            }
+            
+            foreach ($prods as $pName) {
+                $code = strtoupper(Str::slug($pName));
+                $prodId = DB::table('products')->where('code', $code)->value('id');
+                if (!$prodId) {
+                    $prodId = $this->insertWithCompany('products', [
+                        'company_id' => $this->companyId,
+                        'code' => $code,
+                        'name' => $pName,
+                        'category_id' => $catId,
+                        'unit' => 'KG',
+                        'min_stock' => 100,
+                        'purchase_price' => rand(50000, 150000),
+                        'selling_price' => rand(160000, 250000),
+                        'status' => true,
                     ]);
-                } catch (\Exception $e) {
-                    // Pivot might already exist
+                }
+                $this->products[] = $prodId;
+
+                // Bind to warehouses
+                foreach ($this->warehouses as $whId) {
+                    DB::table('product_warehouse')->updateOrInsert(
+                        ['product_id' => $prodId, 'warehouse_id' => $whId],
+                        ['stock' => 0, 'created_at' => now(), 'updated_at' => now()]
+                    );
                 }
             }
+        }
 
-            $this->products[] = $product;
+        // 5. UoM (Skip if exists)
+        if (DB::table('uom_conversions')->count() == 0) {
+            $this->insertSafe('uom_conversions', ['company_id' => $this->companyId, 'from_unit' => 'MT', 'to_unit' => 'KG', 'conversion_factor' => 1000, 'is_active' => true, 'is_default' => false]);
+            $this->insertSafe('uom_conversions', ['company_id' => $this->companyId, 'from_unit' => 'BAG', 'to_unit' => 'KG', 'conversion_factor' => 60, 'is_active' => true, 'is_default' => true]);
         }
     }
 
-    protected function createUomConversions(): void
+    protected function createHistoricalTransactions()
     {
-        $this->command->info('Creating UoM conversions...');
+        $this->command->info('Step B-E: Creating Transaction History...');
 
-        $conversions = [
-            ['from_unit' => 'BAG', 'to_unit' => 'KG', 'conversion_factor' => 60], // Coffee/Cocoa bag = 60kg
-            ['from_unit' => 'MT', 'to_unit' => 'KG', 'conversion_factor' => 1000], // Metric Ton
-            ['from_unit' => 'DRUM', 'to_unit' => 'KG', 'conversion_factor' => 200], // Oil drum
-            ['from_unit' => 'BALE', 'to_unit' => 'KG', 'conversion_factor' => 100], // Fiber bale
-            ['from_unit' => 'CONTAINER', 'to_unit' => 'MT', 'conversion_factor' => 18], // 20ft container ~18MT
-            ['from_unit' => 'FCL40', 'to_unit' => 'MT', 'conversion_factor' => 24], // 40ft container ~24MT
-        ];
-
-        foreach ($conversions as $conv) {
-            UomConversion::firstOrCreate(
-                [
-                    'company_id' => $this->company->id,
-                    'from_unit' => $conv['from_unit'],
-                    'to_unit' => $conv['to_unit'],
-                ],
-                [
-                    'conversion_factor' => $conv['conversion_factor'],
-                    'is_default' => true,
-                    'is_active' => true,
-                ]
-            );
+        if (empty($this->suppliers) || empty($this->products) || empty($this->warehouses)) {
+             $this->command->warn('Skipping history - master data missing');
+             return;
         }
-    }
 
-    protected function createSixMonthHistory(): void
-    {
-        $this->command->info('Generating 6-month transaction history...');
-
-        $startDate = Carbon::now()->subMonths(6)->startOfMonth();
+        $startDate = Carbon::now()->subMonths(6);
         $endDate = Carbon::now();
-
-        // Create stock-ins (purchases) - one per week
-        $this->command->info('  → Creating stock-ins...');
-        $stockInCount = 0;
-        $currentDate = $startDate->copy();
-        
-        while ($currentDate->lt($endDate)) {
-            // 3-5 stock-ins per week
-            $weeklyStockIns = rand(3, 5);
-            for ($i = 0; $i < $weeklyStockIns; $i++) {
-                $this->createStockIn($currentDate->copy()->addDays(rand(0, 6)));
-                $stockInCount++;
-            }
-            $currentDate->addWeek();
-        }
-        $this->command->info("     Created {$stockInCount} stock-ins");
-
-        // Create sales orders - more volume
-        $this->command->info('  → Creating sales orders...');
-        $salesCount = 0;
         $currentDate = $startDate->copy();
 
-        while ($currentDate->lt($endDate)) {
-            // 5-8 sales per week
-            $weeklySales = rand(5, 8);
-            for ($i = 0; $i < $weeklySales; $i++) {
-                $this->createSalesOrder($currentDate->copy()->addDays(rand(0, 6)));
-                $salesCount++;
+        while ($currentDate <= $endDate) {
+            try {
+                // Stock Ins
+                if (rand(0, 10) > 3) $this->createStockIn($currentDate);
+                
+                // Sales
+                if (rand(0, 10) > 2) $this->createSalesOrder($currentDate);
+            } catch (\Exception $e) {
+                $this->command->warn('⚠️ Transaction skipped on ' . $currentDate->toDateString() . ': ' . $e->getMessage());
+                // Continue loop
             }
-            $currentDate->addWeek();
+
+            $currentDate->addDays(rand(2, 4));
         }
-        $this->command->info("     Created {$salesCount} sales orders");
     }
 
-    protected function createStockIn(Carbon $date): void
+    protected function createStockIn($date)
     {
-        $warehouse = $this->warehouses[array_rand($this->warehouses)];
-        $supplier = $this->suppliers[array_rand($this->suppliers)];
+        $supplierId = $this->suppliers[array_rand($this->suppliers)];
+        $warehouseId = $this->warehouses[array_rand($this->warehouses)];
         
-        // Get a random bin
-        $bin = WarehouseBin::whereHas('rack.zone', fn($q) => $q->where('warehouse_id', $warehouse->id))
-            ->inRandomOrder()
-            ->first();
-
-        if (!$bin) return;
-
-        $stockIn = StockIn::create([
-            'transaction_code' => 'SI-' . $date->format('Ymd') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
-            'supplier_id' => $supplier->id,
-            'date' => $date,
-            'warehouse_id' => $warehouse->id,
-            'total' => 0, // Will be calculated below
+        // Ensure code is safe length
+        $code = Str::limit('SI-' . $date->format('ymd') . '-' . Str::random(3), 20, '');
+        
+        $stockInId = $this->insertWithCompany('stock_ins', [
+            'company_id' => $this->companyId,
+            'warehouse_id' => $warehouseId,
+            'supplier_id' => $supplierId,
+            'transaction_code' => $code,
+            'date' => $date->format('Y-m-d'),
             'status' => 'approved',
-            'notes' => 'Import shipment from ' . $supplier->name,
+            'total' => 0,
+            'notes' => 'Historical Import',
+            'created_at' => $date,
+            'updated_at' => $date,
         ]);
 
-        // Add 2-5 products to this stock-in
-        $selectedProducts = collect($this->products)->random(rand(2, 5));
-        
-        foreach ($selectedProducts as $product) {
-            $quantity = rand(50, 300);
-            $unitPrice = $product->purchase_price * (1 + (rand(-5, 10) / 100)); // +/- variance
-            $landedCost = $unitPrice * 1.08; // 8% landed cost overhead
+        $totalVal = 0;
+        $items = rand(1, 3);
+        for ($i = 0; $i < $items; $i++) {
+            $prodId = $this->products[array_rand($this->products)];
+            $qty = rand(500, 2000);
+            $price = rand(50000, 100000);
+            $subtotal = $qty * $price;
+            $totalVal += $subtotal;
 
-            $detail = StockInDetail::create([
-                'stock_in_id' => $stockIn->id,
-                'product_id' => $product->id,
-                'quantity' => $quantity,
-                'purchase_price' => $unitPrice,
-                'total' => $quantity * $unitPrice,
+            $this->insertWithCompany('stock_in_details', [
+                'stock_in_id' => $stockInId,
+                'product_id' => $prodId,
+                'quantity' => $qty,
+                'purchase_price' => $price,
+                'total' => $subtotal,
+                'created_at' => $date,
+                'updated_at' => $date,
             ]);
 
-            // Create batch
-            $batch = Batch::create([
-                'company_id' => $this->company->id,
-                'product_id' => $product->id,
-                'batch_number' => 'B-' . $date->format('Ymd') . '-' . strtoupper(Str::random(4)),
-                'supplier_id' => $supplier->id,
-                'manufacture_date' => $date->copy()->subDays(rand(7, 30)),
-                'expiry_date' => $date->copy()->addMonths(rand(12, 24)),
-                'cost_price' => $landedCost,
+            // Batch
+            $batchNo = Str::limit('B-' . $date->format('ymd') . '-' . Str::upper(Str::random(3)), 20, '');
+            $batchId = $this->insertWithCompany('batches', [
+                'company_id' => $this->companyId,
+                'product_id' => $prodId,
+                'stock_in_id' => $stockInId,
+                'batch_number' => $batchNo,
+                'supplier_id' => $supplierId,
+                'manufacture_date' => $date->copy()->subDays(15)->format('Y-m-d'),
+                'expiry_date' => $date->copy()->addMonths(12)->format('Y-m-d'),
+                'cost_price' => $price,
                 'status' => 'available',
-                'stock_in_id' => $stockIn->id,
+                'created_at' => $date,
+                'updated_at' => $date,
             ]);
 
-            $this->batches[] = $batch;
-
-            // Create stock location
-            StockLocation::create([
-                'batch_id' => $batch->id,
-                'bin_id' => $bin->id,
-                'quantity' => $quantity,
-            ]);
-
-            // Update warehouse stock
-            try {
-                $product->warehouses()->syncWithoutDetaching([
-                    $warehouse->id => [
-                        'stock' => DB::raw('stock + ' . $quantity),
-                    ]
+            // Stock Location
+            if (!empty($this->binIds)) {
+                $this->insertWithCompany('stock_locations', [
+                    'batch_id' => $batchId,
+                    'bin_id' => $this->binIds[array_rand($this->binIds)],
+                    'quantity' => $qty,
+                    'created_at' => $date,
+                    'updated_at' => $date,
                 ]);
-            } catch (\Exception $e) {
-                // Ignore
             }
+
+            // Update Warehouse Stock Pivot
+            DB::table('product_warehouse')
+                ->where('product_id', $prodId)
+                ->where('warehouse_id', $warehouseId)
+                ->increment('stock', $qty);
         }
+
+        DB::table('stock_ins')->where('id', $stockInId)->update(['total' => $totalVal]);
     }
 
-    protected function createSalesOrder(Carbon $date): void
+    protected function createSalesOrder($date)
     {
-        if (empty($this->batches)) return;
+        if (empty($this->customers)) return;
+        
+        $custId = $this->customers[array_rand($this->customers)];
+        $whId = $this->warehouses[array_rand($this->warehouses)];
+        $isDelivered = $date->diffInMonths(Carbon::now()) > 1;
 
-        $warehouse = $this->warehouses[array_rand($this->warehouses)];
-        $customer = $this->customers[array_rand($this->customers)];
+        $soNo = Str::limit('SO-' . $date->format('ymd') . '-' . Str::random(3), 20, '');
 
-        // Determine payment status (45% paid, 35% partial, 20% overdue)
-        $rand = rand(1, 100);
-        if ($rand <= 45) {
-            $paymentStatus = 'paid';
-        } elseif ($rand <= 80) {
-            $paymentStatus = 'partial';
-        } else {
-            $paymentStatus = 'pending';
-        }
-
-        // Select 1-4 products
-        $selectedProducts = collect($this->products)->random(rand(1, 4));
-        $subtotal = 0;
-        $items = [];
-
-        foreach ($selectedProducts as $product) {
-            $quantity = rand(20, 150);
-            $unitPrice = $product->selling_price * (1 + (rand(-3, 5) / 100));
-            $lineTotal = $quantity * $unitPrice;
-            $subtotal += $lineTotal;
-
-            $items[] = [
-                'product_id' => $product->id,
-                'quantity' => $quantity,
-                'unit_price' => $unitPrice,
-                'subtotal' => $lineTotal,
-            ];
-        }
-
-        $tax = $subtotal * 0.011; // 1.1% export tax
-        $discount = rand(0, 1) ? $subtotal * (rand(1, 3) / 100) : 0;
-        $transactionFees = $subtotal * 0.02; // 2% bank/forex fees
-        $total = $subtotal + $tax - $discount;
-        $netAmount = $total - $transactionFees;
-
-        $salesOrder = SalesOrder::create([
-            'so_number' => 'SO-' . $date->format('Ymd') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
-            'customer_id' => $customer->id,
-            'warehouse_id' => $warehouse->id,
-            'order_date' => $date,
-            'delivery_date' => $date->copy()->addDays(rand(7, 21)),
-            'status' => 'delivered',
-            'payment_status' => $paymentStatus,
-            'subtotal' => $subtotal,
-            'tax' => $tax,
-            'discount' => $discount,
-            'total' => $total,
+        $soId = $this->insertWithCompany('sales_orders', [
+            'company_id' => $this->companyId,
+            'customer_id' => $custId,
+            'warehouse_id' => $whId,
+            'so_number' => $soNo,
+            'order_date' => $date->format('Y-m-d'),
+            'delivery_date' => $date->copy()->addDays(7)->format('Y-m-d'),
+            'status' => $isDelivered ? 'delivered' : 'confirmed',
+            'payment_status' => $isDelivered ? 'paid' : 'partial',
             'currency_code' => 'USD',
-            'exchange_rate_at_transaction' => rand(15500, 16200),
-            'transaction_fees' => $transactionFees,
-            'net_amount' => $netAmount,
-            'notes' => 'Export order to ' . $customer->name,
-            'created_by' => $this->demoUser->id,
+            'exchange_rate_at_transaction' => 16000,
+            'subtotal' => 0,
+            'total' => 0,
+            'notes' => 'Export',
+            'created_at' => $date,
+            'updated_at' => $date,
+            'created_by' => $this->userId
         ]);
 
-        // Create order items
-        foreach ($items as $item) {
-            SalesOrderItem::create(array_merge($item, ['sales_order_id' => $salesOrder->id]));
+        $totalVal = 0;
+        $items = rand(1, 4);
+
+        for ($i = 0; $i < $items; $i++) {
+            $prodId = $this->products[array_rand($this->products)];
+            $qty = rand(100, 500);
+            $price = rand(15, 30);
+            $subtotal = $qty * $price;
+            $totalVal += $subtotal;
+
+            $this->insertWithCompany('sales_order_items', [
+                'sales_order_id' => $soId,
+                'product_id' => $prodId,
+                'quantity' => $qty,
+                'unit_price' => $price,
+                'subtotal' => $subtotal,
+                'created_at' => $date,
+                'updated_at' => $date,
+            ]);
         }
 
-        // Create order expenses (commission, freight, etc.)
+        DB::table('sales_orders')->where('id', $soId)->update([
+            'subtotal' => $totalVal,
+            'total' => $totalVal,
+            'net_amount' => $totalVal,
+            'amount_paid' => $isDelivered ? $totalVal : $totalVal * 0.5
+        ]);
+
+        if ($isDelivered) {
+            $ref = Str::limit('PAY-' . Str::random(5), 20, '');
+            $this->insertWithCompany('payments', [
+                'company_id' => $this->companyId,
+                'sales_order_id' => $soId,
+                'customer_id' => $custId,
+                'amount' => $totalVal,
+                'currency_code' => 'USD',
+                'exchange_rate' => 16000,
+                'base_currency_amount' => $totalVal * 16000,
+                'payment_date' => $date->copy()->addDays(3),
+                'payment_method' => 'tt',
+                'reference' => $ref,
+                'created_at' => $date->copy()->addDays(3),
+                'updated_at' => $date->copy()->addDays(3),
+            ]);
+        }
+
         if (rand(0, 1)) {
-            try {
-                OrderExpense::create([
-                    'order_id' => $salesOrder->id,
-                    'order_type' => 'sales',
-                    'expense_type' => 'commission',
-                    'amount' => $total * (rand(2, 5) / 100),
-                    'description' => 'Sales commission',
-                ]);
-            } catch (\Exception $e) {
-                // Table might not exist
-            }
+            $this->insertWithCompany('order_expenses', [
+                'company_id' => $this->companyId,
+                'sales_order_id' => $soId,
+                'category' => 'freight',
+                'amount' => rand(500, 1500),
+                'currency_code' => 'USD',
+                'description' => 'Freight',
+                'created_at' => $date,
+                'updated_at' => $date,
+            ]);
         }
-    }
-
-    protected function createStockTakes(): void
-    {
-        $this->command->info('Creating stock takes with variance...');
-
-        // Create 2-3 stock takes over the period
-        for ($i = 0; $i < rand(2, 3); $i++) {
-            $warehouse = $this->warehouses[array_rand($this->warehouses)];
-            $date = Carbon::now()->subMonths(rand(1, 5));
-
-            try {
-                $stockTake = StockTake::create([
-                    'company_id' => $this->company->id,
-                    'warehouse_id' => $warehouse->id,
-                    'stock_take_number' => 'ST-' . $date->format('Ymd') . '-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
-                    'type' => 'full',
-                    'status' => 'completed',
-                    'scheduled_date' => $date,
-                    'completed_date' => $date,
-                    'notes' => 'Quarterly stock take',
-                    'created_by' => $this->demoUser->id,
-                ]);
-
-                // Add some variance items (0.5-2% shrinkage)
-                $products = collect($this->products)->random(rand(3, 8));
-                foreach ($products as $product) {
-                    $systemQty = rand(50, 200);
-                    $variance = -1 * rand(1, (int)($systemQty * 0.02)); // Negative = shrinkage
-                    
-                    StockTakeItem::create([
-                        'stock_take_id' => $stockTake->id,
-                        'product_id' => $product->id,
-                        'system_quantity' => $systemQty,
-                        'counted_quantity' => $systemQty + $variance,
-                        'variance' => $variance,
-                        'notes' => $variance < 0 ? 'Shrinkage detected' : null,
-                    ]);
-                }
-            } catch (\Exception $e) {
-                // Stock take tables might not exist
-            }
-        }
-    }
-
-    protected function printSummary(): void
-    {
-        $this->command->newLine();
-        $this->command->info('═══════════════════════════════════════════════════════');
-        $this->command->info('              DEMO DATA SUMMARY                        ');
-        $this->command->info('═══════════════════════════════════════════════════════');
-        $this->command->info("Company: {$this->company->name}");
-        $this->command->info("Warehouses: " . count($this->warehouses));
-        $this->command->info("Products: " . count($this->products));
-        $this->command->info("Suppliers: " . count($this->suppliers));
-        $this->command->info("Customers: " . count($this->customers));
-        $this->command->info("Batches Created: " . count($this->batches));
-        $this->command->newLine();
-        $this->command->info("Login: demo@avandigital.id / demo1234");
-        $this->command->info('═══════════════════════════════════════════════════════');
     }
 }
