@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Purchase Order')
+@section('title', __('app.purchase_order_detail'))
 
 @section('content')
    <div class="max-w-7xl mx-auto p-6">

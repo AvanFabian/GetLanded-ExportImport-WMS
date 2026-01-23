@@ -3,7 +3,7 @@
 @section('content')
    <div class="max-w-7xl mx-auto p-6">
       <div class="mb-6">
-         <h1 class="text-3xl font-bold text-gray-800">Terima Barang dari PO</h1>
+         <h1 class="text-3xl font-bold text-gray-800">{{ __('app.receive_goods_from_po') }}</h1>
          <p class="text-gray-600 mt-1">{{ $purchaseOrder->po_number }}</p>
       </div>
 
@@ -14,7 +14,7 @@
             <div class="md:w-2/3">
                <div class="bg-white rounded shadow mb-6">
                   <div class="px-6 py-4 border-b border-gray-200">
-                     <h3 class="text-lg font-semibold text-gray-800">Informasi Penerimaan</h3>
+                     <h3 class="text-lg font-semibold text-gray-800">{{ __('app.receiving_information') }}</h3>
                   </div>
                   <div class="p-6">
                      @if (session('error'))
@@ -25,17 +25,17 @@
 
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                           <span class="font-semibold">Nomor PO:</span> {{ $purchaseOrder->po_number }}
+                           <span class="font-semibold">{{ __('app.po_number') }}:</span> {{ $purchaseOrder->po_number }}
                         </div>
                         <div>
-                           <span class="font-semibold">Supplier:</span> {{ $purchaseOrder->supplier->name }}
+                           <span class="font-semibold">{{ __('app.supplier') }}:</span> {{ $purchaseOrder->supplier->name }}
                         </div>
                      </div>
 
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                              Tanggal Penerimaan <span class="text-red-600">*</span>
+                              {{ __('app.received_date') }} <span class="text-red-600">*</span>
                            </label>
                            <input type="date" name="received_date"
                               class="w-full border rounded px-3 py-2 @error('received_date') border-red-500 @enderror"
@@ -45,10 +45,10 @@
                            @enderror
                         </div>
                         <div>
-                           <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Penerimaan</label>
+                           <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.receiving_notes') }}</label>
                            <input type="text" name="notes"
                               class="w-full border rounded px-3 py-2 @error('notes') border-red-500 @enderror"
-                              value="{{ old('notes') }}" placeholder="Catatan tambahan...">
+                              value="{{ old('notes') }}" placeholder="{{ __('app.notes') }}...">
                            @error('notes')
                               <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                            @enderror
@@ -59,7 +59,7 @@
 
                <div class="bg-white rounded shadow mb-6">
                   <div class="px-6 py-4 border-b border-gray-200">
-                     <h3 class="text-lg font-semibold text-gray-800">Detail Barang yang Diterima</h3>
+                     <h3 class="text-lg font-semibold text-gray-800">{{ __('app.received_items_details') }}</h3>
                   </div>
                   <div class="p-6">
                      <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 flex items-start">
@@ -68,19 +68,18 @@
                               d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                               clip-rule="evenodd" />
                         </svg>
-                        <span>Masukkan jumlah barang yang diterima. Anda dapat menerima sebagian atau seluruh
-                           barang.</span>
+                        <span>{{ __('app.enter_received_quantity_info') }}</span>
                      </div>
 
                      <div class="overflow-x-auto">
                         <table class="min-w-full border">
                            <thead class="bg-gray-50">
                               <tr>
-                                 <th class="text-left p-3 font-semibold border-b">Produk</th>
-                                 <th class="text-center p-3 font-semibold border-b w-24">Dipesan</th>
-                                 <th class="text-center p-3 font-semibold border-b w-24">Sudah Diterima</th>
-                                 <th class="text-center p-3 font-semibold border-b w-24">Sisa</th>
-                                 <th class="text-center p-3 font-semibold border-b w-32">Jumlah Terima</th>
+                                 <th class="text-left p-3 font-semibold border-b">{{ __('app.product') }}</th>
+                                 <th class="text-center p-3 font-semibold border-b w-24">{{ __('app.ordered') }}</th>
+                                 <th class="text-center p-3 font-semibold border-b w-24">{{ __('app.already_received') }}</th>
+                                 <th class="text-center p-3 font-semibold border-b w-24">{{ __('app.remaining') }}</th>
+                                 <th class="text-center p-3 font-semibold border-b w-32">{{ __('app.receive_amount') }}</th>
                               </tr>
                            </thead>
                            <tbody>
@@ -93,7 +92,7 @@
                                        <td class="p-3">
                                           <p class="font-medium">{{ $detail->product->name }}</p>
                                           <p class="text-sm text-gray-500">{{ $detail->product->code }}</p>
-                                          <p class="text-sm text-gray-500">Harga: Rp
+                                          <p class="text-sm text-gray-500">{{ __('app.price') }}: Rp
                                              {{ number_format($detail->unit_price, 0, ',', '.') }}</p>
                                        </td>
                                        <td class="p-3 text-center">
@@ -136,7 +135,7 @@
                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                      </svg>
-                     Proses Penerimaan
+                     {{ __('app.process_receive') }}
                   </button>
                   <a href="{{ route('purchase-orders.show', $purchaseOrder) }}"
                      class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded inline-flex items-center">
@@ -144,7 +143,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                      </svg>
-                     Kembali
+                     {{ __('app.back') }}
                   </a>
                </div>
             </div>
@@ -152,26 +151,26 @@
             <div class="md:w-1/3">
                <div class="bg-white rounded shadow mb-6">
                   <div class="px-6 py-4 border-b border-gray-200">
-                     <h3 class="text-lg font-semibold text-gray-800">Ringkasan Penerimaan</h3>
+                     <h3 class="text-lg font-semibold text-gray-800">{{ __('app.receiving_summary') }}</h3>
                   </div>
                   <div class="p-6">
                      <div class="mb-4">
-                        <p class="text-sm text-gray-600 mb-1">Gudang Tujuan</p>
+                        <p class="text-sm text-gray-600 mb-1">{{ __('app.destination_warehouse') }}</p>
                         <p class="text-xl font-semibold">{{ $purchaseOrder->warehouse->name }}</p>
                      </div>
 
                      <div class="border-t border-gray-200 my-4"></div>
 
                      <div class="mb-4">
-                        <p class="text-sm text-gray-600 mb-1">Total Item yang Tersisa</p>
+                        <p class="text-sm text-gray-600 mb-1">{{ __('app.total_items_remaining') }}</p>
                         <p class="text-2xl font-bold" id="totalItems">
-                           {{ $purchaseOrder->details->filter(fn($d) => $d->getRemainingQuantity() > 0)->count() }} Produk
+                           {{ $purchaseOrder->details->filter(fn($d) => $d->getRemainingQuantity() > 0)->count() }} {{ __('app.products') }}
                         </p>
                      </div>
 
                      <div class="mb-4">
-                        <p class="text-sm text-gray-600 mb-1">Total yang Akan Diterima</p>
-                        <p class="text-2xl font-bold text-green-600" id="totalReceiving">0 Unit</p>
+                        <p class="text-sm text-gray-600 mb-1">{{ __('app.total_to_receive') }}</p>
+                        <p class="text-2xl font-bold text-green-600" id="totalReceiving">0 {{ __('app.unit') }}</p>
                      </div>
 
                      <div class="border-t border-gray-200 my-4"></div>
@@ -184,8 +183,8 @@
                               clip-rule="evenodd" />
                         </svg>
                         <div>
-                           <p class="font-semibold">Perhatian:</p>
-                           <p class="text-sm">Penerimaan akan menambah stok produk ke gudang secara otomatis.</p>
+                           <p class="font-semibold">{{ __('app.attention') }}:</p>
+                           <p class="text-sm">{{ __('app.receive_attention_message') }}</p>
                         </div>
                      </div>
                   </div>
@@ -193,7 +192,7 @@
 
                <div class="bg-white rounded shadow">
                   <div class="px-6 py-4 border-b border-gray-200">
-                     <h3 class="text-lg font-semibold text-gray-800">Tips</h3>
+                     <h3 class="text-lg font-semibold text-gray-800">{{ __('app.tips') }}</h3>
                   </div>
                   <div class="p-6">
                      <ul class="space-y-2 text-gray-700">
@@ -204,7 +203,7 @@
                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                  clip-rule="evenodd" />
                            </svg>
-                           <span>Periksa kondisi barang sebelum menerima</span>
+                           <span>{{ __('app.tip_check_condition') }}</span>
                         </li>
                         <li class="flex items-start">
                            <svg class="w-5 h-5 mr-2 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor"
@@ -213,7 +212,7 @@
                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                  clip-rule="evenodd" />
                            </svg>
-                           <span>Anda dapat menerima barang secara bertahap</span>
+                           <span>{{ __('app.tip_receive_partial') }}</span>
                         </li>
                         <li class="flex items-start">
                            <svg class="w-5 h-5 mr-2 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor"
@@ -222,7 +221,7 @@
                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                  clip-rule="evenodd" />
                            </svg>
-                           <span>Pastikan jumlah sesuai dengan fisik barang</span>
+                           <span>{{ __('app.tip_verify_count') }}</span>
                         </li>
                         <li class="flex items-start">
                            <svg class="w-5 h-5 mr-2 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor"
@@ -231,7 +230,7 @@
                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                  clip-rule="evenodd" />
                            </svg>
-                           <span>Status PO akan berubah otomatis setelah penerimaan</span>
+                           <span>{{ __('app.tip_auto_status') }}</span>
                         </li>
                      </ul>
                   </div>

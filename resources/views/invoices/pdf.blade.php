@@ -4,7 +4,7 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Faktur Pajak - {{ $invoice->invoice_number }}</title>
+   <title>{{ __('app.tax_invoice') }} - {{ $invoice->invoice_number }}</title>
    <style>
       * {
          margin: 0;
@@ -285,26 +285,26 @@
 
       <!-- Invoice Title -->
       <div class="invoice-title">
-         Faktur Pajak
+         {{ __('app.tax_invoice') }}
       </div>
 
       <!-- Invoice Info -->
       <div class="info-section">
          <div class="info-grid">
             <div class="info-row">
-               <div class="info-label">No. Faktur:</div>
+               <div class="info-label">{{ __('app.invoice_number') }}:</div>
                <div class="info-value">{{ $invoice->invoice_number }}</div>
-               <div class="info-label" style="text-align: right;">Tanggal:</div>
+               <div class="info-label" style="text-align: right;">{{ __('app.date') }}:</div>
                <div class="info-value" style="text-align: right;">{{ $invoice->invoice_date->format('d F Y') }}</div>
             </div>
             <div class="info-row">
-               <div class="info-label">No. Pesanan:</div>
+               <div class="info-label">{{ __('app.so_number') }}:</div>
                <div class="info-value">{{ $invoice->salesOrder->so_number }}</div>
-               <div class="info-label" style="text-align: right;">Jatuh Tempo:</div>
+               <div class="info-label" style="text-align: right;">{{ __('app.due_date') }}:</div>
                <div class="info-value" style="text-align: right;">
                   {{ $invoice->due_date->format('d F Y') }}
                   @if ($invoice->due_date->isPast() && $invoice->payment_status !== 'paid')
-                     <span style="color: #c00; font-weight: bold;">(TERLAMBAT)</span>
+                     <span style="color: #c00; font-weight: bold;">({{ __('app.overdue') }})</span>
                   @endif
                </div>
             </div>
@@ -313,23 +313,23 @@
 
       <!-- Customer Info -->
       <div class="info-section">
-         <div class="section-title">Kepada Yth:</div>
+         <div class="section-title">{{ __('app.dear_customer') }}:</div>
          <div class="info-grid">
             <div class="info-row">
-               <div class="info-label">Nama Pelanggan:</div>
+               <div class="info-label">{{ __('app.customer_name') }}:</div>
                <div class="info-value">{{ $invoice->salesOrder->customer->name }}</div>
             </div>
             <div class="info-row">
-               <div class="info-label">Alamat:</div>
+               <div class="info-label">{{ __('app.address') }}:</div>
                <div class="info-value">{{ $invoice->salesOrder->customer->address ?? '-' }}</div>
             </div>
             <div class="info-row">
-               <div class="info-label">Telp:</div>
+               <div class="info-label">{{ __('app.phone') }}:</div>
                <div class="info-value">{{ $invoice->salesOrder->customer->phone ?? '-' }}</div>
             </div>
             @if ($invoice->salesOrder->customer->tax_id)
                <div class="info-row">
-                  <div class="info-label">NPWP:</div>
+                  <div class="info-label">{{ __('app.npwp') }}:</div>
                   <div class="info-value">{{ $invoice->salesOrder->customer->tax_id }}</div>
                </div>
             @endif
@@ -338,29 +338,29 @@
 
       <!-- Payment Status -->
       <div style="margin: 15px 0;">
-         <strong>Status Pembayaran:</strong>
+         <strong>{{ __('app.payment_status') }}:</strong>
          @if ($invoice->payment_status === 'unpaid')
-            <span class="status-badge status-unpaid">BELUM DIBAYAR</span>
+            <span class="status-badge status-unpaid">{{ __('app.payment_status_unpaid') }}</span>
          @elseif($invoice->payment_status === 'partial')
-            <span class="status-badge status-partial">DIBAYAR SEBAGIAN</span>
+            <span class="status-badge status-partial">{{ __('app.payment_status_partial') }}</span>
          @else
-            <span class="status-badge status-paid">LUNAS</span>
+            <span class="status-badge status-paid">{{ __('app.payment_status_paid') }}</span>
          @endif
       </div>
 
       @if ($invoice->payment_status !== 'unpaid')
          <div class="payment-info">
-            <strong>Informasi Pembayaran:</strong><br>
-            Terbayar: <strong>Rp {{ number_format($invoice->paid_amount, 0, ',', '.') }}</strong><br>
+            <strong>{{ __('app.payment_information') }}:</strong><br>
+            {{ __('app.paid') }}: <strong>Rp {{ number_format($invoice->paid_amount, 0, ',', '.') }}</strong><br>
             @if ($invoice->payment_status === 'partial')
-               Sisa: <strong style="color: #c00;">Rp
+               {{ __('app.remaining') }}: <strong style="color: #c00;">Rp
                   {{ number_format($invoice->remaining_amount, 0, ',', '.') }}</strong><br>
             @endif
             @if ($invoice->payment_date)
-               Tanggal Pembayaran Terakhir: {{ $invoice->payment_date->format('d F Y') }}<br>
+               {{ __('app.last_payment') }}: {{ $invoice->payment_date->format('d F Y') }}<br>
             @endif
             @if ($invoice->payment_method)
-               Metode: {{ ucfirst($invoice->payment_method) }}
+               {{ __('app.payment_method') }}: {{ ucfirst($invoice->payment_method) }}
             @endif
          </div>
       @endif
@@ -369,11 +369,11 @@
       <table class="items-table">
          <thead>
             <tr>
-               <th class="center" style="width: 5%;">No</th>
-               <th style="width: 45%;">Nama Produk</th>
-               <th class="center" style="width: 10%;">Qty</th>
-               <th class="right" style="width: 18%;">Harga Satuan</th>
-               <th class="right" style="width: 22%;">Subtotal</th>
+               <th class="center" style="width: 5%;">{{ __('app.number_short') }}</th>
+               <th style="width: 45%;">{{ __('app.product_name') }}</th>
+               <th class="center" style="width: 10%;">{{ __('app.quantity') }}</th>
+               <th class="right" style="width: 18%;">{{ __('app.unit_price') }}</th>
+               <th class="right" style="width: 22%;">{{ __('app.subtotal') }}</th>
             </tr>
          </thead>
          <tbody>
@@ -396,22 +396,22 @@
       <div class="totals-section">
          <table class="totals-table">
             <tr>
-               <td class="label">Subtotal:</td>
+               <td class="label">{{ __('app.subtotal') }}:</td>
                <td class="value">Rp {{ number_format($invoice->salesOrder->subtotal, 0, ',', '.') }}</td>
             </tr>
             @if ($invoice->salesOrder->discount > 0)
                <tr>
-                  <td class="label">Diskon:</td>
+                  <td class="label">{{ __('app.discount') }}:</td>
                   <td class="value" style="color: #c00;">- Rp
                      {{ number_format($invoice->salesOrder->discount, 0, ',', '.') }}</td>
                </tr>
             @endif
             <tr>
-               <td class="label">PPN 11%:</td>
+               <td class="label">{{ __('app.tax_vat') }} 11%:</td>
                <td class="value">Rp {{ number_format($invoice->salesOrder->tax, 0, ',', '.') }}</td>
             </tr>
             <tr class="total">
-               <td class="label">TOTAL:</td>
+               <td class="label">{{ __('app.total') }}:</td>
                <td class="value">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
             </tr>
          </table>
@@ -419,15 +419,15 @@
 
       <!-- Tax Info -->
       <div class="tax-info" style="clear: both;">
-         <strong>Keterangan Pajak:</strong><br>
-         Faktur ini merupakan bukti pungutan pajak yang sah sesuai dengan Undang-Undang PPN.<br>
-         PPN 11% telah dipungut sesuai ketentuan perpajakan yang berlaku.
+         <strong>{{ __('app.tax_info_title') }}:</strong><br>
+         {{ __('app.tax_info_desc_1') }}<br>
+         {{ __('app.tax_info_desc_2') }}
       </div>
 
       <!-- Notes -->
       @if ($invoice->notes)
          <div class="notes-section">
-            <div class="notes-title">Catatan:</div>
+            <div class="notes-title">{{ __('app.notes') }}:</div>
             <div class="notes-content">{{ $invoice->notes }}</div>
          </div>
       @endif
@@ -435,27 +435,27 @@
       <!-- Footer / Signature -->
       <div class="footer">
          <div style="font-size: 9pt; margin-bottom: 20px;">
-            <strong>Informasi Pembayaran:</strong><br>
-            Bank: BCA / Mandiri / BNI<br>
-            No. Rekening: 1234567890<br>
-            A/n: PT. Nama Perusahaan Anda
+            <strong>{{ __('app.payment_information') }}:</strong><br>
+            {{ __('app.payment_bank') }}: BCA / Mandiri / BNI<br>
+            {{ __('app.account_number') }}: 1234567890<br>
+            {{ __('app.account_name') }}: PT. Nama Perusahaan Anda
          </div>
 
          <div class="signature-section">
             <div class="signature-box">
-               <div class="signature-title">Hormat Kami,</div>
+               <div class="signature-title">{{ __('app.regards') }},</div>
                <div class="signature-line">
                   (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)
                </div>
             </div>
             <div class="signature-box">
-               <div class="signature-title">Mengetahui,</div>
+               <div class="signature-title">{{ __('app.approved_by') }},</div>
                <div class="signature-line">
                   (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)
                </div>
             </div>
             <div class="signature-box">
-               <div class="signature-title">Penerima,</div>
+               <div class="signature-title">{{ __('app.receiver') }},</div>
                <div class="signature-line">
                   (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)
                </div>
@@ -466,8 +466,8 @@
       <!-- Document Info -->
       <div
          style="margin-top: 30px; text-align: center; font-size: 8pt; color: #999; border-top: 1px solid #ddd; padding-top: 10px;">
-         Dokumen ini dicetak pada {{ now()->format('d F Y H:i:s') }}<br>
-         Dibuat oleh: {{ $invoice->creator->name ?? 'System' }}
+         {{ __('app.printed_on') }} {{ now()->format('d F Y H:i:s') }}<br>
+         {{ __('app.generated_by') }}: {{ $invoice->creator->name ?? 'System' }}
       </div>
    </div>
 </body>

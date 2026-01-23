@@ -26,6 +26,7 @@ class User extends Authenticatable
         'is_active',
         'is_super_admin',
         'company_id',
+        'locale',
     ];
 
     /**

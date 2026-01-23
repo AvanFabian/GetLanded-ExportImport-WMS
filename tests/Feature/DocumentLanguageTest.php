@@ -47,37 +47,36 @@ class DocumentLanguageTest extends TestCase
     public function test_pdf_generation_respects_document_language()
     {
         $user = User::factory()->create();
+        $customer = Customer::factory()->create();
+        $warehouse = Warehouse::factory()->create();
+        $product = Product::factory()->create();
+        
         $salesOrder = SalesOrder::factory()->create([
-            'document_language' => 'en'
+            'document_language' => 'en',
+            'customer_id' => $customer->id,
+            'warehouse_id' => $warehouse->id,
+            'created_by' => $user->id,
+        ]);
+        
+        // Add items
+        $salesOrder->items()->create([
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'unit_price' => 1000,
+            'subtotal' => 1000,
         ]);
 
-        // Mock PdfService or check App locale during request
-        // Since verifying actual PDF content is hard, we can trust the logic if we check locale setting.
-        // But verifying logic inside PdfService directly is also an option.
-        
         $pdfService = new PdfService();
-        
-        // We can't easily mock App::setLocale scope without refactoring, 
-        // but we can check if the functionality basically runs without error.
-        // A better test would be checking that 'Invoice' (English) vs 'Faktur' (Indonesian) appears.
-        // Assuming we have translation files setup.
 
         // Force app locale to ID first.
         App::setLocale('id');
-
-        // We'll partially mock Pdf facade to intercept loadView and check view data?
-        // Or just run the method and assume it works if no error.
         
-        // Let's rely on unit testing the service logic if possible, or integration test:
-        
+        // Assert that generating invoice doesn't throw error
+        // and theoretically switches locale (hard to assert without mocking internal View)
         try {
             $pdfService->generateInvoice($salesOrder);
-            // If code reached here, it generated PDF. 
-            // We can't check locale inside the service strictly without mocking App.
             $this->assertTrue(true);
         } catch (\Exception $e) {
-             // It might fail if views are missing, which is expected if not fully set up.
-             // But we want to ensure no 500.
              $this->fail("PDF Generation failed: " . $e->getMessage());
         }
     }

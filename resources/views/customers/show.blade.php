@@ -6,7 +6,7 @@
       <div class="mb-6 flex justify-between items-center">
          <div>
             <h1 class="text-3xl font-bold text-gray-900">{{ $customer->name }}</h1>
-            <p class="mt-1 text-sm text-gray-600">Detail informasi pelanggan</p>
+            <p class="mt-1 text-sm text-gray-600">{{ __('app.customer_details') }}</p>
          </div>
          <div class="flex gap-3">
             <a href="{{ route('customers.edit', $customer) }}"
@@ -16,11 +16,11 @@
                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
                   </path>
                </svg>
-               Edit
+               {{ __('app.edit') }}
             </a>
             <a href="{{ route('customers.index') }}"
                class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition duration-150">
-               Kembali
+               {{ __('app.back') }}
             </a>
          </div>
       </div>
@@ -29,66 +29,66 @@
          <!-- Customer Information -->
          <div class="lg:col-span-1">
             <div class="bg-white rounded-lg shadow-md p-6">
-               <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi Pelanggan</h2>
+               <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('app.customer_information') }}</h2>
 
                <div class="space-y-4">
                   <div>
-                     <div class="text-sm text-gray-500 mb-1">Status</div>
+                     <div class="text-sm text-gray-500 mb-1">{{ __('app.status') }}</div>
                      @if ($customer->is_active)
                         <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-green-100 text-green-800">
-                           Aktif
+                           {{ __('app.active') }}
                         </span>
                      @else
                         <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full bg-red-100 text-red-800">
-                           Tidak Aktif
+                           {{ __('app.inactive') }}
                         </span>
                      @endif
                   </div>
 
                   <div>
-                     <div class="text-sm text-gray-500 mb-1">Alamat</div>
+                     <div class="text-sm text-gray-500 mb-1">{{ __('app.address') }}</div>
                      <div class="text-sm text-gray-900">{{ $customer->address ?? '-' }}</div>
                   </div>
 
                   <div>
-                     <div class="text-sm text-gray-500 mb-1">Telepon</div>
+                     <div class="text-sm text-gray-500 mb-1">{{ __('app.phone') }}</div>
                      <div class="text-sm text-gray-900">{{ $customer->phone ?? '-' }}</div>
                   </div>
 
                   <div>
-                     <div class="text-sm text-gray-500 mb-1">Email</div>
+                     <div class="text-sm text-gray-500 mb-1">{{ __('app.email') }}</div>
                      <div class="text-sm text-gray-900">{{ $customer->email ?? '-' }}</div>
                   </div>
 
                   <div>
-                     <div class="text-sm text-gray-500 mb-1">NPWP</div>
+                     <div class="text-sm text-gray-500 mb-1">{{ __('app.npwp') }}</div>
                      <div class="text-sm text-gray-900">{{ $customer->tax_id ?? '-' }}</div>
                   </div>
 
                   @if ($customer->notes)
                      <div>
-                        <div class="text-sm text-gray-500 mb-1">Catatan</div>
+                        <div class="text-sm text-gray-500 mb-1">{{ __('app.notes') }}</div>
                         <div class="text-sm text-gray-900">{{ $customer->notes }}</div>
                      </div>
                   @endif
 
                   <div class="pt-4 border-t border-gray-200">
-                     <div class="text-sm text-gray-500 mb-1">Dibuat</div>
+                     <div class="text-sm text-gray-500 mb-1">{{ __('app.created') }}</div>
                      <div class="text-sm text-gray-900">
                         {{ $customer->created_at->format('d/m/Y H:i') }}
                         @if ($customer->creator)
-                           <span class="text-gray-500">oleh {{ $customer->creator->name }}</span>
+                           <span class="text-gray-500">{{ __('app.by') ?? 'oleh' }} {{ $customer->creator->name }}</span>
                         @endif
                      </div>
                   </div>
 
                   @if ($customer->updated_at != $customer->created_at)
                      <div>
-                        <div class="text-sm text-gray-500 mb-1">Terakhir Diperbarui</div>
+                        <div class="text-sm text-gray-500 mb-1">{{ __('app.updated') }}</div>
                         <div class="text-sm text-gray-900">
                            {{ $customer->updated_at->format('d/m/Y H:i') }}
                            @if ($customer->updater)
-                              <span class="text-gray-500">oleh {{ $customer->updater->name }}</span>
+                              <span class="text-gray-500">{{ __('app.by') ?? 'oleh' }} {{ $customer->updater->name }}</span>
                            @endif
                         </div>
                      </div>
@@ -101,10 +101,10 @@
          <div class="lg:col-span-2">
             <div class="bg-white rounded-lg shadow-md p-6">
                <div class="flex justify-between items-center mb-4">
-                  <h2 class="text-lg font-semibold text-gray-900">Riwayat Pesanan Penjualan</h2>
+                  <h2 class="text-lg font-semibold text-gray-900">{{ __('app.sales_order_history') }}</h2>
                   <a href="{{ route('sales-orders.create', ['customer_id' => $customer->id]) }}"
                      class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                     Buat Pesanan Baru
+                     {{ __('app.create_new_order') }}
                   </a>
                </div>
 
@@ -113,12 +113,12 @@
                      <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                            <tr>
-                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. SO</th>
-                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pembayaran</th>
-                              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.so_number') }}</th>
+                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.date') }}</th>
+                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.total') }}</th>
+                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.status') }}</th>
+                              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.payment') }}</th>
+                              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">{{ __('app.actions') }}</th>
                            </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -143,11 +143,11 @@
                                            'cancelled' => 'bg-red-100 text-red-800',
                                        ];
                                        $statusLabels = [
-                                           'draft' => 'Draft',
-                                           'confirmed' => 'Dikonfirmasi',
-                                           'shipped' => 'Dikirim',
-                                           'delivered' => 'Diterima',
-                                           'cancelled' => 'Dibatalkan',
+                                           'draft' => __('app.draft'),
+                                           'confirmed' => __('app.confirmed'),
+                                           'shipped' => __('app.shipped'),
+                                           'delivered' => __('app.delivered'),
+                                           'cancelled' => __('app.cancelled'),
                                        ];
                                     @endphp
                                     <span
@@ -163,9 +163,9 @@
                                            'paid' => 'bg-green-100 text-green-800',
                                        ];
                                        $paymentLabels = [
-                                           'unpaid' => 'Belum Bayar',
-                                           'partial' => 'Sebagian',
-                                           'paid' => 'Lunas',
+                                           'unpaid' => __('app.unpaid'),
+                                           'partial' => __('app.partial'),
+                                           'paid' => __('app.paid'),
                                        ];
                                     @endphp
                                     <span
@@ -176,7 +176,7 @@
                                  <td class="px-4 py-3 text-center">
                                     <a href="{{ route('sales-orders.show', $order) }}"
                                        class="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                                       Lihat
+                                       {{ __('app.view') }}
                                     </a>
                                  </td>
                               </tr>
@@ -191,7 +191,7 @@
                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                         </path>
                      </svg>
-                     <p class="mt-2">Belum ada riwayat pesanan penjualan</p>
+                     <p class="mt-2">{{ __('app.no_sales_order_history') }}</p>
                   </div>
                @endif
             </div>

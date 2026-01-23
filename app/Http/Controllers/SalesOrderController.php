@@ -148,10 +148,10 @@ class SalesOrderController extends Controller
             DB::commit();
 
             return redirect()->route('sales-orders.show', $salesOrder)
-                ->with('success', 'Pesanan penjualan berhasil dibuat.');
+                ->with('success', __('sales.create_success'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal membuat pesanan penjualan: ' . $e->getMessage());
+            return back()->withInput()->with('error', __('sales.create_error') . $e->getMessage());
         }
     }
 
@@ -173,7 +173,7 @@ class SalesOrderController extends Controller
         // Only draft orders can be edited
         if ($salesOrder->status !== 'draft') {
             return redirect()->route('sales-orders.show', $salesOrder)
-                ->with('error', 'Hanya pesanan dengan status draft yang dapat diedit.');
+                ->with('error', __('sales.edit_draft_only'));
         }
 
         $salesOrder->load(['items.product']);
@@ -192,7 +192,7 @@ class SalesOrderController extends Controller
         // Only draft orders can be updated
         if ($salesOrder->status !== 'draft') {
             return redirect()->route('sales-orders.show', $salesOrder)
-                ->with('error', 'Hanya pesanan dengan status draft yang dapat diperbarui.');
+                ->with('error', __('sales.update_draft_only'));
         }
 
         $validated = $request->validate([
@@ -257,10 +257,10 @@ class SalesOrderController extends Controller
             DB::commit();
 
             return redirect()->route('sales-orders.show', $salesOrder)
-                ->with('success', 'Pesanan penjualan berhasil diperbarui.');
+                ->with('success', __('sales.update_success'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal memperbarui pesanan penjualan: ' . $e->getMessage());
+            return back()->withInput()->with('error', __('sales.update_error') . $e->getMessage());
         }
     }
 
@@ -272,13 +272,13 @@ class SalesOrderController extends Controller
         // Only draft orders can be deleted
         if ($salesOrder->status !== 'draft') {
             return redirect()->route('sales-orders.index')
-                ->with('error', 'Hanya pesanan dengan status draft yang dapat dihapus.');
+                ->with('error', __('sales.delete_draft_only'));
         }
 
         $salesOrder->delete();
 
         return redirect()->route('sales-orders.index')
-            ->with('success', 'Pesanan penjualan berhasil dihapus.');
+            ->with('success', __('sales.delete_success'));
     }
 
     /**
@@ -287,7 +287,7 @@ class SalesOrderController extends Controller
     public function confirm(SalesOrder $salesOrder)
     {
         if ($salesOrder->status !== 'draft') {
-            return back()->with('error', 'Hanya pesanan dengan status draft yang dapat dikonfirmasi.');
+            return back()->with('error', __('sales.confirm_draft_only'));
         }
 
         // Validate stock availability in the pivot table
@@ -298,7 +298,7 @@ class SalesOrderController extends Controller
             $stock = $product->getStockInWarehouse($salesOrder->warehouse_id);
 
             if ($stock < $item->quantity) {
-                return back()->with('error', "Stok tidak mencukupi untuk produk: {$product->name}. Stok tersedia: {$stock}, dibutuhkan: {$item->quantity}");
+                return back()->with('error', __('sales.stock_insufficient', ['product' => $product->name, 'stock' => $stock, 'required' => $item->quantity]));
             }
         }
 
@@ -307,7 +307,7 @@ class SalesOrderController extends Controller
             'updated_by' => Auth::id(),
         ]);
 
-        return back()->with('success', 'Pesanan penjualan berhasil dikonfirmasi.');
+        return back()->with('success', __('sales.confirm_success'));
     }
 
     /**
@@ -316,7 +316,7 @@ class SalesOrderController extends Controller
     public function ship(SalesOrder $salesOrder)
     {
         if ($salesOrder->status !== 'confirmed') {
-            return back()->with('error', 'Hanya pesanan dengan status dikonfirmasi yang dapat dikirim.');
+            return back()->with('error', __('sales.ship_confirmed_only'));
         }
 
         $salesOrder->update([
@@ -324,7 +324,7 @@ class SalesOrderController extends Controller
             'updated_by' => Auth::id(),
         ]);
 
-        return back()->with('success', 'Pesanan penjualan berhasil ditandai sebagai dikirim.');
+        return back()->with('success', __('sales.ship_success'));
     }
 
     /**
@@ -333,7 +333,7 @@ class SalesOrderController extends Controller
     public function deliver(SalesOrder $salesOrder)
     {
         if ($salesOrder->status !== 'shipped') {
-            return back()->with('error', 'Hanya pesanan dengan status dikirim yang dapat ditandai sebagai diterima.');
+            return back()->with('error', __('sales.deliver_shipped_only'));
         }
 
         $salesOrder->update([
@@ -341,7 +341,7 @@ class SalesOrderController extends Controller
             'updated_by' => Auth::id(),
         ]);
 
-        return back()->with('success', 'Pesanan penjualan berhasil ditandai sebagai diterima.');
+        return back()->with('success', __('sales.deliver_success'));
     }
 
     /**
@@ -350,7 +350,7 @@ class SalesOrderController extends Controller
     public function cancel(SalesOrder $salesOrder)
     {
         if (in_array($salesOrder->status, ['delivered', 'cancelled'])) {
-            return back()->with('error', 'Pesanan yang sudah diterima atau dibatalkan tidak dapat dibatalkan lagi.');
+            return back()->with('error', __('sales.cancel_error'));
         }
 
         $salesOrder->update([
@@ -358,7 +358,7 @@ class SalesOrderController extends Controller
             'updated_by' => Auth::id(),
         ]);
 
-        return back()->with('success', 'Pesanan penjualan berhasil dibatalkan.');
+        return back()->with('success', __('sales.cancel_success'));
     }
 
     /**
@@ -367,11 +367,11 @@ class SalesOrderController extends Controller
     public function generateStockOut(SalesOrder $salesOrder)
     {
         if ($salesOrder->status !== 'confirmed') {
-            return back()->with('error', 'Hanya pesanan dengan status dikonfirmasi yang dapat diproses menjadi stok keluar.');
+            return back()->with('error', __('sales.stock_out_confirmed_only'));
         }
 
         if ($salesOrder->stock_out_id) {
-            return back()->with('error', 'Pesanan ini sudah memiliki stok keluar.');
+            return back()->with('error', __('sales.stock_out_exists'));
         }
 
         DB::beginTransaction();
@@ -414,10 +414,10 @@ class SalesOrderController extends Controller
             DB::commit();
 
             return redirect()->route('stock-outs.show', $stockOut)
-                ->with('success', 'Stok keluar berhasil dibuat dari pesanan penjualan.');
+                ->with('success', __('sales.stock_out_success'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membuat stok keluar: ' . $e->getMessage());
+            return back()->with('error', __('sales.stock_out_error') . $e->getMessage());
         }
     }
 

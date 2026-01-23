@@ -97,10 +97,10 @@ class PurchaseOrderController extends Controller
             DB::commit();
 
             return redirect()->route('purchase-orders.show', $po)
-                ->with('success', 'Purchase Order berhasil dibuat');
+                ->with('success', __('purchase_order.create_success'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membuat Purchase Order: ' . $e->getMessage())->withInput();
+            return back()->with('error', __('purchase_order.create_error') . $e->getMessage())->withInput();
         }
     }
 
@@ -114,7 +114,7 @@ class PurchaseOrderController extends Controller
     public function edit(PurchaseOrder $purchaseOrder)
     {
         if (!$purchaseOrder->canBeEdited()) {
-            return back()->with('error', 'PO tidak dapat diedit karena sudah disetujui atau diterima');
+            return back()->with('error', __('purchase_order.edit_error_approved'));
         }
 
         $warehouses = Warehouse::where('is_active', true)->get();
@@ -126,7 +126,7 @@ class PurchaseOrderController extends Controller
     public function update(Request $request, PurchaseOrder $purchaseOrder)
     {
         if (!$purchaseOrder->canBeEdited()) {
-            return back()->with('error', 'PO tidak dapat diedit');
+            return back()->with('error', __('purchase_order.edit_error_approved'));
         }
 
         $validated = $request->validate([
@@ -175,43 +175,43 @@ class PurchaseOrderController extends Controller
             DB::commit();
 
             return redirect()->route('purchase-orders.show', $purchaseOrder)
-                ->with('success', 'Purchase Order berhasil diperbarui');
+                ->with('success', __('purchase_order.update_success'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal memperbarui Purchase Order: ' . $e->getMessage())->withInput();
+            return back()->with('error', __('purchase_order.update_error') . $e->getMessage())->withInput();
         }
     }
 
     public function destroy(PurchaseOrder $purchaseOrder)
     {
         if (!$purchaseOrder->canBeEdited()) {
-            return back()->with('error', 'PO tidak dapat dihapus');
+            return back()->with('error', __('purchase_order.delete_error_generated'));
         }
 
         try {
             $purchaseOrder->delete();
             return redirect()->route('purchase-orders.index')
-                ->with('success', 'Purchase Order berhasil dihapus');
+                ->with('success', __('purchase_order.delete_success'));
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus Purchase Order: ' . $e->getMessage());
+            return back()->with('error', __('purchase_order.delete_error') . $e->getMessage());
         }
     }
 
     public function submit(PurchaseOrder $purchaseOrder)
     {
         if ($purchaseOrder->status !== 'draft') {
-            return back()->with('error', 'PO sudah diajukan');
+            return back()->with('error', __('purchase_order.submit_error_status'));
         }
 
         $purchaseOrder->update(['status' => 'pending']);
 
-        return back()->with('success', 'Purchase Order berhasil diajukan untuk persetujuan');
+        return back()->with('success', __('purchase_order.submit_success'));
     }
 
     public function approve(PurchaseOrder $purchaseOrder)
     {
         if (!$purchaseOrder->canBeApproved()) {
-            return back()->with('error', 'PO tidak dapat disetujui');
+            return back()->with('error', __('purchase_order.approve_error'));
         }
 
         $purchaseOrder->update([
@@ -220,24 +220,24 @@ class PurchaseOrderController extends Controller
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Purchase Order berhasil disetujui');
+        return back()->with('success', __('purchase_order.approve_success'));
     }
 
     public function reject(PurchaseOrder $purchaseOrder)
     {
         if (!$purchaseOrder->canBeApproved()) {
-            return back()->with('error', 'PO tidak dapat ditolak');
+            return back()->with('error', __('purchase_order.reject_error'));
         }
 
         $purchaseOrder->update(['status' => 'cancelled']);
 
-        return back()->with('success', 'Purchase Order ditolak');
+        return back()->with('success', __('purchase_order.reject_success'));
     }
 
     public function receive(PurchaseOrder $purchaseOrder)
     {
         if (!$purchaseOrder->canBeReceived()) {
-            return back()->with('error', 'PO tidak dapat diterima');
+            return back()->with('error', __('purchase_order.receive_error'));
         }
 
         $purchaseOrder->load(['details.product']);
@@ -248,7 +248,7 @@ class PurchaseOrderController extends Controller
     public function processReceive(Request $request, PurchaseOrder $purchaseOrder)
     {
         if (!$purchaseOrder->canBeReceived()) {
-            return back()->with('error', 'PO tidak dapat diterima');
+            return back()->with('error', __('purchase_order.receive_error'));
         }
 
         $validated = $request->validate([
@@ -268,7 +268,7 @@ class PurchaseOrderController extends Controller
                 'warehouse_id' => $purchaseOrder->warehouse_id,
                 'supplier_id' => $purchaseOrder->supplier_id,
                 'transaction_date' => $validated['received_date'],
-                'notes' => 'Penerimaan dari PO: ' . $purchaseOrder->po_number . ($validated['notes'] ? ' - ' . $validated['notes'] : ''),
+                'notes' => __('purchase_order.stock_in_notes', ['po' => $purchaseOrder->po_number]) . ($validated['notes'] ? ' - ' . $validated['notes'] : ''),
                 'created_by' => auth()->id(),
             ]);
 
@@ -281,7 +281,7 @@ class PurchaseOrderController extends Controller
                 // Validate quantity
                 $remaining = $detail->getRemainingQuantity();
                 if ($qtyReceived > $remaining) {
-                    throw new \Exception("Jumlah yang diterima melebihi jumlah yang dipesan untuk produk: {$detail->product->name}");
+                    throw new \Exception(__('purchase_order.receive_error_qty', ['product' => $detail->product->name]));
                 }
 
                 // Create Stock In Detail
@@ -321,10 +321,10 @@ class PurchaseOrderController extends Controller
             DB::commit();
 
             return redirect()->route('purchase-orders.show', $purchaseOrder)
-                ->with('success', 'Penerimaan barang berhasil dicatat');
+                ->with('success', __('purchase_order.receive_success'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal mencatat penerimaan: ' . $e->getMessage())->withInput();
+            return back()->with('error', __('purchase_order.receive_record_error') . $e->getMessage())->withInput();
         }
     }
 }
