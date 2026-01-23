@@ -67,7 +67,7 @@
                   class="w-full border rounded px-3 py-2 @error('type') border-red-500 @enderror">
                   @foreach ($types as $type)
                      <option value="{{ $type }}" {{ old('type') == $type ? 'selected' : '' }}>
-                        {{ ucfirst($type) }}
+                        {{ __('app.' . $type) }}
                      </option>
                   @endforeach
                </select>

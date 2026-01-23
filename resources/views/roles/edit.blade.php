@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Role')
+@section('title', __('app.edit_role'))
 
 @section('content')
 <div class="max-w-4xl mx-auto">
@@ -10,10 +10,10 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
-            Back to Roles
+            {{ __('app.back_to_roles') ?? 'Back to Roles' }}
         </a>
-        <h1 class="text-2xl font-bold text-gray-800">Edit Role: {{ $role->display_name }}</h1>
-        <p class="text-gray-600 text-sm mt-1">Modify permissions for this custom role</p>
+        <h1 class="text-2xl font-bold text-gray-800">{{ __('app.edit_role') }}: {{ $role->display_name }}</h1>
+        <p class="text-gray-600 text-sm mt-1">{{ __('app.modify_role_desc') ?? 'Modify permissions for this custom role' }}</p>
     </div>
 
     {{-- Alerts --}}
@@ -30,19 +30,19 @@
 
         {{-- Basic Info Card --}}
         <div class="bg-white rounded-xl shadow-sm border p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Role Information</h2>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">{{ __('app.role_information') ?? 'Role Information' }}</h2>
             
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Role Code</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.role_code') }}</label>
                     <input type="text" value="{{ $role->name }}" disabled
                            class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed">
-                    <p class="mt-1 text-xs text-gray-500">Role code cannot be changed</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ __('app.role_code_cannot_change') ?? 'Role code cannot be changed' }}</p>
                 </div>
 
                 <div>
                     <label for="display_name" class="block text-sm font-medium text-gray-700 mb-1">
-                        Display Name <span class="text-red-500">*</span>
+                        {{ __('app.display_name') }} <span class="text-red-500">*</span>
                     </label>
                     <input type="text" name="display_name" id="display_name" 
                            value="{{ old('display_name', $role->display_name) }}"
@@ -55,7 +55,7 @@
             </div>
 
             <div class="mt-4">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.description') ?? 'Description' }}</label>
                 <textarea name="description" id="description" rows="2"
                           class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">{{ old('description', $role->description) }}</textarea>
             </div>
@@ -65,17 +65,17 @@
         <div class="bg-white rounded-xl shadow-sm border p-6 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-800">Permissions</h2>
-                    <p class="text-sm text-gray-500">Select what this role can do</p>
+                    <h2 class="text-lg font-semibold text-gray-800">{{ __('app.permissions') ?? 'Permissions' }}</h2>
+                    <p class="text-sm text-gray-500">{{ __('app.select_permissions_desc') ?? 'Select what this role can do' }}</p>
                 </div>
                 <div class="flex gap-2">
                     <button type="button" onclick="selectAll()" 
                             class="px-3 py-1.5 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition">
-                        Select All
+                        {{ __('app.select_all') }}
                     </button>
                     <button type="button" onclick="deselectAll()"
                             class="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                        Clear All
+                        {{ __('app.clear_all') }}
                     </button>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                             <input type="checkbox" class="group-toggle rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                                    data-group="{{ $group }}"
                                    onchange="toggleGroup('{{ $group }}', this.checked)">
-                            <span class="text-sm text-gray-600">Select All</span>
+                            <span class="text-sm text-gray-600">{{ __('app.select_all') }}</span>
                         </label>
                     </div>
                     <div class="p-4 grid gap-3 sm:grid-cols-2">
@@ -128,11 +128,11 @@
         <div class="flex flex-col sm:flex-row gap-3 justify-end">
             <a href="{{ route('roles.index') }}"
                class="px-6 py-3 text-center border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
-                Cancel
+                {{ __('app.cancel') }}
             </a>
             <button type="submit"
                     class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-semibold">
-                Save Changes
+                {{ __('app.save_changes') ?? 'Save Changes' }}
             </button>
         </div>
     </form>

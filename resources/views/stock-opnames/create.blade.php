@@ -3,84 +3,84 @@
 @section('title', 'Buat Stok Opname')
 
 @section('content')
-   <div class="max-w-4xl mx-auto">
-      <h2 class="text-xl font-semibold mb-4">Record Stok Opname</h2>
-
-      @if ($errors->any())
-         <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-            <ul class="list-disc list-inside">
-               @foreach ($errors->all() as $error)
-                  <li>{{ $error }}</li>
-               @endforeach
-            </ul>
-         </div>
-      @endif
-
-      <form method="POST" action="{{ route('stock-opnames.store') }}" class="bg-white p-4 rounded shadow">
-         @csrf
-
-         <div class="mb-4">
-            <label class="block text-sm mb-1">Date <span class="text-red-500">*</span></label>
-            <input type="date" name="date" value="{{ old('date', date('Y-m-d')) }}"
-               class="w-full border rounded px-2 py-1" required />
-         </div>
-
-         <div class="mb-4">
-            <label class="block text-sm mb-1">Product <span class="text-red-500">*</span></label>
-            <select name="product_id" id="productSelect" class="w-full border rounded px-2 py-1" required
-               onchange="updateSystemQty()">
-               <option value="">-- Select Product --</option>
-               @foreach ($products as $p)
-                  @php
-                     $totalStock = $p->warehouses->sum('pivot.stock');
-                  @endphp
-                  <option value="{{ $p->id }}" data-stock="{{ $totalStock }}" data-unit="{{ $p->unit }}"
-                     {{ old('product_id') == $p->id ? 'selected' : '' }}>
-                     {{ $p->code }} - {{ $p->name }} (Stock: {{ $totalStock }})
-                  </option>
-               @endforeach
-            </select>
-         </div>
-
-         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-               <label class="block text-sm mb-1">System Quantity</label>
-               <input type="text" id="systemQty" class="w-full border rounded px-2 py-1 bg-gray-100" readonly
-                  placeholder="Select product first" />
-            </div>
-            <div>
-               <label class="block text-sm mb-1">Counted Quantity <span class="text-red-500">*</span></label>
-               <input type="number" name="counted_qty" value="{{ old('counted_qty', 0) }}"
-                  class="w-full border rounded px-2 py-1" required min="0" id="countedQty"
-                  onchange="calculateDifference()" />
-            </div>
-         </div>
-
-         <div class="mb-4">
-            <label class="block text-sm mb-1">Difference</label>
-            <input type="text" id="difference" class="w-full border rounded px-2 py-1 bg-gray-100 font-semibold"
-               readonly placeholder="Will be calculated" />
-         </div>
-
-         <div class="mb-4">
-            <label class="block text-sm mb-1">Reason <span class="text-red-500">*</span></label>
-            <select name="reason" class="w-full border rounded px-2 py-1" required>
-               <option value="">-- Select Reason --</option>
-               <option value="Damaged">Damaged</option>
-               <option value="Lost">Lost</option>
-               <option value="Expired">Expired</option>
-               <option value="Found">Found (additional)</option>
-               <option value="Counting Error">Counting Error</option>
-               <option value="Other">Other</option>
-            </select>
-         </div>
-
-         <div class="flex gap-2 mt-6">
-            <button type="submit" class="px-4 py-2 bg-warning text-white rounded">Record Opname</button>
-            <a href="{{ route('stock-opnames.index') }}" class="px-4 py-2 border rounded">Batal</a>
-         </div>
-      </form>
-   </div>
+    <div class="max-w-4xl mx-auto">
+       <h2 class="text-xl font-semibold mb-4">{{ __('app.record_stock_opname') }}</h2>
+ 
+       @if ($errors->any())
+          <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+             <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                   <li>{{ $error }}</li>
+                @endforeach
+             </ul>
+          </div>
+       @endif
+ 
+       <form method="POST" action="{{ route('stock-opnames.store') }}" class="bg-white p-4 rounded shadow">
+          @csrf
+ 
+          <div class="mb-4">
+             <label class="block text-sm mb-1">{{ __('app.date') }} <span class="text-red-500">*</span></label>
+             <input type="date" name="date" value="{{ old('date', date('Y-m-d')) }}"
+                class="w-full border rounded px-2 py-1" required />
+          </div>
+ 
+          <div class="mb-4">
+             <label class="block text-sm mb-1">{{ __('app.product') }} <span class="text-red-500">*</span></label>
+             <select name="product_id" id="productSelect" class="w-full border rounded px-2 py-1" required
+                onchange="updateSystemQty()">
+                <option value="">{{ __('app.select_product') }}</option>
+                @foreach ($products as $p)
+                   @php
+                      $totalStock = $p->warehouses->sum('pivot.stock');
+                   @endphp
+                   <option value="{{ $p->id }}" data-stock="{{ $totalStock }}" data-unit="{{ $p->unit }}"
+                      {{ old('product_id') == $p->id ? 'selected' : '' }}>
+                      {{ $p->code }} - {{ $p->name }} ({{ __('app.stock') }}: {{ $totalStock }})
+                   </option>
+                @endforeach
+             </select>
+          </div>
+ 
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+             <div>
+                <label class="block text-sm mb-1">{{ __('app.system_qty') }}</label>
+                <input type="text" id="systemQty" class="w-full border rounded px-2 py-1 bg-gray-100" readonly
+                   placeholder="{{ __('app.select_product') }}" />
+             </div>
+             <div>
+                <label class="block text-sm mb-1">{{ __('app.counted_qty') }} <span class="text-red-500">*</span></label>
+                <input type="number" name="counted_qty" value="{{ old('counted_qty', 0) }}"
+                   class="w-full border rounded px-2 py-1" required min="0" id="countedQty"
+                   onchange="calculateDifference()" />
+             </div>
+          </div>
+ 
+          <div class="mb-4">
+             <label class="block text-sm mb-1">{{ __('app.difference') }}</label>
+             <input type="text" id="difference" class="w-full border rounded px-2 py-1 bg-gray-100 font-semibold"
+                readonly placeholder="" />
+          </div>
+ 
+          <div class="mb-4">
+             <label class="block text-sm mb-1">{{ __('app.reason') }} <span class="text-red-500">*</span></label>
+             <select name="reason" class="w-full border rounded px-2 py-1" required>
+                <option value="">{{ __('app.select_option', ['item' => __('app.reason')]) }}</option>
+                <option value="Damaged">{{ __('app.damaged') }}</option>
+                <option value="Lost">{{ __('app.lost') }}</option>
+                <option value="Expired">{{ __('app.expired') }}</option>
+                <option value="Found">{{ __('app.found') }}</option>
+                <option value="Counting Error">{{ __('app.counting_error') }}</option>
+                <option value="Other">{{ __('app.other') }}</option>
+             </select>
+          </div>
+ 
+          <div class="flex gap-2 mt-6">
+             <button type="submit" class="px-4 py-2 bg-warning text-white rounded">{{ __('app.confirm_record_opname') }}</button>
+             <a href="{{ route('stock-opnames.index') }}" class="px-4 py-2 border rounded">{{ __('app.cancel') }}</a>
+          </div>
+       </form>
+    </div>
 
    <script>
       function updateSystemQty() {

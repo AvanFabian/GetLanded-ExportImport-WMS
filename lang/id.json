@@ -73,5 +73,18 @@
     "purchase_order.receive_success": "Penerimaan barang berhasil dicatat",
     "purchase_order.receive_error_qty": "Jumlah yang diterima melebihi jumlah yang dipesan untuk produk: :product",
     "purchase_order.stock_in_notes": "Penerimaan dari PO: :po",
-    "purchase_order.receive_record_error": "Gagal mencatat penerimaan: "
+    "purchase_order.receive_record_error": "Gagal mencatat penerimaan: ",
+    "Email": "Email",
+    "Password": "Kata Sandi",
+    "Confirm Password": "Konfirmasi Kata Sandi",
+    "Remember me": "Ingat saya",
+    "Forgot your password?": "Lupa kata sandi Anda?",
+    "Log in": "Masuk",
+    "Register": "Daftar",
+    "Already registered?": "Sudah terdaftar?",
+    "Name": "Nama",
+    "Reset Password": "Atur Ulang Kata Sandi",
+    "Verify Your Email Address": "Verifikasi Alamat Email Anda",
+    "A new verification link has been sent to the email address you provided during registration.": "Tautan verifikasi baru telah dikirim ke alamat email yang Anda berikan saat pendaftaran.",
+    "Resend Verification Email": "Kirim Ulang Email Verifikasi"
 }

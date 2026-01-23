@@ -25,7 +25,7 @@
             <option value="">{{ __('app.all_types') }}</option>
             @foreach (['storage', 'receiving', 'shipping', 'quarantine', 'returns'] as $type)
                <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>
-                  {{ ucfirst($type) }}
+                  {{ __('app.' . $type) }}
                </option>
             @endforeach
          </select>
@@ -59,7 +59,7 @@
                            @elseif($zone->type === 'quarantine') bg-red-100 text-red-800
                            @else bg-gray-100 text-gray-800
                            @endif">
-                           {{ ucfirst($zone->type) }}
+                           {{ __('app.' . $zone->type) }}
                         </span>
                      </td>
                      <td class="p-3">{{ $zone->racks->count() }}</td>

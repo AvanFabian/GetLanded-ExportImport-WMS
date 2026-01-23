@@ -91,7 +91,7 @@
                      class="w-full border rounded px-3 py-2 @error('pick_priority') border-red-500 @enderror">
                      @foreach ($priorities as $priority)
                         <option value="{{ $priority }}" {{ old('pick_priority', 'medium') == $priority ? 'selected' : '' }}>
-                           {{ ucfirst($priority) }}
+                           {{ __('app.' . $priority) }}
                         </option>
                      @endforeach
                   </select>

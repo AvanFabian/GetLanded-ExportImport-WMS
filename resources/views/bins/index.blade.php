@@ -63,7 +63,7 @@
                            @elseif($bin->pick_priority === 'medium') bg-yellow-100 text-yellow-800
                            @else bg-gray-100 text-gray-800
                            @endif">
-                           {{ ucfirst($bin->pick_priority) }}
+                           {{ __('app.' . $bin->pick_priority) }}
                         </span>
                      </td>
                      <td class="p-3">

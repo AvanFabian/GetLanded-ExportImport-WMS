@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Batch Management')
+@section('title', __('app.batch_management'))
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     {{-- Header --}}
     <div class="flex justify-between items-center mb-6">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Batch Management</h1>
-            <p class="mt-1 text-sm text-gray-600">Track batch locations and expiry dates</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('app.batch_management') }}</h1>
+            <p class="mt-1 text-sm text-gray-600">{{ __('app.batch_management_desc') }}</p>
         </div>
     </div>
 
@@ -16,24 +16,24 @@
     <div class="bg-white rounded-lg shadow-md p-4 mb-6">
         <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.search') }}</label>
                 <input type="text" name="search" value="{{ request('search') }}" 
-                    placeholder="Batch number..."
+                    placeholder="{{ __('app.search_code_placeholder') ?? __('app.batch_number') }}..."
                     class="w-full border-gray-300 rounded-lg text-sm">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.status') }}</label>
                 <select name="status" class="w-full border-gray-300 rounded-lg text-sm">
-                    <option value="">All Status</option>
-                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="depleted" {{ request('status') === 'depleted' ? 'selected' : '' }}>Depleted</option>
-                    <option value="quarantine" {{ request('status') === 'quarantine' ? 'selected' : '' }}>Quarantine</option>
+                    <option value="">{{ __('app.all_statuses') }}</option>
+                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('app.active') }}</option>
+                    <option value="depleted" {{ request('status') === 'depleted' ? 'selected' : '' }}>{{ __('app.depleted') }}</option>
+                    <option value="quarantine" {{ request('status') === 'quarantine' ? 'selected' : '' }}>{{ __('app.quarantine') }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Warehouse</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.warehouse') }}</label>
                 <select name="warehouse" class="w-full border-gray-300 rounded-lg text-sm">
-                    <option value="">All Warehouses</option>
+                    <option value="">{{ __('app.all_warehouses') }}</option>
                     @foreach($warehouses as $warehouse)
                         <option value="{{ $warehouse->id }}" {{ request('warehouse') == $warehouse->id ? 'selected' : '' }}>
                             {{ $warehouse->name }}
@@ -42,20 +42,20 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Expiring In</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.expiring_in') }}</label>
                 <select name="expiring" class="w-full border-gray-300 rounded-lg text-sm">
-                    <option value="">Any</option>
-                    <option value="7" {{ request('expiring') === '7' ? 'selected' : '' }}>7 days</option>
-                    <option value="30" {{ request('expiring') === '30' ? 'selected' : '' }}>30 days</option>
-                    <option value="60" {{ request('expiring') === '60' ? 'selected' : '' }}>60 days</option>
+                    <option value="">{{ __('app.any') }}</option>
+                    <option value="7" {{ request('expiring') === '7' ? 'selected' : '' }}>{{ __('app.days_days', ['days' => 7]) }}</option>
+                    <option value="30" {{ request('expiring') === '30' ? 'selected' : '' }}>{{ __('app.days_days', ['days' => 30]) }}</option>
+                    <option value="60" {{ request('expiring') === '60' ? 'selected' : '' }}>{{ __('app.days_days', ['days' => 60]) }}</option>
                 </select>
             </div>
             <div class="flex items-end gap-2">
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Filter
+                    {{ __('app.filter') }}
                 </button>
                 <a href="{{ route('batches.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                    Reset
+                    {{ __('app.reset') }}
                 </a>
             </div>
         </form>
@@ -66,13 +66,13 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Batch #</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Method</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Expiry</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.batch_number') }}</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.product') }}</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{{ __('app.method') }}</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">{{ __('app.qty') }}</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{{ __('app.expiry_date') }}</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{{ __('app.status') }}</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{{ __('app.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -98,7 +98,7 @@
                             <span class="text-sm font-semibold text-gray-900">{{ number_format($batch->total_quantity) }}</span>
                             @if($batch->available_quantity < $batch->total_quantity)
                                 <span class="text-xs text-gray-500 block">
-                                    ({{ number_format($batch->available_quantity) }} avail)
+                                    ({{ number_format($batch->available_quantity) }} {{ __('app.available') }})
                                 </span>
                             @endif
                         </td>
@@ -111,11 +111,11 @@
                                     {{ $batch->expiry_date->format('d M Y') }}
                                 </span>
                                 @if($daysLeft < 0)
-                                    <span class="text-xs text-red-500 block">EXPIRED</span>
+                                    <span class="text-xs text-red-500 block">{{ __('app.expired') }}</span>
                                 @elseif($daysLeft <= 7)
-                                    <span class="text-xs text-red-500 block">{{ $daysLeft }} days left</span>
+                                    <span class="text-xs text-red-500 block">{{ $daysLeft }} {{ __('app.days_left') }}</span>
                                 @elseif($daysLeft <= 30)
-                                    <span class="text-xs text-orange-500 block">{{ $daysLeft }} days left</span>
+                                    <span class="text-xs text-orange-500 block">{{ $daysLeft }} {{ __('app.days_left') }}</span>
                                 @endif
                             @else
                                 <span class="text-gray-400">-</span>
@@ -124,13 +124,13 @@
                         <td class="px-6 py-4 text-center">
                             @switch($batch->status)
                                 @case('active')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">{{ __('app.active') }}</span>
                                     @break
                                 @case('depleted')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Depleted</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{{ __('app.depleted') }}</span>
                                     @break
                                 @case('quarantine')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Quarantine</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{{ __('app.quarantine') }}</span>
                                     @break
                                 @default
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{{ ucfirst($batch->status) }}</span>
@@ -139,7 +139,7 @@
                         <td class="px-6 py-4 text-center">
                             <a href="{{ route('batches.show', $batch) }}" 
                                 class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                View
+                                {{ __('app.view') }}
                             </a>
                         </td>
                     </tr>

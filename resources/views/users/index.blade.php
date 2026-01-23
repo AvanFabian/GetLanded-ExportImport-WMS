@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'User Management')
+@section('title', __('app.user_management'))
 
 @section('content')
    <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6">
-         <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
+         <h1 class="text-2xl font-bold text-gray-800">{{ __('app.user_management') }}</h1>
          <a href="{{ route('users.create') }}"
             class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
             <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6">
                </path>
             </svg>
-            Add User
+            {{ __('app.add_user') }}
          </a>
       </div>
 
@@ -21,37 +21,37 @@
       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
          <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-               <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-               <input type="text" name="search" value="{{ request('search') }}" placeholder="Name or email..."
+               <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.search') }}</label>
+               <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('app.search_placeholder') ?? 'Name or email...' }}"
                   class="w-full border-gray-300 rounded-lg">
             </div>
 
             <div>
-               <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+               <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.role') }}</label>
                <select name="role" class="w-full border-gray-300 rounded-lg">
-                  <option value="">All Roles</option>
-                  <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-                  <option value="manager" {{ request('role') === 'manager' ? 'selected' : '' }}>Manager</option>
-                  <option value="staff" {{ request('role') === 'staff' ? 'selected' : '' }}>Staff</option>
+                  <option value="">{{ __('app.all_roles') ?? 'All Roles' }}</option>
+                  <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>{{ __('app.admin') }}</option>
+                  <option value="manager" {{ request('role') === 'manager' ? 'selected' : '' }}>{{ __('app.manager') ?? 'Manager' }}</option>
+                  <option value="staff" {{ request('role') === 'staff' ? 'selected' : '' }}>{{ __('app.staff') }}</option>
                </select>
             </div>
 
             <div>
-               <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+               <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('app.status') }}</label>
                <select name="status" class="w-full border-gray-300 rounded-lg">
-                  <option value="">All Status</option>
-                  <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
-                  <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                  <option value="">{{ __('app.all_statuses') }}</option>
+                  <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('app.active') }}</option>
+                  <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>{{ __('app.inactive') }}</option>
                </select>
             </div>
 
             <div class="flex items-end gap-2">
                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition">
-                  Filter
+                  {{ __('app.filter') }}
                </button>
                <a href="{{ route('users.index') }}"
                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-                  Reset
+                  {{ __('app.reset') }}
                </a>
             </div>
          </form>
@@ -63,18 +63,18 @@
             <table class="min-w-full divide-y divide-gray-200">
                <thead class="bg-gray-50">
                   <tr>
-                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User
+                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.user') }}
                      </th>
-                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email
+                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.email') }}
                      </th>
-                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role
+                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.role') }}
                      </th>
-                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status
+                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.status') }}
                      </th>
-                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined
+                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('app.joined_date') }}
                      </th>
                      <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions</th>
+                        {{ __('app.actions') }}</th>
                   </tr>
                </thead>
                <tbody class="bg-white divide-y divide-gray-200">
@@ -100,17 +100,17 @@
                            @if ($user->role === 'admin')
                               <span
                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                                 Admin
+                                 {{ __('app.admin') }}
                               </span>
                            @elseif($user->role === 'manager')
                               <span
                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                 Manager
+                                 {{ __('app.manager') ?? 'Manager' }}
                               </span>
                            @else
                               <span
                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                 Staff
+                                 {{ __('app.staff') }}
                               </span>
                            @endif
                         </td>
@@ -118,12 +118,12 @@
                            @if ($user->is_active)
                               <span
                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                 Active
+                                 {{ __('app.active') }}
                               </span>
                            @else
                               <span
                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                 Inactive
+                                 {{ __('app.inactive') }}
                               </span>
                            @endif
                         </td>
@@ -132,15 +132,15 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                            <a href="{{ route('users.edit', $user->id) }}" class="text-primary hover:text-blue-900 mr-3">
-                              Edit
+                              {{ __('app.edit') }}
                            </a>
                            @if ($user->id !== auth()->id())
                               <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block"
-                                 onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                 onsubmit="return confirm('{{ __('app.confirm_delete_user') ?? 'Are you sure?' }}')">
                                  @csrf
                                  @method('DELETE')
                                  <button type="submit" class="text-danger hover:text-red-900">
-                                    Delete
+                                    {{ __('app.delete') }}
                                  </button>
                               </form>
                            @endif

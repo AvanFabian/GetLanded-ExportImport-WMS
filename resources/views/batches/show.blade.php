@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Batch ' . $batch->batch_number)
+@section('title', __('app.batch_number') . ' ' . $batch->batch_number)
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -11,20 +11,20 @@
                 <h1 class="text-3xl font-bold text-gray-900">{{ $batch->batch_number }}</h1>
                 @switch($batch->status)
                     @case('active')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Active</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">{{ __('app.active') }}</span>
                         @break
                     @case('depleted')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">Depleted</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">{{ __('app.depleted') }}</span>
                         @break
                     @case('quarantine')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">Quarantine</span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">{{ __('app.quarantine') }}</span>
                         @break
                 @endswitch
             </div>
             <p class="mt-1 text-sm text-gray-600">{{ $batch->product->name ?? 'Unknown Product' }}</p>
         </div>
         <a href="{{ route('batches.index') }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg">
-            ← Back to Batches
+            ← {{ __('app.back_to_list') }}
         </a>
     </div>
 
@@ -33,22 +33,22 @@
         <div class="lg:col-span-2 space-y-6">
             {{-- Batch Details Card --}}
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Batch Information</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('app.details') }}</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Batch Number</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.batch_number') }}</label>
                         <p class="mt-1 text-sm font-semibold text-gray-900">{{ $batch->batch_number }}</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Product</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.product') }}</label>
                         <p class="mt-1 text-sm text-gray-900">{{ $batch->product->name ?? '-' }}</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Cost Price</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.cost_price') }}</label>
                         <p class="mt-1 text-sm text-gray-900">Rp {{ number_format($batch->cost_price ?? 0, 0, ',', '.') }}</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Method</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.method') }}</label>
                         @php $method = $batch->product->batch_method ?? 'FIFO'; @endphp
                         <span class="inline-flex items-center px-2 py-0.5 mt-1 rounded text-xs font-medium 
                             {{ $method === 'FEFO' ? 'bg-orange-100 text-orange-800' : ($method === 'LIFO' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800') }}">
@@ -56,39 +56,39 @@
                         </span>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Manufacturing Date</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.manufacturing_date') }}</label>
                         <p class="mt-1 text-sm text-gray-900">{{ $batch->manufactured_date?->format('d M Y') ?? '-' }}</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Expiry Date</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.expiry_date') }}</label>
                         @if($batch->expiry_date)
                             @php $daysLeft = now()->diffInDays($batch->expiry_date, false); @endphp
                             <p class="mt-1 text-sm {{ $daysLeft < 0 ? 'text-red-600 font-bold' : ($daysLeft <= 30 ? 'text-orange-600' : 'text-gray-900') }}">
                                 {{ $batch->expiry_date->format('d M Y') }}
                                 @if($daysLeft < 0)
-                                    <span class="text-red-500">(EXPIRED)</span>
+                                    <span class="text-red-500">({{ __('app.expired') }})</span>
                                 @elseif($daysLeft <= 7)
-                                    <span class="text-red-500">({{ $daysLeft }} days)</span>
+                                    <span class="text-red-500">({{ $daysLeft }} {{ __('app.days_left') }})</span>
                                 @elseif($daysLeft <= 30)
-                                    <span class="text-orange-500">({{ $daysLeft }} days)</span>
+                                    <span class="text-orange-500">({{ $daysLeft }} {{ __('app.days_left') }})</span>
                                 @endif
                             </p>
                         @else
-                            <p class="mt-1 text-sm text-gray-400">No expiry</p>
+                            <p class="mt-1 text-sm text-gray-400">-</p>
                         @endif
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Total Quantity</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.total_stock') }}</label>
                         <p class="mt-1 text-2xl font-bold text-gray-900">{{ number_format($batch->total_quantity) }}</p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 uppercase">Available</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase">{{ __('app.available') }}</label>
                         <p class="mt-1 text-2xl font-bold text-green-600">{{ number_format($batch->available_quantity) }}</p>
                     </div>
                 </div>
                 @if($batch->notes)
                     <div class="mt-4 pt-4 border-t border-gray-200">
-                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">Notes</label>
+                        <label class="block text-xs font-medium text-gray-500 uppercase mb-1">{{ __('app.notes') }}</label>
                         <p class="text-sm text-gray-700">{{ $batch->notes }}</p>
                     </div>
                 @endif
@@ -96,18 +96,18 @@
 
             {{-- Stock Locations Table --}}
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Stock Locations</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ __('app.stock_locations') }}</h2>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Warehouse</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Zone</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rack</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bin</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Reserved</th>
-                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Available</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.warehouse') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.zone') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.rack') }}</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ __('app.bin') }}</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{{ __('app.quantity') }}</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{{ __('app.reserved') }}</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{{ __('app.available') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -129,7 +129,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">No stock locations</td>
+                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">{{ __('app.no_data') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

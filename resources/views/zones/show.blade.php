@@ -35,7 +35,7 @@
                         @elseif($zone->type === 'quarantine') bg-red-100 text-red-800
                         @else bg-gray-100 text-gray-800
                         @endif">
-                        {{ ucfirst($zone->type) }}
+                        {{ __('app.' . $zone->type) }}
                      </span>
                   </dd>
                </div>
