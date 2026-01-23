@@ -77,6 +77,17 @@
                   <input type="date" id="delivery_date" name="delivery_date" value="{{ old('delivery_date') }}"
                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                </div>
+
+               <div>
+                  <label for="document_language" class="block text-sm font-medium text-gray-700 mb-2">
+                     {{ __('Document Language') }}
+                  </label>
+                  <select id="document_language" name="document_language"
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                     <option value="id" {{ old('document_language') == 'id' ? 'selected' : '' }}>Indonesia (Default)</option>
+                     <option value="en" {{ old('document_language') == 'en' ? 'selected' : '' }}>English</option>
+                  </select>
+               </div>
             </div>
 
             <div class="mt-6">

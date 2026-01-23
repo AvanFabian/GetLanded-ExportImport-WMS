@@ -89,6 +89,7 @@ class SalesOrderController extends Controller
             'delivery_date' => 'nullable|date|after_or_equal:order_date',
             'discount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
+            'document_language' => 'nullable|in:en,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -111,6 +112,7 @@ class SalesOrderController extends Controller
                 'discount' => $validated['discount'] ?? 0,
                 'total' => 0,
                 'notes' => $validated['notes'],
+                'document_language' => $validated['document_language'] ?? 'en',
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);
@@ -200,6 +202,7 @@ class SalesOrderController extends Controller
             'delivery_date' => 'nullable|date|after_or_equal:order_date',
             'discount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
+            'document_language' => 'nullable|in:en,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -219,6 +222,7 @@ class SalesOrderController extends Controller
                 'delivery_date' => $validated['delivery_date'],
                 'discount' => $validated['discount'] ?? 0,
                 'notes' => $validated['notes'],
+                'document_language' => $validated['document_language'] ?? 'en',
                 'updated_by' => Auth::id(),
             ]);
 

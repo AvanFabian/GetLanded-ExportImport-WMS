@@ -37,86 +37,86 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                 </svg>
-                <span class="font-medium">{{ __('app.dashboard') }}</span>
+                <span class="font-medium">{{ __('Dashboard') }}</span>
             </a>
 
             {{-- Master Data Section --}}
             <div class="pt-4">
-                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.master_data') }}</p>
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Master Data') }}</p>
                 <div class="mt-2 space-y-1">
                     <a href="{{ route('warehouses.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('warehouses.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>🏭</span><span>{{ __('app.warehouses') }}</span>
+                        <span>🏭</span><span>{{ __('Warehouses') }}</span>
                     </a>
                     <a href="{{ route('categories.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('categories.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>📂</span><span>{{ __('app.categories') }}</span>
+                        <span>📂</span><span>{{ __('Categories') }}</span>
                     </a>
                     <a href="{{ route('suppliers.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('suppliers.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>🤝</span><span>{{ __('app.suppliers') }}</span>
+                        <span>🤝</span><span>{{ __('Suppliers') }}</span>
                     </a>
                     <a href="{{ route('products.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('products.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>📦</span><span>{{ __('app.products') }}</span>
+                        <span>📦</span><span>{{ __('Products') }}</span>
                     </a>
                 </div>
             </div>
 
             {{-- Purchasing Section --}}
             <div class="pt-4">
-                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.purchasing') }}</p>
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Purchasing') }}</p>
                 <div class="mt-2 space-y-1">
                     <a href="{{ route('purchase-orders.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('purchase-orders.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>📋</span><span>{{ __('app.purchase_orders') }}</span>
+                        <span>📋</span><span>{{ __('Purchase Orders') }}</span>
                     </a>
                     <a href="{{ route('stock-ins.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('stock-ins.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>📥</span><span>{{ __('app.stock_in') }}</span>
+                        <span>📥</span><span>{{ __('Stock In') }}</span>
                     </a>
                 </div>
             </div>
 
             {{-- Sales Section --}}
             <div class="pt-4">
-                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.sales') }}</p>
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Sales') }}</p>
                 <div class="mt-2 space-y-1">
                     <a href="{{ route('customers.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('customers.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>👥</span><span>{{ __('app.customers') }}</span>
+                        <span>👥</span><span>{{ __('Customers') }}</span>
                     </a>
                     <a href="{{ route('sales-orders.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('sales-orders.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>🛒</span><span>{{ __('app.sales_orders') }}</span>
+                        <span>🛒</span><span>{{ __('Sales Orders') }}</span>
                     </a>
                     <a href="{{ route('invoices.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('invoices.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>🧾</span><span>{{ __('app.invoices_payments') }}</span>
+                        <span>🧾</span><span>{{ __('Invoices & Payments') }}</span>
                     </a>
                     <a href="{{ route('stock-outs.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('stock-outs.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>📤</span><span>{{ __('app.stock_out') }}</span>
+                        <span>📤</span><span>{{ __('Stock Out') }}</span>
                     </a>
                 </div>
             </div>
 
             {{-- Warehouse Operations Section --}}
             <div class="pt-4">
-                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.warehouse') }}</p>
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Warehouse') }}</p>
                 <div class="mt-2 space-y-1">
                     <a href="{{ route('batches.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('batches.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>📦</span><span>Batch Inventory</span>
+                        <span>📦</span><span>{{ __('Batch Inventory') }}</span>
                     </a>
                     <a href="{{ route('transfers.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('transfers.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>🔄</span><span>{{ __('app.warehouse_transfers') }}</span>
+                        <span>🔄</span><span>{{ __('Warehouse Transfers') }}</span>
                     </a>
                     @if (auth()->user()->isAdmin() || auth()->user()->isManager())
                         <a href="{{ route('stock-opnames.index') }}" @click="sidebarOpen = false"
                            class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('stock-opnames.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                            <span>📋</span><span>{{ __('app.stock_opname') }}</span>
+                            <span>📋</span><span>{{ __('Stock Opname') }}</span>
                         </a>
                     @endif
                 </div>
@@ -124,12 +124,12 @@
 
             {{-- Operations Section --}}
             <div class="pt-4">
-                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Operations</p>
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Operations') }}</p>
                 <div class="mt-2 space-y-1">
                     @can('transaction.approve')
                         <a href="{{ route('approvals.index') }}" @click="sidebarOpen = false"
                            class="flex items-center justify-between gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('approvals.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                            <span class="flex items-center gap-3"><span>📋</span><span>Approval Center</span></span>
+                            <span class="flex items-center gap-3"><span>📋</span><span>{{ __('Approval Center') }}</span></span>
                             <span id="approval-badge" class="hidden px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold"></span>
                         </a>
                     @endcan
@@ -138,11 +138,11 @@
 
             {{-- Reports Section --}}
             <div class="pt-4">
-                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.reports') }}</p>
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Reports') }}</p>
                 <div class="mt-2 space-y-1">
                     <a href="{{ route('reports.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('reports.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                        <span>📊</span><span>{{ __('app.all_reports') }}</span>
+                        <span>📊</span><span>{{ __('All Reports') }}</span>
                     </a>
                 </div>
             </div>
@@ -150,32 +150,32 @@
             {{-- Administration (Permission-based) --}}
             @if (auth()->user()->hasPermissionTo('user.manage') || auth()->user()->hasPermissionTo('role.manage') || auth()->user()->isAdmin())
                 <div class="pt-4 pb-8">
-                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('app.administration') }}</p>
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Administration') }}</p>
                     <div class="mt-2 space-y-1">
                         @can('user.manage')
                             <a href="{{ route('users.index') }}" @click="sidebarOpen = false"
                                class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('users.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                                <span>👤</span><span>{{ __('app.user_management') }}</span>
+                                <span>👤</span><span>{{ __('User Management') }}</span>
                             </a>
                         @endcan
                         @can('role.manage')
                             <a href="{{ route('roles.index') }}" @click="sidebarOpen = false"
                                class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('roles.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                                <span>🔐</span><span>Role Management</span>
+                                <span>🔐</span><span>{{ __('Role Management') }}</span>
                             </a>
                         @endcan
                         @if (auth()->user()->hasPermissionTo('user.manage') || auth()->user()->isAdmin())
                             <a href="{{ route('company.settings') }}" @click="sidebarOpen = false"
                                class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('company.settings*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                                <span>🏢</span><span>Company Settings</span>
+                                <span>🏢</span><span>{{ __('Company Settings') }}</span>
                             </a>
                             <a href="{{ route('currencies.index') }}" @click="sidebarOpen = false"
                                class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('currencies.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                                <span>💱</span><span>Currency Settings</span>
+                                <span>💱</span><span>{{ __('Currency Settings') }}</span>
                             </a>
                             <a href="{{ route('settings.index') }}" @click="sidebarOpen = false"
                                class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('settings.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
-                                <span>⚙️</span><span>{{ __('app.settings') }}</span>
+                                <span>⚙️</span><span>{{ __('Settings') }}</span>
                             </a>
                         @endif
                     </div>
@@ -185,11 +185,11 @@
             {{-- Super-Admin Platform --}}
             @if (auth()->user()->is_super_admin)
                 <div class="pt-4 pb-8 border-t border-purple-100">
-                    <p class="px-4 text-xs font-semibold text-purple-500 uppercase tracking-wider">🔮 Platform Admin</p>
+                    <p class="px-4 text-xs font-semibold text-purple-500 uppercase tracking-wider">{{ __('Platform Admin') }}</p>
                     <div class="mt-2 space-y-1">
                         <a href="{{ route('platform.companies.index') }}" @click="sidebarOpen = false"
                            class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('platform.*') ? 'bg-purple-600 text-white' : 'hover:bg-purple-50 text-purple-700' }}">
-                            <span>🏭</span><span>All Companies</span>
+                            <span>🏭</span><span>{{ __('All Companies') }}</span>
                         </a>
                     </div>
                 </div>

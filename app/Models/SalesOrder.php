@@ -22,6 +22,7 @@ class SalesOrder extends Model
         'discount',
         'total',
         'notes',
+        'document_language',
         'stock_out_id',
         'created_by',
         'updated_by',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class LocaleController extends Controller
@@ -21,7 +22,17 @@ class LocaleController extends Controller
         // Store locale in session
         Session::put('locale', $locale);
 
-        // Set application locale
+        // If user is logged in, save preference to database
+        if (Auth::check()) {
+            // We use forceFill to bypass fillable protection if 'locale' isn't in fillable yet.
+            // Or we should add it to fillable. Let's use forceFill/save for safety or update if fillable.
+            // Best practice: add to fillable in User model too.
+            $user = Auth::user();
+            $user->locale = $locale;
+            $user->save();
+        }
+
+        // Set application locale (for immediately subsequent logic in this request, though redirect handles next)
         App::setLocale($locale);
 
         // Redirect back to previous page
