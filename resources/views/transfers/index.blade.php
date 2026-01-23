@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Transfer Antar Gudang')
+@section('title', __('app.inter_warehouse_transfer'))
 
 @section('content')
    <div class="max-w-7xl mx-auto">

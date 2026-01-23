@@ -1,10 +1,10 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Create Inter-Warehouse Transfer')
+@section('title', __('app.create_transfer'))
 
 @section('content')
    <div class="max-w-6xl mx-auto">
-      <h2 class="text-xl font-semibold mb-4">Create Inter-Warehouse Transfer</h2>
+      <h2 class="text-xl font-semibold mb-4">{{ __('app.create_transfer') }}</h2>
 
       @if ($errors->any())
          <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
@@ -21,10 +21,10 @@
 
          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-               <label class="block text-sm mb-1">From Warehouse <span class="text-red-500">*</span></label>
+               <label class="block text-sm mb-1">{{ __('app.from_warehouse') }} <span class="text-red-500">*</span></label>
                <select name="from_warehouse_id" id="fromWarehouse" class="w-full border rounded px-2 py-1" required
                   onchange="filterProducts()">
-                  <option value="">-- Select Source Warehouse --</option>
+                  <option value="">{{ __('app.select_source_warehouse') }}</option>
                   @foreach ($warehouses as $wh)
                      <option value="{{ $wh->id }}" {{ old('from_warehouse_id') == $wh->id ? 'selected' : '' }}>
                         {{ $wh->name }} ({{ $wh->code }})
@@ -33,9 +33,9 @@
                </select>
             </div>
             <div>
-               <label class="block text-sm mb-1">To Warehouse <span class="text-red-500">*</span></label>
+               <label class="block text-sm mb-1">{{ __('app.to_warehouse') }} <span class="text-red-500">*</span></label>
                <select name="to_warehouse_id" id="toWarehouse" class="w-full border rounded px-2 py-1" required>
-                  <option value="">-- Select Destination Warehouse --</option>
+                  <option value="">{{ __('app.select_destination_warehouse') }}</option>
                   @foreach ($warehouses as $wh)
                      <option value="{{ $wh->id }}" {{ old('to_warehouse_id') == $wh->id ? 'selected' : '' }}>
                         {{ $wh->name }} ({{ $wh->code }})
@@ -44,32 +44,31 @@
                </select>
             </div>
             <div>
-               <label class="block text-sm mb-1">Transfer Date <span class="text-red-500">*</span></label>
+               <label class="block text-sm mb-1">{{ __('app.date') }} <span class="text-red-500">*</span></label>
                <input type="date" name="transfer_date" value="{{ old('transfer_date', date('Y-m-d')) }}"
                   class="w-full border rounded px-2 py-1" required />
             </div>
          </div>
 
          <div class="mb-4">
-            <label class="block text-sm mb-1">Notes</label>
+            <label class="block text-sm mb-1">{{ __('app.notes') }}</label>
             <textarea name="notes" class="w-full border rounded px-2 py-1" rows="2">{{ old('notes') }}</textarea>
          </div>
 
          <div class="border-t pt-4">
             <div class="flex items-center justify-between mb-3">
-               <h3 class="font-semibold">Transfer Items <span class="text-red-500">*</span></h3>
-               <button type="button" onclick="addItemRow()" class="px-3 py-1 bg-success text-white rounded text-sm">+ Add
-                  Item</button>
+               <h3 class="font-semibold">{{ __('app.transfer_items') }} <span class="text-red-500">*</span></h3>
+               <button type="button" onclick="addItemRow()" class="px-3 py-1 bg-success text-white rounded text-sm">+ {{ __('app.add_item') }}</button>
             </div>
 
             <div class="overflow-x-auto">
                <table class="min-w-full" id="itemTable">
                   <thead class="bg-gray-50">
                      <tr>
-                        <th class="text-left p-3">Produk</th>
-                        <th class="text-left p-2 w-24">Available</th>
-                        <th class="text-right p-2 w-24">Qty</th>
-                        <th class="text-left p-2">Notes</th>
+                        <th class="text-left p-3">{{ __('app.product') }}</th>
+                        <th class="text-left p-2 w-24">{{ __('app.available_stock') }}</th>
+                        <th class="text-right p-2 w-24">{{ __('app.qty') }}</th>
+                        <th class="text-left p-2">{{ __('app.notes') }}</th>
                         <th class="w-16 p-2"></th>
                      </tr>
                   </thead>
@@ -81,8 +80,8 @@
          </div>
 
          <div class="flex gap-2 mt-6">
-            <button type="submit" class="px-4 py-2 bg-primary text-white rounded">Create Transfer</button>
-            <a href="{{ route('transfers.index') }}" class="px-4 py-2 border rounded">Batal</a>
+            <button type="submit" class="px-4 py-2 bg-primary text-white rounded">{{ __('app.create_transfer') }}</button>
+            <a href="{{ route('transfers.index') }}" class="px-4 py-2 border rounded">{{ __('app.cancel') }}</a>
          </div>
       </form>
    </div>
@@ -110,12 +109,12 @@
          const fromWarehouseId = document.getElementById('fromWarehouse').value;
 
          if (!fromWarehouseId) {
-            alert('Please select a source warehouse first');
+            alert('{{ __('app.select_source_warehouse') }}'); // Using simplified message
             return;
          }
 
          if (availableProducts.length === 0) {
-            alert('No products available in the selected warehouse');
+            alert('{{ __('app.no_products_available') }}');
             return;
          }
 
@@ -127,7 +126,7 @@
          row.innerHTML = `
             <td class="p-2">
                <select name="items[${rowIndex}][product_id]" class="w-full border rounded px-2 py-1" onchange="updateStock(this, ${rowIndex})" required>
-                  <option value="">-- Pilih Produk --</option>
+                  <option value="">{{ __('app.select_product') }}</option>
                   ${availableProducts.map(p => `<option value="${p.id}" data-stock="${p.stock}">${p.code} - ${p.name}</option>`).join('')}
                </select>
             </td>
@@ -167,7 +166,7 @@
          const qty = parseInt(qtyInput.value) || 0;
 
          if (qty > maxStock) {
-            alert(`Quantity cannot exceed available stock (${maxStock})`);
+            alert(`{{ __('app.qty_exceeds_stock') }} (${maxStock})`);
             qtyInput.value = maxStock;
          }
       }
@@ -187,13 +186,13 @@
 
          if (fromWarehouse === toWarehouse) {
             e.preventDefault();
-            alert('Source and destination warehouses must be different');
+            alert('{{ __('app.source_destination_same') }}');
             return false;
          }
 
          if (rows === 0) {
             e.preventDefault();
-            alert('Please add at least one item to transfer');
+            alert('{{ __('app.add_at_least_one_item') }}');
             return false;
          }
       });

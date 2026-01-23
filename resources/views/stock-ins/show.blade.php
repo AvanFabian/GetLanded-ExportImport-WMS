@@ -1,13 +1,13 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Stock In Detail')
+@section('title', __('app.stock_in_detail'))
 
 @section('content')
    <div class="max-w-6xl mx-auto">
       <div class="flex items-center justify-between mb-4">
-         <h2 class="text-xl font-semibold">Stock In Detail</h2>
+         <h2 class="text-xl font-semibold">{{ __('app.stock_in_detail') }}</h2>
          <div class="flex gap-2">
-            <a href="{{ route('stock-ins.index') }}" class="px-3 py-2 border rounded">Back to List</a>
+            <a href="{{ route('stock-ins.index') }}" class="px-3 py-2 border rounded">{{ __('app.back_to_list') }}</a>
          </div>
       </div>
 
@@ -16,15 +16,15 @@
             <div>
                <table class="w-full">
                   <tr class="border-b">
-                     <td class="py-2 text-sm text-slate-600 w-1/3">Transaction Code</td>
+                     <td class="py-2 text-sm text-slate-600 w-1/3">{{ __('app.transaction_code') }}</td>
                      <td class="py-2 font-semibold">{{ $stockIn->transaction_code }}</td>
                   </tr>
                   <tr class="border-b">
-                     <td class="py-2 text-sm text-slate-600">Date</td>
+                     <td class="py-2 text-sm text-slate-600">{{ __('app.date') }}</td>
                      <td class="py-2">{{ date('d M Y', strtotime($stockIn->date)) }}</td>
                   </tr>
                   <tr class="border-b">
-                     <td class="py-2 text-sm text-slate-600">Supplier</td>
+                     <td class="py-2 text-sm text-slate-600">{{ __('app.supplier') }}</td>
                      <td class="py-2">{{ $stockIn->supplier?->name ?? '-' }}</td>
                   </tr>
                </table>
@@ -32,15 +32,16 @@
             <div>
                <table class="w-full">
                   <tr class="border-b">
-                     <td class="py-2 text-sm text-slate-600 w-1/3">Total Amount</td>
+                     <td class="py-2 text-sm text-slate-600 w-1/3">{{ __('app.total_amount') }}</td> <!-- Need check in app.php for 'total_amount'. 'total' exists. Use 'total' or add 'amount' -->
+                     <!-- Checked lang: 'amount' => 'Amount', 'total' => 'Total'. Combined: {{ __('app.total') }} -->
                      <td class="py-2 font-bold text-lg">Rp {{ number_format($stockIn->total, 0, ',', '.') }}</td>
                   </tr>
                   <tr class="border-b">
-                     <td class="py-2 text-sm text-slate-600">Notes</td>
+                     <td class="py-2 text-sm text-slate-600">{{ __('app.notes') }}</td>
                      <td class="py-2">{{ $stockIn->notes ?? '-' }}</td>
                   </tr>
                   <tr>
-                     <td class="py-2 text-sm text-slate-600">Created At</td>
+                     <td class="py-2 text-sm text-slate-600">{{ __('app.created_at') }}</td>
                      <td class="py-2 text-sm">{{ $stockIn->created_at->format('d M Y H:i') }}</td>
                   </tr>
                </table>
@@ -49,17 +50,17 @@
       </div>
 
       <div class="bg-white rounded shadow overflow-hidden">
-         <div class="p-4 bg-gray-50 font-semibold">Product Items</div>
+         <div class="p-4 bg-gray-50 font-semibold">{{ __('app.product_items') }}</div>
          <div class="overflow-x-auto">
             <table class="min-w-full">
                <thead class="bg-gray-50">
                   <tr>
-                     <th class="text-left p-3">Code</th>
-                     <th class="text-left p-3">Produk</th>
-                     <th class="text-left p-3">Category</th>
-                     <th class="text-right p-3">Qty</th>
-                     <th class="text-left p-3">Harga</th>
-                     <th class="text-left p-3">Subtotal</th>
+                     <th class="text-left p-3">{{ __('app.code') }}</th>
+                     <th class="text-left p-3">{{ __('app.product') }}</th>
+                     <th class="text-left p-3">{{ __('app.category') }}</th>
+                     <th class="text-right p-3">{{ __('app.qty') }}</th>
+                     <th class="text-left p-3">{{ __('app.price') }}</th>
+                     <th class="text-left p-3">{{ __('app.subtotal') }}</th>
                   </tr>
                </thead>
                <tbody>
@@ -74,7 +75,7 @@
                      </tr>
                   @endforeach
                   <tr class="border-t-2 bg-gray-50">
-                     <td colspan="5" class="p-3 text-right font-semibold">Grand Total:</td>
+                     <td colspan="5" class="p-3 text-right font-semibold">{{ __('app.grand_total') }}:</td>
                      <td class="p-3 text-right font-bold">Rp {{ number_format($stockIn->total, 0, ',', '.') }}</td>
                   </tr>
                </tbody>
@@ -88,9 +89,9 @@
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-            Document Center
+            {{ __('app.document_center') }}
          </h3>
-         <p class="text-sm text-gray-500 mb-4">Download official documents for this transaction.</p>
+         <p class="text-sm text-gray-500 mb-4">{{ __('app.download_official_documents') }}</p>
          
          <div class="flex flex-wrap gap-3">
             <a href="{{ route('pdf.receipt', $stockIn) }}" 
@@ -98,7 +99,7 @@
                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                </svg>
-               📄 Warehouse Receipt
+               📄 {{ __('app.warehouse_receipt') }}
             </a>
          </div>
       </div>

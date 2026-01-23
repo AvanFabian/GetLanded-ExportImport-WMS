@@ -1,6 +1,6 @@
 ﻿@extends('layouts.app')
 
-@section('title', 'Buat Stok Keluar')
+@section('title', __('app.create_stock_out'))
 
 @section('content')
    <div class="max-w-6xl mx-auto">
