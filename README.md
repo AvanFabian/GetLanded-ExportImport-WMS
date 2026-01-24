@@ -1,328 +1,154 @@
-# 📦 Warehouse Inventory Management System
+<div align="center">
+  <a href="https://avandigital.id">
+    <img src="public/images/hero-warehouse.jpg" alt="AgroWMS Hero" width="100%" style="border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  </a>
 
-A modern, secure, and feature-rich warehouse inventory management system built with Laravel 12 and Tailwind CSS.
+  <h1 align="center" style="font-size: 3rem; margin-top: 1rem;">AgroWMS</h1>
 
-![Laravel](https://img.shields.io/badge/Laravel-12.x-red.svg)
-![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+  <p align="center" style="font-size: 1.2rem; color: #555;">
+    <b>Manajemen Gudang Tanpa Pusing.</b>
+    <br>
+    The Enterprise-Grade Warehouse Management System for Modern Business.
+  </p>
 
----
+  <p align="center">
+    <a href="#-features">Features</a> •
+    <a href="#-tech-stack">Tech Stack</a> •
+    <a href="#-getting-started">Getting Started</a> •
+    <a href="#-architecture">Architecture</a> •
+    <a href="#-contributing">Contributing</a>
+  </p>
 
-## ✨ Features
-
-### 📊 **Core Functionality**
-- **Product Management** - Categories, suppliers, stock tracking
-- **Stock Transactions** - Stock In, Stock Out, Stock Opname
-- **User Management** - Role-based access (Admin, Manager, Staff)
-- **Advanced Reports** - Stock reports, transactions, inventory value, stock cards
-- **PDF Export** - Professional PDF generation for all reports
-
-### 🔒 **Security Features**
-- DDoS protection with rate limiting
-- Security headers (XSS, Clickjacking, MIME-sniffing protection)
-- Suspicious request blocking
-- Activity & security logging
-- CSRF protection
-- Button spam prevention
-
-### 🎨 **User Experience**
-- Clean, responsive design
-- Real-time search & filtering
-- Empty state interfaces
-- Loading indicators
-- Professional error pages (403, 404, 419, 500, 503)
+  <p align="center">
+    <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20.svg?style=flat-square&logo=laravel" alt="Laravel 12">
+    <img src="https://img.shields.io/badge/PHP-8.2+-777BB4.svg?style=flat-square&logo=php" alt="PHP 8.2">
+    <img src="https://img.shields.io/badge/Multi--Tenant-Ready-064E3B.svg?style=flat-square" alt="Multi-Tenant">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License">
+  </p>
+</div>
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Why AgroWMS?
 
-### **Prerequisites**
-- PHP 8.2 or higher
-- Composer
-- Node.js & NPM
-- MySQL 5.7+ or MariaDB 10.3+
+Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replaces chaotic Excel sheets and manual tracking with a streamlined, intelligent system desigend for precision and speed.
 
-### **Installation**
-
-1. **Clone the repository**
-```bash
-git clone <your-repo-url>
-cd warehouse-inventory
-```
-
-2. **Install dependencies**
-```bash
-composer install
-npm install
-```
-
-3. **Configure environment**
-```bash
-cp .env.example .env
-php artisan key:generate
-```
-
-4. **Edit .env file** with your database credentials:
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=warehouse_inventory
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-5. **Run migrations**
-```bash
-php artisan migrate
-```
-
-6. **Seed default users** (optional)
-```bash
-php artisan db:seed --class=UserSeeder
-```
-
-7. **Build assets**
-```bash
-npm run build
-```
-
-8. **Start development server**
-```bash
-php artisan serve
-```
-
-9. **Visit** http://127.0.0.1:8000
+### 🌟 Unique Selling Propositions
+*   **🎯 Precision Inventory**: Real-time tracking down to the **Bin Location** level. Never lose an item again.
+*   **💰 True Profit Tracker**: Automated **FIFO/FEFO** costing ensures your financial reports reflect reality, not guesswork.
+*   **🌍 Global Traceability**: Complete audit trail from **Supplier -> Warehouse -> Customer**. Handling batch expiry and lot tracking effortlessly.
+*   **🔒 Enterprise Security**: Built with **Tenant Isolation** standards (UU PDP/GDPR ready) to keep your data sovereign and secure.
 
 ---
 
-## 👥 Default Users
+## ✨ Key Features
 
-| Email | Password | Role |
-|-------|----------|------|
-| admin@warehouse.test | password | Admin |
-| manager@warehouse.test | password | Manager |
-| staff@warehouse.test | password | Staff |
+### 🏢 Multi-Tenant Architecture
+*   **Data Isolation**: Strict row-level security using Global Scopes (`TenantScope`).
+*   **Role-Based Access Control (RBAC)**: Granular permissions for Admin, Manager, and Staff.
 
----
+### 📦 Smart Logistics
+*   **Inbound**: Purchase Orders, Quality Check, and Put-away strategies.
+*   **Outbound**: Sales Orders, Picking Lists (Wave/Batch), and Packing Slips.
+*   **Internal**: Stock Transfers, Adjustments, and Stock Opname (Blind Counts).
 
-## 📁 Project Structure
-
-```
-warehouse-inventory/
-├── app/
-│   ├── Http/Controllers/     # Application controllers
-│   ├── Models/               # Eloquent models
-│   ├── Middleware/           # Custom middleware
-│   └── Exceptions/           # Exception handling
-├── resources/
-│   ├── views/                # Blade templates
-│   ├── js/                   # JavaScript files
-│   └── css/                  # Stylesheets
-├── routes/
-│   └── web.php               # Web routes
-├── database/
-│   ├── migrations/           # Database migrations
-│   └── seeders/              # Database seeders
-└── public/                   # Public assets
-```
+### 📊 Intelligence
+*   **Dashboard**: Real-time metrics on Stock Value, Turnover, and Low Stock Alerts.
+*   **Reports**: Inventory Aging, Stock Movement Cards, and Profit Margins.
+*   **Docs**: PDF Generation for Invoices, Delivery Orders, and Barcodes.
 
 ---
 
-## 🛠️ Development
+## 🛠 Tech Stack
 
-### **Run development server**
-```bash
-php artisan serve
-npm run dev
-```
+**Backend**
+*   **Framework**: Laravel 12 (PHP 8.2+)
+*   **Database**: MySQL 8.0 / MariaDB 10.5
+*   **Caching**: Redis
+*   **Queue**: Database / Redis
 
-### **Watch for changes**
-```bash
-npm run dev
-```
-
-### **Run tests**
-```bash
-php artisan test
-```
-
-### **Clear cache**
-```bash
-php artisan cache:clear
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-```
+**Frontend**
+*   **Styling**: Tailwind CSS 3.0 (Emerald Theme)
+*   **Interactivity**: Alpine.js
+*   **Icons**: Heroicons
 
 ---
 
-## 🚢 Deployment
+## 🚀 Getting Started
 
-### **Quick Deployment**
-```bash
-# 1. Update .env for production
-APP_ENV=production
-APP_DEBUG=false
+### Prerequisites
+*   PHP >= 8.2
+*   Composer
+*   Node.js & NPM
+*   MySQL
 
-# 2. Run deployment script
-bash deploy.sh
-```
+### Installation
 
-### **Manual Deployment**
-```bash
-composer install --no-dev --optimize-autoloader
-php artisan migrate --force
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-npm run build
-```
+1.  **Clone the Repo**
+    ```bash
+    git clone https://github.com/StartAgro/AgroWMS.git
+    cd AgroWMS
+    ```
 
-📖 **Full deployment guide:** See [DEPLOYMENT.md](DEPLOYMENT.md)
+2.  **Install Dependencies**
+    ```bash
+    composer install
+    npm install
+    ```
 
----
+3.  **Environment Setup**
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+    *Edit `.env` with your database credentials.*
 
-## 📚 Documentation
+4.  **Database & Seeding**
+    ```bash
+    php artisan migrate --seed
+    ```
+    *Seeds default Super Admin and Demo Data.*
 
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete deployment guide with 200+ checklist items
-- **[SECURITY.md](SECURITY.md)** - Security features and best practices
-- **[LOGGING.md](LOGGING.md)** - Logging configuration and monitoring
-- **[QUICKSTART.md](QUICKSTART.md)** - Quick reference for common tasks
+5.  **Run Application**
+    ```bash
+    npm run build
+    php artisan serve
+    ```
+    Visit `http://localhost:8000`.
 
----
-
-## 🔐 Security
-
-This application includes:
-- ✅ Rate limiting & DDoS protection
-- ✅ CSRF & XSS protection
-- ✅ SQL injection prevention
-- ✅ Security headers
-- ✅ Activity logging
-- ✅ Role-based access control
-
-**Security issues?** Please email: security@yourdomain.com
-
----
-
-## 🎯 Key Features by Role
-
-### **Admin**
-- Full system access
-- User management
-- System settings
-- All reports & exports
-
-### **Manager**
-- Product management
-- Stock transactions
-- Reports viewing
-- Supplier management
-
-### **Staff**
-- View products
-- Create stock transactions
-- Basic reports
+### Default Credentials
+*   **Email**: `admin@agrowms.com`
+*   **Password**: `password`
 
 ---
 
-## 📊 Available Reports
+## 🏗 Architecture
 
-1. **Stock Report** - Current stock levels with filters
-2. **Transaction Report** - Stock In/Out history
-3. **Inventory Value** - Total inventory valuation by category
-4. **Stock Card** - Product movement history
+We follow **Domain-Driven Design (DDD)** principles wrapped in a Service-Oriented structure.
 
-All reports support **PDF export** with company branding.
+*   **Controllers**: Thin HTTP layer, delegating logic to Services.
+*   **Services**: Encapsulated business logic (e.g., `BatchService`, `StockMovementService`).
+*   **Models**: Rich domain entities with `TenantScope` for security.
 
----
-
-## 🐛 Troubleshooting
-
-### **Permission errors?**
-```bash
-chmod -R 775 storage bootstrap/cache
-chown -R www-data:www-data .
-```
-
-### **Assets not loading?**
-```bash
-npm run build
-php artisan storage:link
-```
-
-### **Database connection failed?**
-```bash
-# Check .env database credentials
-# Verify MySQL is running
-php artisan config:clear
-```
-
-### **500 Internal Server Error?**
-```bash
-# Enable debug mode temporarily
-APP_DEBUG=true
-# Check storage/logs/laravel.log
-tail -f storage/logs/laravel.log
-```
+📖 **[Read the Full Architecture Guide](ARCHITECTURE.md)**
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+We welcome contributions to make warehouse management even less of a headache!
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Please read our **[CONTRIBUTING.md](CONTRIBUTING.md)** for details on our code of conduct and the process for submitting pull requests.
 
 ---
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License.
-
----
-
-## 👨‍💻 Built With
-
-- **[Laravel 12](https://laravel.com)** - PHP Framework
-- **[Tailwind CSS](https://tailwindcss.com)** - CSS Framework
-- **[Alpine.js](https://alpinejs.dev)** - JavaScript Framework
-- **[DomPDF](https://github.com/dompdf/dompdf)** - PDF Generation
+This project is open-sourced software licensed under the **[MIT license](LICENSE)**.
 
 ---
 
-## 💼 Developed By
-
-**Avan Digital**
-- Website: [avandigital.id](https://avandigital.id)
-- Email: info@avandigital.id
-
----
-
-## 🙏 Acknowledgments
-
-- Laravel Community
-- Tailwind CSS Team
-- All contributors and testers
-
----
-
-## 📞 Support
-
-Need help? 
-
-- 📖 Check [DEPLOYMENT.md](DEPLOYMENT.md) for deployment issues
-- 🔒 Check [SECURITY.md](SECURITY.md) for security questions
-- 📝 Check [LOGGING.md](LOGGING.md) for logging setup
-- 🐛 Open an issue on GitHub
-
----
-
-**⭐ Star this repo if you find it helpful!**
-
-Made with ❤️ by avandigital.id
+<div align="center">
+  <p>Built with ❤️ by <b>Avan Digital</b></p>
+  <p><i>"Manajemen Gudang Tanpa Pusing"</i></p>
+</div>

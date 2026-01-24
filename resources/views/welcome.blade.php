@@ -171,61 +171,40 @@
                 
                 {{-- Hero Visual --}}
                 <div class="relative lg:pl-8">
-                    <div class="relative">
-                        {{-- Dashboard Preview Card --}}
-                        <div class="bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-6 transform rotate-1 hover:rotate-0 transition-transform duration-500">
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="w-3 h-3 rounded-full bg-red-400"></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                                <div class="w-3 h-3 rounded-full bg-green-400"></div>
-                            </div>
-                            <div class="space-y-3">
-                                <div class="h-8 bg-gradient-to-r from-emerald-100 to-emerald-50 rounded-lg"></div>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <div class="h-20 bg-blue-50 rounded-lg flex flex-col items-center justify-center">
-                                        <div class="text-2xl font-bold text-blue-600">847</div>
-                                        <div class="text-xs text-gray-500">{{ __('landing.dashboard_preview_sku') }}</div>
-                                    </div>
-                                    <div class="h-20 bg-emerald-50 rounded-lg flex flex-col items-center justify-center">
-                                        <div class="text-2xl font-bold text-emerald-600">12</div>
-                                        <div class="text-xs text-gray-500">{{ __('landing.dashboard_preview_warehouse') }}</div>
-                                    </div>
-                                    <div class="h-20 bg-purple-50 rounded-lg flex flex-col items-center justify-center">
-                                        <div class="text-2xl font-bold text-purple-600">99%</div>
-                                        <div class="text-xs text-gray-500">{{ __('landing.dashboard_preview_accuracy') }}</div>
-                                    </div>
-                                </div>
-                                <div class="h-24 bg-gray-50 rounded-lg"></div>
-                            </div>
-                        </div>
+                    <div class="relative group">
+                        {{-- Emerald Glow Effect --}}
+                        <div class="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                         
-                        {{-- Floating Card 1 --}}
-                        <div class="absolute -top-4 -left-4 bg-white rounded-xl shadow-lg p-4 glass-card">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        {{-- Main Image Container with Glass-morphism --}}
+                        <div class="relative rounded-2xl ring-1 ring-gray-900/5 shadow-2xl overflow-hidden glass-card">
+                            <img src="{{ asset('images/hero-warehouse.jpg') }}" 
+                                 alt="AgroWMS - Warehouse Management and Export-Import Analytics" 
+                                 class="w-full h-auto object-cover transform transition duration-500 hover:scale-105">
+                            
+                            {{-- Glass Overlay Gradient --}}
+                            <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-transparent pointer-events-none"></div>
+                        </div>
+
+                        {{-- Floating Status Badge --}}
+                        <div class="absolute -bottom-6 -right-6 animate-bounce-slow">
+                            <div class="bg-white/90 backdrop-blur-md rounded-xl p-4 shadow-xl border border-white/50 flex items-center gap-3">
+                                <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-semibold text-gray-900">{{ __('landing.card_stock_updated') }}</div>
-                                    <div class="text-xs text-gray-500">{{ __('landing.card_just_now') }}</div>
+                                    <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">System Status</div>
+                                    <div class="text-sm font-bold text-gray-900">99.9% Accuracy</div>
                                 </div>
                             </div>
                         </div>
                         
-                        {{-- Floating Card 2 --}}
-                        <div class="absolute -bottom-4 -right-4 bg-white rounded-xl shadow-lg p-4 glass-card">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-semibold text-gray-900">{{ __('landing.card_realtime') }}</div>
-                                    <div class="text-xs text-gray-500">{{ __('landing.card_multidevice') }}</div>
-                                </div>
+                        {{-- Floating Live Badge --}}
+                        <div class="absolute top-6 left-6">
+                            <div class="bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                Live Tracking
                             </div>
                         </div>
                     </div>

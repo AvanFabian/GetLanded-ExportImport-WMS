@@ -468,16 +468,34 @@ $decrypted = Crypt::decryptString($encrypted);
 
 ---
 
-## 🎯 Summary
+---
 
-Your application now has **production-grade security** including:
+## ⚖️ Compliance & Data Sovereignty
 
-1. **DDoS Protection** via rate limiting
-2. **Attack Prevention** via request validation
-3. **Security Headers** for browser protection
-4. **Comprehensive Logging** for audit trail
-5. **Custom Error Pages** for better UX
-6. **Session Security** with proper configuration
-7. **CSRF & XSS Protection** out of the box
+### **UU PDP (Indonesia Personal Data Protection)**
+AgroWMS is designed to comply with **UU No. 27 Tahun 2022**:
 
-**The application is now secure and ready for deployment!** 🚀
+1.  **Data Isolation**: 
+    - Every database query is scoped by `company_id`.
+    - Tenant data is logically isolated; User A cannot query User B's stock.
+    - Implementation: `app/Models/Scopes/TenantScope.php`.
+
+2.  **Right to Erasure (Soft vs Hard Delete)**:
+    - Default behavior is **Soft Delete** (`deleted_at`).
+    - "Trash" module allows authorized admins to restore or permanently delete records.
+    - Permanent deletion wipes data from the primary database (Encryption keys are rotated).
+
+3.  **Audit Trails**:
+    - All data modifications (Create, Update, Delete) are logged in `activity_log`.
+    - Logs include: **Who** (User ID), **When** (Timestamp), **What** (Old vs New values), and **Where** (IP Address).
+
+4.  **Encryption**:
+    - Passwords are hashed using **Bcrypt**.
+    - Session data is encrypted at rest (if `SESSION_ENCRYPT=true`).
+    - Communication is enforced over **HTTPS/TLS 1.2+**.
+
+### **GDPR Readiness**
+- **Data Portability**: Users can export all Master Data (Products, Customers) and Transactions via Excel/PDF.
+- **Consent**: Cookie consent logic is prepared in the frontend layer.
+- **Breach Notification**: Security architecture includes monitoring hooks for `security.log` to alert admins of suspicious spikes.
+
