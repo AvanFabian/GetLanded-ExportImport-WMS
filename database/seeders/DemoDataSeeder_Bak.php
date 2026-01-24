@@ -49,7 +49,6 @@ class DemoDataSeeder extends Seeder
 
         } catch (\Exception $e) {
             DB::rollBack();
-            dump('DUMPED ERROR: ' . $e->getMessage());
             $this->command->error('❌ Fatal Error: ' . $e->getMessage());
             $this->command->error('   Location: ' . basename($e->getFile()) . ':' . $e->getLine());
             throw $e;
@@ -61,11 +60,13 @@ class DemoDataSeeder extends Seeder
      */
     protected function insertWithCompany(string $table, array $data): int
     {
-        // FORCE REMOVE SLUG if it exists, to fix SQL errors on tables dropping slug
-        if (isset($data['slug'])) {
-            unset($data['slug']);
+        if ($table === 'categories') { 
+            if (array_key_exists('slug', $data)) {
+                 dd('CRITICAL: SLUG FOUND IN DATA', $data);
+            } else {
+                 dd('CLEAN: NO SLUG IN DATA', $data);
+            }
         }
-
         if (!Schema::hasColumn($table, 'company_id')) {
             unset($data['company_id']);
         }
@@ -80,9 +81,6 @@ class DemoDataSeeder extends Seeder
     
     protected function insertSafe(string $table, array $data): void
     {
-        if (isset($data['slug'])) {
-            unset($data['slug']);
-        }
         if (!Schema::hasColumn($table, 'company_id')) {
             unset($data['company_id']);
         }
@@ -232,6 +230,7 @@ class DemoDataSeeder extends Seeder
         }
 
         // 4. Products & Categories
+        $this->command->info('Debug: Before Categories Loop');
         $categories = [
             'Coffee' => ['Arabica Gayo', 'Robusta Lampung'],
             'Spices' => ['Black Pepper', 'Nutmeg', 'Cinnamon'],
@@ -242,6 +241,7 @@ class DemoDataSeeder extends Seeder
         foreach ($categories as $catName => $prods) {
             $catId = DB::table('categories')->where('name', $catName)->value('id');
             if (!$catId) {
+                //$this->command->info("Debug: Inserting Category $catName");
                 $catId = $this->insertWithCompany('categories', [
                     'company_id' => $this->companyId,
                     'name' => $catName,
@@ -363,7 +363,7 @@ class DemoDataSeeder extends Seeder
                 'manufacture_date' => $date->copy()->subDays(15)->format('Y-m-d'),
                 'expiry_date' => $date->copy()->addMonths(12)->format('Y-m-d'),
                 'cost_price' => $price,
-                'status' => 'active',
+                'status' => 'available',
                 'created_at' => $date,
                 'updated_at' => $date,
             ]);
@@ -502,7 +502,7 @@ class DemoDataSeeder extends Seeder
                 'manufacture_date' => now()->subMonths(11),
                 'expiry_date' => now()->addDays(10), // Expiring in 10 days
                 'cost_price' => 50000,
-                'status' => 'active',
+                'status' => 'available',
                 'created_at' => now()->subMonths(6),
                 'updated_at' => now(),
             ]);

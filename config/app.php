@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Warehouse Inventory Management'),
+    'name' => env('APP_NAME', 'AgroWMS'),
 
     /*
     |--------------------------------------------------------------------------

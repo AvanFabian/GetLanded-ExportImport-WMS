@@ -16,8 +16,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            PermissionSeeder::class,
             UserSeeder::class,
             WarehouseSeeder::class,
+            DemoDataSeeder::class, 
             // MasterDataSeeder::class, // Disabled - will be created manually during testing
         ]);
     }

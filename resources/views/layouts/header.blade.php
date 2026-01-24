@@ -11,10 +11,13 @@
                 </svg>
             </button>
             <a href="{{ url('/') }}" class="flex items-center gap-3">
-               <img src="{{ asset('storage/avandigital-logo-2.png') }}" alt="Avan Digital Logo"
-                  class="h-8 w-8 rounded-full">
-               <span class="text-lg font-semibold text-gray-800 hidden sm:inline">Warehouse Inventory</span>
-               <span class="text-lg font-semibold text-gray-800 sm:hidden">AgroWMS</span>
+               @if(isset($currentCompany) && $currentCompany->logo_url)
+                   <img src="{{ $currentCompany->logo_url }}" alt="{{ $currentCompany->name }}" class="h-8 w-auto">
+               @else
+                   <img src="{{ asset('storage/avandigital-logo-2.png') }}" alt="{{ config('app.name') }}" class="h-8 w-8 rounded-full">
+               @endif
+               <span class="text-lg font-semibold text-gray-800 hidden sm:inline">{{ $currentCompany->name ?? config('app.name') }}</span>
+               <span class="text-lg font-semibold text-gray-800 sm:hidden">{{ config('app.name') }}</span>
             </a>
          </div>
 
@@ -36,11 +39,11 @@
                </button>
                <div x-show="open" @click.away="open = false" x-transition
                   class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                  <a href="{{ route('locale.switch', 'en') }}"
+                  <a href="{{ route('lang.switch', 'en') }}"
                      class="block px-4 py-2 text-sm hover:bg-gray-100 {{ app()->getLocale() === 'en' ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                      🇬🇧 English
                   </a>
-                  <a href="{{ route('locale.switch', 'id') }}"
+                  <a href="{{ route('lang.switch', 'id') }}"
                      class="block px-4 py-2 text-sm hover:bg-gray-100 {{ app()->getLocale() === 'id' ? 'bg-blue-50 text-blue-600 font-semibold' : '' }}">
                      🇮🇩 Bahasa Indonesia
                   </a>

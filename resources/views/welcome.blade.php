@@ -428,8 +428,7 @@
                         </div>
                         <span class="text-xl font-bold text-white">{{ config('app.name', 'AgroWMS') }}</span>
                     </div>
-                    <p class="text-gray-400 mb-4 max-w-md">
-                        Sistem Manajemen Gudang modern untuk membantu bisnis Indonesia berkembang. Dikembangkan oleh avandigital.id.
+                        Sistem Manajemen Gudang modern untuk membantu bisnis Indonesia berkembang.
                     </p>
                 </div>
                 
@@ -453,7 +452,7 @@
             </div>
             
             <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <p class="text-sm">© {{ date('Y') }} {{ config('app.name', 'AgroWMS') }} by avandigital.id. All rights reserved.</p>
+                <p class="text-sm">© {{ date('Y') }} {{ config('app.name', 'AgroWMS') }}. All rights reserved.</p>
                 <div class="flex items-center gap-4 text-sm">
                     <a href="{{ route('terms') }}" class="hover:text-white transition">Terms</a>
                     <span>•</span>

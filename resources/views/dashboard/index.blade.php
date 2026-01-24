@@ -205,7 +205,7 @@
             <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
                 @forelse($recentActivity as $log)
                     <div class="px-6 py-3 flex items-start gap-3 hover:bg-gray-50">
-                        @switch($log->action)
+                        @switch($log->event)
                             @case('created')
                                 <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
                                     <span class="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -228,7 +228,7 @@
                         @endswitch
                         <div class="flex-1 min-w-0">
                             <p class="text-sm text-gray-900">
-                                <span class="font-medium capitalize">{{ $log->action }}</span>
+                                <span class="font-medium capitalize">{{ $log->event }}</span>
                                 <span class="text-gray-500">{{ class_basename($log->auditable_type) }}</span>
                                 @if($log->user)
                                     <span class="text-gray-500">by</span>
