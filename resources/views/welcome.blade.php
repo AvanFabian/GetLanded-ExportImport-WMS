@@ -50,26 +50,27 @@
                 
                 {{-- Desktop Nav --}}
                 <div class="hidden md:flex items-center gap-8">
-                    <a href="#features" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">Fitur</a>
-                    <a href="#benefits" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">Keuntungan</a>
-                    <a href="{{ route('terms') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">Terms</a>
-                    <a href="{{ route('privacy') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">Privacy</a>
+                    <a href="#features" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">{{ __('landing.nav_features') }}</a>
+                    <a href="#benefits" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">{{ __('landing.nav_benefits') }}</a>
+                    <a href="{{ route('terms') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">{{ __('landing.nav_terms') }}</a>
+                    <a href="{{ route('privacy') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition">{{ __('landing.nav_privacy') }}</a>
                 </div>
                 
                 {{-- Auth Buttons --}}
                 <div class="hidden md:flex items-center gap-3">
+                    <x-language-switcher />
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}" class="px-4 py-2 text-sm font-medium text-emerald-700 hover:text-emerald-800 transition">
-                                Dashboard
+                                {{ __('landing.nav_dashboard') }}
                             </a>
                         @else
                             <a href="{{ route('login') }}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition">
-                                Masuk
+                                {{ __('landing.nav_login') }}
                             </a>
                             @if (Route::has('register'))
                                 <a href="{{ route('register') }}" class="px-6 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition shadow-lg shadow-emerald-200">
-                                    Daftar Gratis
+                                    {{ __('landing.nav_register') }}
                                 </a>
                             @endif
                         @endauth
@@ -87,17 +88,19 @@
             {{-- Mobile Menu --}}
             <div x-show="mobileMenu" x-cloak class="md:hidden py-4 border-t border-gray-100">
                 <div class="flex flex-col gap-4">
-                    <a href="#features" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Fitur</a>
-                    <a href="#benefits" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Keuntungan</a>
-                    <a href="{{ route('terms') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Terms of Service</a>
-                    <a href="{{ route('privacy') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Privacy Policy</a>
+                    <a href="#features" class="text-gray-600 hover:text-gray-900 text-sm font-medium">{{ __('landing.nav_features') }}</a>
+                    <a href="#benefits" class="text-gray-600 hover:text-gray-900 text-sm font-medium">{{ __('landing.nav_benefits') }}</a>
+                    <a href="{{ route('terms') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium">{{ __('landing.nav_terms') }}</a>
+                    <a href="{{ route('privacy') }}" class="text-gray-600 hover:text-gray-900 text-sm font-medium">{{ __('landing.nav_privacy') }}</a>
                     <hr class="border-gray-100">
                     @guest
-                        <a href="{{ route('login') }}" class="text-gray-700 font-medium">Masuk</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2 bg-emerald-600 text-white text-center rounded-lg font-medium">Daftar Gratis</a>
+                        <a href="{{ route('login') }}" class="text-gray-700 font-medium">{{ __('landing.nav_login') }}</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 bg-emerald-600 text-white text-center rounded-lg font-medium">{{ __('landing.nav_register') }}</a>
                     @else
-                        <a href="{{ url('/dashboard') }}" class="text-emerald-700 font-medium">Dashboard</a>
+                        <a href="{{ url('/dashboard') }}" class="text-emerald-700 font-medium">{{ __('landing.nav_dashboard') }}</a>
                     @endguest
+                    <hr class="border-gray-100">
+                    <x-language-switcher :mobile="true" />
                 </div>
             </div>
         </div>
@@ -113,33 +116,32 @@
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
                         </svg>
-                        Sistem WMS Modern untuk UMKM
+                        {{ __('landing.hero_badge') }}
                     </div>
                     
                     {{-- Headline --}}
                     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-                        Manajemen Gudang<br>
-                        <span class="gradient-text">Tanpa Pusing</span>
+                        {{ __('landing.hero_headline_1') }}<br>
+                        <span class="gradient-text">{{ __('landing.hero_headline_2') }}</span>
                     </h1>
                     
                     {{-- Sub-headline --}}
                     <p class="text-xl text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0">
-                        Stop catat stok pakai Excel yang ribet dan rawan error. 
-                        <strong class="text-gray-900">AgroWMS</strong> bikin pengelolaan gudang jadi simpel, akurat, dan bisa diakses dari mana saja.
+                        {{ __('landing.hero_sub') }}
                     </p>
                     
                     {{-- CTA Buttons --}}
                     <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                         @if (Route::has('register'))
                             <a href="{{ route('register') }}" class="px-8 py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition shadow-xl shadow-emerald-200 text-lg flex items-center justify-center gap-2">
-                                Mulai Gratis Sekarang
+                                {{ __('landing.cta_start') }}
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                                 </svg>
                             </a>
                         @endif
                         <a href="#features" class="px-8 py-4 bg-white text-gray-900 font-semibold rounded-xl border-2 border-gray-200 hover:border-gray-300 transition text-lg">
-                            Lihat Fitur
+                            {{ __('landing.cta_features') }}
                         </a>
                     </div>
                     
@@ -149,19 +151,19 @@
                             <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
-                            Tanpa Kartu Kredit
+                            {{ __('landing.trust_no_cc') }}
                         </div>
                         <div class="flex items-center gap-2">
                             <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
-                            Setup 5 Menit
+                            {{ __('landing.trust_setup') }}
                         </div>
                         <div class="flex items-center gap-2">
                             <svg class="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                             </svg>
-                            Support Indonesia
+                            {{ __('landing.trust_support') }}
                         </div>
                     </div>
                 </div>
@@ -181,15 +183,15 @@
                                 <div class="grid grid-cols-3 gap-3">
                                     <div class="h-20 bg-blue-50 rounded-lg flex flex-col items-center justify-center">
                                         <div class="text-2xl font-bold text-blue-600">847</div>
-                                        <div class="text-xs text-gray-500">Total SKU</div>
+                                        <div class="text-xs text-gray-500">{{ __('landing.dashboard_preview_sku') }}</div>
                                     </div>
                                     <div class="h-20 bg-emerald-50 rounded-lg flex flex-col items-center justify-center">
                                         <div class="text-2xl font-bold text-emerald-600">12</div>
-                                        <div class="text-xs text-gray-500">Gudang</div>
+                                        <div class="text-xs text-gray-500">{{ __('landing.dashboard_preview_warehouse') }}</div>
                                     </div>
                                     <div class="h-20 bg-purple-50 rounded-lg flex flex-col items-center justify-center">
                                         <div class="text-2xl font-bold text-purple-600">99%</div>
-                                        <div class="text-xs text-gray-500">Akurasi</div>
+                                        <div class="text-xs text-gray-500">{{ __('landing.dashboard_preview_accuracy') }}</div>
                                     </div>
                                 </div>
                                 <div class="h-24 bg-gray-50 rounded-lg"></div>
@@ -205,8 +207,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-semibold text-gray-900">Stok Diperbarui</div>
-                                    <div class="text-xs text-gray-500">Baru saja</div>
+                                    <div class="text-sm font-semibold text-gray-900">{{ __('landing.card_stock_updated') }}</div>
+                                    <div class="text-xs text-gray-500">{{ __('landing.card_just_now') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -220,8 +222,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-semibold text-gray-900">Real-time Sync</div>
-                                    <div class="text-xs text-gray-500">Multi-device</div>
+                                    <div class="text-sm font-semibold text-gray-900">{{ __('landing.card_realtime') }}</div>
+                                    <div class="text-xs text-gray-500">{{ __('landing.card_multidevice') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -236,10 +238,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-12">
                 <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                    Masih Kelola Stok Secara Manual?
+                    {{ __('landing.pain_title') }}
                 </h2>
                 <p class="text-lg text-gray-600">
-                    Ribuan bisnis di Indonesia masih mengalami masalah yang sama setiap hari...
+                    {{ __('landing.pain_sub') }}
                 </p>
             </div>
             
@@ -251,8 +253,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Data Stok Tidak Akurat</h3>
-                    <p class="text-gray-600">Selisih stok fisik vs catatan bikin pusing. Customer komplain barang kosong padahal di sistem masih ada.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.pain_1_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.pain_1_desc') }}</p>
                 </div>
                 
                 {{-- Pain Point 2 --}}
@@ -262,8 +264,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Laporan Lama & Repot</h3>
-                    <p class="text-gray-600">Butuh waktu berjam-jam untuk bikin laporan stok. Kalau ada meeting dadakan, data selalu outdated.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.pain_2_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.pain_2_desc') }}</p>
                 </div>
                 
                 {{-- Pain Point 3 --}}
@@ -273,8 +275,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Barang Expired Menumpuk</h3>
-                    <p class="text-gray-600">Tanpa sistem tracking batch & expiry, barang kadaluarsa baru ketahuan saat sudah terlambat.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.pain_3_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.pain_3_desc') }}</p>
                 </div>
             </div>
         </div>
@@ -285,13 +287,13 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
                 <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-4">
-                    Fitur Lengkap
+                    {{ __('landing.features_badge') }}
                 </div>
                 <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                    Semua yang Anda Butuhkan dalam Satu Sistem
+                    {{ __('landing.features_title') }}
                 </h2>
                 <p class="text-lg text-gray-600">
-                    Dari tracking stok hingga laporan keuangan, semuanya terintegrasi dan mudah digunakan.
+                    {{ __('landing.features_sub') }}
                 </p>
             </div>
             
@@ -303,8 +305,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Real-time Inventory</h3>
-                    <p class="text-gray-600">Monitor stok secara real-time di semua gudang. Data selalu up-to-date, di manapun Anda berada.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.feature_1_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.feature_1_desc') }}</p>
                 </div>
                 
                 {{-- Feature 2 --}}
@@ -314,8 +316,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Multi-Warehouse</h3>
-                    <p class="text-gray-600">Kelola banyak gudang dalam satu dashboard. Support zone, rack, dan bin location.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.feature_2_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.feature_2_desc') }}</p>
                 </div>
                 
                 {{-- Feature 3 --}}
@@ -325,8 +327,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Batch & Expiry Tracking</h3>
-                    <p class="text-gray-600">Track nomor batch dan tanggal kadaluarsa. FIFO/FEFO otomatis untuk picking.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.feature_3_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.feature_3_desc') }}</p>
                 </div>
                 
                 {{-- Feature 4 --}}
@@ -336,8 +338,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Sales Order & Invoice</h3>
-                    <p class="text-gray-600">Proses pesanan hingga invoice dalam satu alur. Terintegrasi dengan stok gudang.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.feature_4_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.feature_4_desc') }}</p>
                 </div>
                 
                 {{-- Feature 5 --}}
@@ -347,8 +349,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Stock Transfer</h3>
-                    <p class="text-gray-600">Transfer stok antar gudang dengan tracking status transit dan approval workflow.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.feature_5_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.feature_5_desc') }}</p>
                 </div>
                 
                 {{-- Feature 6 --}}
@@ -358,8 +360,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Laporan & Analytics</h3>
-                    <p class="text-gray-600">Dashboard real-time, laporan inventory aging, profit margin, dan export ke Excel/PDF.</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">{{ __('landing.feature_6_title') }}</h3>
+                    <p class="text-gray-600">{{ __('landing.feature_6_desc') }}</p>
                 </div>
             </div>
         </div>
@@ -370,25 +372,25 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-3xl sm:text-4xl font-bold mb-4">
-                    Kenapa Bisnis Memilih AgroWMS?
+                    {{ __('landing.benefits_title') }}
                 </h2>
                 <p class="text-lg text-emerald-100 max-w-2xl mx-auto">
-                    Lebih dari sekadar software inventaris. AgroWMS membantu Anda mengambil keputusan berbasis data.
+                    {{ __('landing.benefits_sub') }}
                 </p>
             </div>
             
             <div class="grid md:grid-cols-3 gap-8">
                 <div class="text-center p-8">
                     <div class="text-5xl font-bold text-white mb-2">90%</div>
-                    <div class="text-emerald-100">Pengurangan waktu stock opname</div>
+                    <div class="text-emerald-100">{{ __('landing.benefit_1_label') }}</div>
                 </div>
                 <div class="text-center p-8">
                     <div class="text-5xl font-bold text-white mb-2">5x</div>
-                    <div class="text-emerald-100">Lebih cepat generate laporan</div>
+                    <div class="text-emerald-100">{{ __('landing.benefit_2_label') }}</div>
                 </div>
                 <div class="text-center p-8">
                     <div class="text-5xl font-bold text-white mb-2">99%</div>
-                    <div class="text-emerald-100">Akurasi data inventori</div>
+                    <div class="text-emerald-100">{{ __('landing.benefit_3_label') }}</div>
                 </div>
             </div>
         </div>
@@ -398,14 +400,14 @@
     <section class="py-20 bg-gray-50">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Siap Kelola Gudang Tanpa Pusing?
+                {{ __('landing.cta_footer_title') }}
             </h2>
             <p class="text-xl text-gray-600 mb-8">
-                Bergabung dengan ratusan bisnis yang sudah menggunakan AgroWMS. Gratis untuk memulai.
+                {{ __('landing.cta_footer_sub') }}
             </p>
             @if (Route::has('register'))
                 <a href="{{ route('register') }}" class="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition shadow-xl shadow-emerald-200 text-lg">
-                    Mulai Sekarang - Gratis
+                    {{ __('landing.cta_footer_btn') }}
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                     </svg>
@@ -428,25 +430,25 @@
                         </div>
                         <span class="text-xl font-bold text-white">{{ config('app.name', 'AgroWMS') }}</span>
                     </div>
-                        Sistem Manajemen Gudang modern untuk membantu bisnis Indonesia berkembang.
+                        {{ __('landing.footer_desc') }}
                     </p>
                 </div>
                 
                 {{-- Links --}}
                 <div>
-                    <h4 class="text-white font-semibold mb-4">Produk</h4>
+                    <h4 class="text-white font-semibold mb-4">{{ __('landing.footer_product') }}</h4>
                     <ul class="space-y-2">
-                        <li><a href="#features" class="hover:text-white transition">Fitur</a></li>
-                        <li><a href="#benefits" class="hover:text-white transition">Keuntungan</a></li>
+                        <li><a href="#features" class="hover:text-white transition">{{ __('landing.nav_features') }}</a></li>
+                        <li><a href="#benefits" class="hover:text-white transition">{{ __('landing.nav_benefits') }}</a></li>
                     </ul>
                 </div>
                 
                 {{-- Legal --}}
                 <div>
-                    <h4 class="text-white font-semibold mb-4">Legal</h4>
+                    <h4 class="text-white font-semibold mb-4">{{ __('landing.footer_legal') }}</h4>
                     <ul class="space-y-2">
-                        <li><a href="{{ route('terms') }}" class="hover:text-white transition">Terms of Service</a></li>
-                        <li><a href="{{ route('privacy') }}" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="{{ route('terms') }}" class="hover:text-white transition">{{ __('landing.nav_terms') }}</a></li>
+                        <li><a href="{{ route('privacy') }}" class="hover:text-white transition">{{ __('landing.nav_privacy') }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -454,9 +456,9 @@
             <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <p class="text-sm">© {{ date('Y') }} {{ config('app.name', 'AgroWMS') }}. All rights reserved.</p>
                 <div class="flex items-center gap-4 text-sm">
-                    <a href="{{ route('terms') }}" class="hover:text-white transition">Terms</a>
+                    <a href="{{ route('terms') }}" class="hover:text-white transition">{{ __('landing.nav_terms') }}</a>
                     <span>•</span>
-                    <a href="{{ route('privacy') }}" class="hover:text-white transition">Privacy</a>
+                    <a href="{{ route('privacy') }}" class="hover:text-white transition">{{ __('landing.nav_privacy') }}</a>
                 </div>
             </div>
         </div>

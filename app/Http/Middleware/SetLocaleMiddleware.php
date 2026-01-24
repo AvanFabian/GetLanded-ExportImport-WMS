@@ -18,23 +18,27 @@ class SetLocaleMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = config('app.locale'); // Default to config (usually 'id')
+        $locale = null;
 
-        // 1. Check Session
+        // 1. Check Session (Explicit User Choice)
         if (Session::has('locale')) {
             $locale = Session::get('locale');
         } 
-        // 2. Check User Preference (if authenticated and nothing in session yet?)
-        // Actually, we should probably sync session with user pref on login. 
-        // But here, if session is empty, we check user.
+        
+        // 2. Check User Preference (Authenticated Fallback)
         elseif (Auth::check() && Auth::user()->locale) {
              $locale = Auth::user()->locale;
              Session::put('locale', $locale);
         }
 
-        // Validate locale is supported
-        if (!in_array($locale, ['en', 'id'])) {
-            $locale = config('app.locale');
+        // 3. Check Browser Header (Guest / First Visit)
+        if (!$locale) {
+            $locale = $request->getPreferredLanguage(['en', 'id']);
+        }
+
+        // 4. Default Fallback
+        if (!$locale || !in_array($locale, ['en', 'id'])) {
+            $locale = config('app.locale', 'id');
         }
 
         App::setLocale($locale);
