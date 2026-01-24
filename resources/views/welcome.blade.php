@@ -3,9 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="AgroWMS - Sistem Manajemen Gudang modern untuk bisnis Anda. Kelola inventaris dengan mudah, tanpa pusing.">
-    
-    <title>{{ config('app.name', 'AgroWMS') }} - Manajemen Gudang Tanpa Pusing</title>
+    <x-meta-tags 
+        :title="__('landing.hero_headline_1') . ' ' . __('landing.hero_headline_2')"
+        :description="__('landing.hero_sub')"
+    />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

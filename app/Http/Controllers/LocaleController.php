@@ -22,6 +22,9 @@ class LocaleController extends Controller
         // Store locale in session
         Session::put('locale', $locale);
 
+        // Store locale in cookie (1 year)
+        \Illuminate\Support\Facades\Cookie::queue(\Illuminate\Support\Facades\Cookie::make('locale', $locale, 60 * 24 * 365));
+
         // If user is logged in, save preference to database
         if (Auth::check()) {
             // We use forceFill to bypass fillable protection if 'locale' isn't in fillable yet.
