@@ -1,20 +1,23 @@
-# Menggunakan image PHP 8.3 FPM Nginx yang sangat stabil untuk Laravel
+# Menggunakan image PHP 8.3 FPM Nginx yang stabil
 FROM serversideup/php:8.3-fpm-nginx
 
 # Atur direktori kerja
 WORKDIR /var/www/html
 
-# Switch ke root untuk pengaturan izin
+# Switch ke root untuk menginstal ekstensi sistem
 USER root
 
-# Copy semua file project
+# Instal ekstensi PHP GD (Dibutuhkan untuk Excel & QR Code)
+RUN install-php-extensions gd
+
+# Copy semua file project dengan kepemilikan user www-data
 COPY --chown=www-data:www-data . .
 
-# Install dependencies (Tanpa dev dependencies)
+# Instal dependencies Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Pindahkan kepemilikan kembali ke user www-data
+# Pindahkan kepemilikan kembali ke user www-data untuk keamanan
 USER www-data
 
-# Environment variable default (Akan ditimpa oleh Coolify)
+# Environment variable untuk menjalankan skrip otomatis
 ENV AUTORUN_ENABLED=true
