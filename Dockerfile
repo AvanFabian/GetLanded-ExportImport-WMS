@@ -1,20 +1,20 @@
-FROM richarvey/php-fpm-laravel:latest
+# Menggunakan image PHP 8.3 FPM Nginx yang sangat stabil untuk Laravel
+FROM serversideup/php:8.3-fpm-nginx
 
 # Atur direktori kerja
 WORKDIR /var/www/html
 
+# Switch ke root untuk pengaturan izin
+USER root
+
 # Copy semua file project
-COPY . .
+COPY --chown=www-data:www-data . .
 
-# Konfigurasi environment untuk produksi
-ENV APP_ENV=production
-ENV WEBROOT=/var/www/html/public
-ENV PHP_ERRORS_STDERR=1
-ENV RUN_SCRIPTS=1
-ENV REAL_IP_HEADER=1
-
-# Install dependencies (Optional jika sudah ada vendor)
+# Install dependencies (Tanpa dev dependencies)
 RUN composer install --no-dev --optimize-autoloader
 
-# Expose port 80
-EXPOSE 80
+# Pindahkan kepemilikan kembali ke user www-data
+USER www-data
+
+# Environment variable default (Akan ditimpa oleh Coolify)
+ENV AUTORUN_ENABLED=true
