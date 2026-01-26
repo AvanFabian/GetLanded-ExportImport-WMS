@@ -21,3 +21,6 @@ USER www-data
 
 # Environment variable untuk menjalankan skrip otomatis
 ENV AUTORUN_ENABLED=true
+
+# Tambahkan ini di bagian bawah Dockerfile kamu
+EXPOSE 8080
