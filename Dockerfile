@@ -4,23 +4,28 @@ FROM serversideup/php:8.3-fpm-nginx
 # Atur direktori kerja
 WORKDIR /var/www/html
 
-# Switch ke root untuk menginstal ekstensi sistem
+# Switch ke root untuk instalasi sistem
 USER root
 
-# Instal ekstensi PHP GD dan INTL (Dibutuhkan untuk Excel, QR Code, dan Formating Angka)
-RUN install-php-extensions gd intl
+# 1. Instal Node.js (untuk menjalankan Vite) dan ekstensi PHP
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && install-php-extensions gd intl
 
-# Copy semua file project dengan kepemilikan user www-data
+# 2. Copy file project
 COPY --chown=www-data:www-data . .
 
-# Instal dependencies Laravel
+# 3. Jalankan build untuk Frontend (Vite)
+RUN npm install && npm run build
+
+# 4. Jalankan build untuk Backend (Composer)
 RUN composer install --no-dev --optimize-autoloader
 
 # Pindahkan kepemilikan kembali ke user www-data
 USER www-data
 
-# Environment variable untuk menjalankan skrip otomatis
+# Environment variable untuk automasi
 ENV AUTORUN_ENABLED=true
 
-# Tambahkan ini di bagian bawah Dockerfile kamu
+# Expose port internal Nginx
 EXPOSE 8080
