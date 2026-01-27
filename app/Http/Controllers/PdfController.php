@@ -19,10 +19,11 @@ class PdfController extends Controller
 
     /**
      * Download Commercial Invoice PDF.
+     * Requires 'invoice.view' permission (finance role).
      */
     public function invoice(SalesOrder $salesOrder)
     {
-        $this->authorize('view', $salesOrder);
+        $this->authorize('viewInvoice', $salesOrder);
         
         $pdf = $this->pdfService->generateInvoice($salesOrder);
         
@@ -68,10 +69,11 @@ class PdfController extends Controller
 
     /**
      * Preview PDF in browser (optional).
+     * Requires 'invoice.view' permission (finance role).
      */
     public function previewInvoice(SalesOrder $salesOrder)
     {
-        $this->authorize('view', $salesOrder);
+        $this->authorize('viewInvoice', $salesOrder);
         
         $pdf = $this->pdfService->generateInvoice($salesOrder);
         

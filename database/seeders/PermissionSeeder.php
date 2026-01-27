@@ -35,6 +35,13 @@ class PermissionSeeder extends Seeder
             // Finance
             ['name' => 'finance.view', 'display_name' => 'View Financial Data', 'group' => 'finance'],
             
+            // Sales & Invoice (Segregation of Duties)
+            ['name' => 'sales.view', 'display_name' => 'View Sales Orders', 'group' => 'sales'],
+            ['name' => 'sales.create', 'display_name' => 'Create Sales Orders', 'group' => 'sales'],
+            ['name' => 'sales.update', 'display_name' => 'Update Sales Orders', 'group' => 'sales'],
+            ['name' => 'sales.delete', 'display_name' => 'Delete Sales Orders', 'group' => 'sales'],
+            ['name' => 'invoice.view', 'display_name' => 'View Invoices (Financial)', 'group' => 'finance'],
+            
             // Currency
             ['name' => 'currency.manage', 'display_name' => 'Manage Currency Settings', 'group' => 'currency'],
             
@@ -101,6 +108,10 @@ class PermissionSeeder extends Seeder
             'transaction.reject',
             'batch.manage',
             'finance.view',
+            'sales.view',
+            'sales.create',
+            'sales.update',
+            'invoice.view',
             'trade.metadata.manage',
             'warehouse.manage',
             'product.manage',
@@ -128,6 +139,7 @@ class PermissionSeeder extends Seeder
             'batch.manage',
             'document.upload',
             'report.view',
+            'sales.view',  // Can view SO for packing, but NOT invoice.view
         ]);
 
         // Viewer Role - Read-only
