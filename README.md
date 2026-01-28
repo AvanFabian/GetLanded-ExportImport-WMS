@@ -116,9 +116,20 @@ Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replac
     ```
     Visit `http://localhost:8000`.
 
-### Default Credentials
-*   **Email**: `admin@agrowms.com`
-*   **Password**: `password`
+### Default Demo Credentials
+
+Run the demo seeder to create test users:
+```bash
+php artisan db:seed --class=DemoUserSeeder
+```
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Owner (Admin)** | `owner@avandigital.id` | `demo1234` |
+| **Manager** | `manager@avandigital.id` | `demo1234` |
+| **Staff** | `staff@avandigital.id` | `demo1234` |
+
+> All demo users belong to the **AVANDIGITAL** tenant (Company ID: 1).
 
 ---
 

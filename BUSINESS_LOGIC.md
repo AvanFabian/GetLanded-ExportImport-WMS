@@ -293,14 +293,15 @@ erDiagram
 
 ## Quick Reference: Demo Credentials
 
+Run `php artisan db:seed --class=DemoUserSeeder` to create these users:
+
 | Role | Email | Password |
 |------|-------|----------|
-| Admin (Owner) | `demo@avandigital.id` | `demo1234` |
-| Admin | `admin@warehouse.test` | `password` |
-| Manager | `manager@warehouse.test` | `password` |
-| Staff | `staff@warehouse.test` | `password` |
+| Owner (Admin) | `owner@avandigital.id` | `demo1234` |
+| Manager | `manager@avandigital.id` | `demo1234` |
+| Staff | `staff@avandigital.id` | `demo1234` |
 
-All users belong to **AVANDIGITAL** company with ID from seeder.
+All users belong to **AVANDIGITAL** company (ID: 1).
 
 ---
 
