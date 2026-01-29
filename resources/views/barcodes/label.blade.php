@@ -27,7 +27,7 @@
                      </div>
                      <div>
                         <p class="text-sm text-gray-600">Gudang</p>
-                        <p class="font-semibold">{{ $product->warehouse->name ?? '-' }}</p>
+                        <p class="font-semibold">{{ $product->warehouses->first()?->name ?? '-' }}</p>
                      </div>
                      <div>
                         <p class="text-sm text-gray-600">Harga</p>
@@ -35,7 +35,7 @@
                      </div>
                      <div>
                         <p class="text-sm text-gray-600">Stok</p>
-                        <p class="font-semibold">{{ $product->stock }} {{ $product->unit }}</p>
+                        <p class="font-semibold">{{ $product->total_stock }} {{ $product->unit }}</p>
                      </div>
                   </div>
                </div>

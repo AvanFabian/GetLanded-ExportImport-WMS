@@ -38,7 +38,7 @@
                   <option value="">{{ __('app.select_warehouse') }}</option>
                   @foreach ($warehouses as $wh)
                      <option value="{{ $wh->id }}"
-                        {{ old('warehouse_id', $product->warehouse_id) == $wh->id ? 'selected' : '' }}>
+                        {{ old('warehouse_id', $product->warehouses->first()?->id) == $wh->id ? 'selected' : '' }}>
                         {{ $wh->name }} ({{ $wh->code }})
                      </option>
                   @endforeach
@@ -76,7 +76,7 @@
 
             <div>
                <label class="block text-sm mb-1">{{ __('app.rack_location') }}</label>
-               <input name="rack_location" value="{{ old('rack_location', $product->rack_location) }}"
+               <input name="rack_location" value="{{ old('rack_location', $product->warehouses->first()?->pivot?->rack_location) }}"
                   class="w-full border rounded px-2 py-1" />
                @error('rack_location')
                   <div class="text-red-600 text-sm">{{ $message }}</div>

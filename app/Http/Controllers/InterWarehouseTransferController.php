@@ -42,7 +42,7 @@ class InterWarehouseTransferController extends Controller
     public function create()
     {
         $warehouses = Warehouse::active()->orderBy('name')->get();
-        $products = Product::with('warehouse')->where('status', true)->orderBy('name')->get();
+        $products = Product::with('warehouses')->where('status', true)->orderBy('name')->get();
 
         return view('transfers.create', compact('warehouses', 'products'));
     }

@@ -127,13 +127,13 @@
                      <span class="label-text">Category:</span> {{ $product->category->name ?? '-' }}
                   </div>
                   <div class="info-row">
-                     <span class="label-text">Warehouse:</span> {{ $product->warehouse->name ?? '-' }}
+                     <span class="label-text">Warehouse:</span> {{ $product->warehouses->first()?->name ?? '-' }}
                   </div>
                   <div class="info-row">
                      <span class="label-text">Price:</span> Rp {{ number_format($product->selling_price, 0, ',', '.') }}
                   </div>
                   <div class="info-row">
-                     <span class="label-text">Stock:</span> {{ $product->stock }} {{ $product->unit }}
+                     <span class="label-text">Stock:</span> {{ $product->total_stock }} {{ $product->unit }}
                   </div>
                </div>
             </div>

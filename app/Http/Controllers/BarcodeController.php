@@ -29,7 +29,7 @@ class BarcodeController extends Controller
      */
     public function generateQrCode($productId)
     {
-        $product = Product::with(['category', 'warehouse'])->findOrFail($productId);
+        $product = Product::with(['category', 'warehouses'])->findOrFail($productId);
 
         // Product data in JSON format
         $data = json_encode([
@@ -37,7 +37,7 @@ class BarcodeController extends Controller
             'code' => $product->code,
             'name' => $product->name,
             'category' => $product->category->name ?? '',
-            'warehouse' => $product->warehouse->name ?? '',
+            'warehouse' => $product->warehouses->first()?->name ?? '',
             'price' => $product->selling_price,
         ]);
 
@@ -51,7 +51,7 @@ class BarcodeController extends Controller
      */
     public function showLabel($productId)
     {
-        $product = Product::with(['category', 'warehouse'])->findOrFail($productId);
+        $product = Product::with(['category', 'warehouses'])->findOrFail($productId);
 
         return view('barcodes.label', compact('product'));
     }
@@ -67,7 +67,7 @@ class BarcodeController extends Controller
             return redirect()->back()->with('error', 'Please select products to print labels');
         }
 
-        $products = Product::with(['category', 'warehouse'])
+        $products = Product::with(['category', 'warehouses'])
             ->whereIn('id', $productIds)
             ->get();
 
@@ -88,13 +88,16 @@ class BarcodeController extends Controller
             return response()->json(['error' => 'No barcode provided'], 400);
         }
 
-        $product = Product::with(['category', 'warehouse'])
+        $product = Product::with(['category', 'warehouses'])
             ->where('code', $code)
             ->first();
 
         if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
         }
+
+        // Get first warehouse for backward compatibility
+        $firstWarehouse = $product->warehouses->first();
 
         return response()->json([
             'success' => true,
@@ -103,13 +106,13 @@ class BarcodeController extends Controller
                 'code' => $product->code,
                 'name' => $product->name,
                 'category' => $product->category->name ?? '',
-                'warehouse_id' => $product->warehouse_id,
-                'warehouse' => $product->warehouse->name ?? '',
-                'stock' => $product->stock,
+                'warehouse_id' => $firstWarehouse?->id,
+                'warehouse' => $firstWarehouse?->name ?? '',
+                'stock' => $product->total_stock,
                 'unit' => $product->unit,
                 'purchase_price' => $product->purchase_price,
                 'selling_price' => $product->selling_price,
-                'rack_location' => $product->rack_location,
+                'rack_location' => $firstWarehouse?->pivot?->rack_location ?? '',
             ]
         ]);
     }

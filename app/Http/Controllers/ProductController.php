@@ -109,6 +109,7 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $product->load('warehouses');
         $categories = Category::where('status', true)->orderBy('name')->get();
         $warehouses = Warehouse::active()->orderBy('name')->get();
         return view('products.edit', compact('product', 'categories', 'warehouses'));

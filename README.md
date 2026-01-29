@@ -145,6 +145,18 @@ We follow **Domain-Driven Design (DDD)** principles wrapped in a Service-Oriente
 
 ---
 
+## 🚀 Deployment
+
+Ready to deploy? Our consolidated setup guide covers:
+- **Coolify** (one-click deployment)
+- **VPS** (manual setup with Nginx)
+- Environment configuration
+- SSL/HTTPS setup
+
+📖 **[Read the Complete Setup Guide](SETUP.md)**
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions to make warehouse management even less of a headache!
