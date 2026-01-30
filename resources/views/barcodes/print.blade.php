@@ -117,9 +117,11 @@
          <div class="flex-container">
             <div class="flex-left">
                <div class="barcode-section">
-                  <img
-                     src="data:image/png;base64,{{ base64_encode(new \Picqer\Barcode\BarcodeGeneratorPNG()->getBarcode($product->code, \Picqer\Barcode\BarcodeGeneratorPNG::TYPE_CODE_128)) }}"
-                     alt="Barcode">
+                  @php
+                      $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+                      $barcodeData = $generator->getBarcode($product->code, $generator::TYPE_CODE_128);
+                  @endphp
+                  <img src="data:image/png;base64,{{ base64_encode($barcodeData) }}" alt="Barcode">
                </div>
 
                <div class="product-info">
