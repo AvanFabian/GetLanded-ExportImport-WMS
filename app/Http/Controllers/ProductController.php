@@ -8,6 +8,8 @@ use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Exports\ProductsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -184,8 +186,7 @@ class ProductController extends Controller
 
     public function export(Request $request)
     {
-        // TODO: Implement Excel export using maatwebsite/excel
-        return back()->with('status', 'Export feature coming soon');
+        return Excel::download(new ProductsExport($request), 'products-' . date('Y-m-d') . '.xlsx');
     }
 
     public function getAll(Request $request)
