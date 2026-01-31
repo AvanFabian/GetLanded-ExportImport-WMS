@@ -57,6 +57,11 @@ Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replac
 *   **Reports**: Inventory Aging, Stock Movement Cards, and Profit Margins.
 *   **Docs**: PDF Generation for Invoices, Delivery Orders, and Barcodes.
 
+### 🔄 Smart Importer (New)
+*   **Auto-Map Intelligence**: Fuzzy matches column headers (e.g., "Cost Price" -> "Purchase Price").
+*   **Messy Data Cleaning**: Automatically fixes currency formats (`Rp 15.000` -> `15000`) and weight units.
+*   **Enterprise Performance**: Chunked transactions support 10,000+ row files without timeouts.
+
 ---
 
 ## 🛠 Tech Stack

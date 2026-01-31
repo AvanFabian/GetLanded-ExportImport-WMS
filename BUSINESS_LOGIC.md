@@ -11,7 +11,8 @@
 3. [Sales Order Workflow](#3-sales-order-workflow)
 4. [Invoice Generation](#4-invoice-generation)
 5. [Known Issues & Explanations](#5-known-issues--explanations)
-6. [Entity Relationships](#6-entity-relationships)
+6. [Import Logic (Smart Importer)](#6-import-logic-smart-importer)
+7. [Entity Relationships](#7-entity-relationships)
 
 ---
 
@@ -251,7 +252,35 @@ public function invoice(SalesOrder $salesOrder)
 
 ---
 
-## 6. Entity Relationships
+---
+
+## 6. Import Logic (Smart Importer)
+
+The Smart Importer (`ImportService.php`) handles large, messy CSV uploads with enterprise-grade stability.
+
+### A. Data Cleaning Strategy
+The system does not reject messy data; it cleans it.
+
+| Field | Input Example | Cleaned Output | Logic |
+|-------|--------------|----------------|-------|
+| **Currency** | `Rp. 18.000.000` | `18000000` | Detects `Rp`/`IDR` (Dot=Thousands). Defaults to US (Comma=Thousands). |
+| **Weight** | `10 lbs` | `4.53` (Stored as kg) | Detects `lbs`, `oz`, `kg` and converts mathematically. |
+| **Unit** | `Pieces`, `Buah` | `pcs` | Normalizes extensive list of synonyms to standard UoM. |
+
+### B. Intelligent Mapping
+Columns are mapped using a **Strict Fuzzy Match** approach:
+1. **Exact Match**: `name` matches `name`.
+2. **Strict Regex**: `Product Name` matches `name` (Valid).
+3. **Safety**: `Filename` does **NOT** match `name` (Invalid, prevented by regex word boundaries).
+
+### C. Performance & Safety
+*   **Chunked Transactions**: Commits every 100 rows. Prevents DB locks on large files.
+*   **Category Caching**: Loads categories into memory once. Eliminates N+1 queries.
+*   **Nullable Safety**: If a CSV row has no category, it is skipped (set to NULL) rather than crashing.
+
+---
+
+## 7. Entity Relationships
 
 ### Sales Flow
 
