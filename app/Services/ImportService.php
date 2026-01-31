@@ -59,6 +59,10 @@ class ImportService
                 throw new \Exception("Unknown import type: {$job->type}");
             }
 
+            // Batch Processing to prevent memory/lock issues
+            $batchSize = 100;
+            $batchCount = 0;
+
             DB::beginTransaction();
 
             foreach ($csv->getRecords() as $rowIndex => $record) {
@@ -66,6 +70,14 @@ class ImportService
                     $mappedData = $this->mapColumns($record, $job->column_mapping);
                     $this->$method($mappedData, $job->company_id);
                     $job->incrementProcessed();
+
+                    $batchCount++;
+                    if ($batchCount >= $batchSize) {
+                        DB::commit();
+                        DB::beginTransaction();
+                        $batchCount = 0;
+                    }
+
                 } catch (\Exception $e) {
                     $job->incrementFailed($e->getMessage(), $rowIndex + 2);
                 }
@@ -73,12 +85,11 @@ class ImportService
 
             DB::commit();
             $job->complete();
-
         } catch (\Exception $e) {
-            DB::rollBack();
+            DB::rollBack(); // Rollback currently open transaction
             $job->update([
-                'status' => ImportJob::STATUS_FAILED,
-                'error_log' => [['error' => $e->getMessage(), 'time' => now()->toISOString()]],
+                'status' => ImportJob::STATUS_FAILED, 
+                'error_log' => array_merge($job->error_log ?? [], [['error' => $e->getMessage(), 'time' => now()->toISOString()]]),
             ]);
         }
     }
@@ -99,8 +110,18 @@ class ImportService
         return $result;
     }
 
+    protected array $categoryCache = [];
+
     protected function importProducts(array $data, int $companyId): void
     {
+        // Preload cache if empty
+        if (empty($this->categoryCache)) {
+            $this->categoryCache = \App\Models\Category::where('company_id', $companyId)
+                ->pluck('id', 'name')
+                ->mapWithKeys(fn($id, $name) => [strtolower($name) => $id])
+                ->toArray();
+        }
+
         // Require Name
         if (empty($data['name'])) {
             throw new \Exception("Product Name is required");
@@ -117,15 +138,84 @@ class ImportService
             [
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
-                'unit' => $data['unit'] ?? 'pcs',
+                'unit' => $this->cleanUnit($data['unit'] ?? 'pcs'),
+                'category_id' => $this->resolveCategory($data['category'] ?? $data['category_id'] ?? null, $companyId),
                 // Exim Fields
                 'hs_code' => $data['hs_code'] ?? null,
-                'origin_country' => $data['origin_country'] ?? null,
-                'purchase_price' => $data['purchase_price'] ?? 0,
-                'selling_price' => $data['selling_price'] ?? 0,
-                'min_stock' => $data['min_stock'] ?? 0,
+                'origin_country' => strtoupper($data['origin_country'] ?? ''),
+                'purchase_price' => $this->cleanCurrency($data['purchase_price'] ?? 0),
+                'selling_price' => $this->cleanCurrency($data['selling_price'] ?? 0),
+                'min_stock' => $this->cleanWeight($data['min_stock'] ?? 0), // Assuming min_stock can track weight for now
             ]
         );
+    }
+
+    public function resolveCategory($value, $companyId)
+    {
+        if (empty($value)) return null;
+        if (is_numeric($value)) return $value;
+
+        $normalized = strtolower(trim($value));
+
+        // Check Cache
+        if (isset($this->categoryCache[$normalized])) {
+            return $this->categoryCache[$normalized];
+        }
+
+        // Create & Cache
+        $category = \App\Models\Category::firstOrCreate(
+            ['company_id' => $companyId, 'name' => trim($value)],
+            ['description' => 'Auto-created from Import']
+        );
+        
+        $this->categoryCache[$normalized] = $category->id;
+        return $category->id;
+    }
+
+    public function cleanUnit($value)
+    {
+        $v = strtolower(trim($value));
+        if (in_array($v, ['pcs', 'pieces', 'piece', 'buah', 'unit', 'units'])) return 'pcs';
+        if (in_array($v, ['kg', 'kgs', 'kilogram', 'kilograms'])) return 'kg';
+        if (in_array($v, ['m', 'meter', 'meters'])) return 'm';
+        return $value;
+    }
+
+    public function cleanWeight($value)
+    {
+        // Detect Unit
+        $lower = strtolower((string)$value);
+        $number = (float) preg_replace('/[^0-9.]/', '', $lower);
+        
+        if (str_contains($lower, 'lb') || str_contains($lower, 'pound')) {
+            return $number * 0.453592; // Convert lbs to kg
+        }
+        if (str_contains($lower, 'oz') || str_contains($lower, 'ounce')) {
+            return $number * 0.0283495; // Convert oz to kg
+        }
+        
+        return $number;
+    }
+
+    public function cleanCurrency($value)
+    {
+        if (is_numeric($value)) return (float)$value;
+        
+        $msg = strtoupper($value);
+        // IDR/Rp specific logic: Dots are thousands, Commas are decimals
+        if (str_contains($msg, 'RP') || str_contains($msg, 'IDR')) {
+            // Remove dots (thousands), replace comma with dot (decimal)
+            return (float) preg_replace('/[^0-9.-]/', '', str_replace(',', '.', str_replace('.', '', $value)));
+        }
+
+        // Default/USD logic: Commas are thousands, Dots are decimals
+        return (float) preg_replace('/[^0-9.-]/', '', str_replace(',', '', $value));
+    }
+
+    protected function cleanNumber($value)
+    {
+        // Deprecated in favor of specific cleaners, currently alias to weight for simple numbers
+        return $this->cleanWeight($value);
     }
 
     protected function importCustomers(array $data, int $companyId): void
@@ -220,7 +310,7 @@ class ImportService
         };
     }
 
-    protected function findBestMatch(array $aliases, array $headers): ?string
+    public function findBestMatch(array $aliases, array $headers): ?string
     {
         // Pre-process headers 
         $normalizedHeaders = array_map(fn($h) => strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '', $h))), $headers);
@@ -234,9 +324,11 @@ class ImportService
                 return $originalHeaders[$normalizedAlias];
             }
             
-            // 2. Contains Match (e.g., "Net Weight (kg)" matches "Weight")
+            // 2. Strict Word Boundary Match (Regex)
+            // Prevents "filename" matching "name". Only matches "Product Name", "Name (First)", etc.
             foreach ($originalHeaders as $normHeader => $original) {
-                if (str_contains($normHeader, $normalizedAlias)) {
+                // Check original header for word interaction
+                if (preg_match("/\b" . preg_quote($alias, '/') . "\b/i", $original)) {
                     return $original;
                 }
             }
