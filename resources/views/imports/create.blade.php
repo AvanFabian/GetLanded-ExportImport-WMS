@@ -12,6 +12,18 @@
     <div class="bg-white rounded-lg shadow-md p-6">
         <form action="{{ route('imports.upload') }}" method="POST" enctype="multipart/form-data">
             @csrf
+            
+            <!-- Quick Help -->
+            <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                <span class="text-2xl">💡</span>
+                <div>
+                    <h3 class="font-bold text-blue-900 text-sm">New to Importing?</h3>
+                    <p class="text-sm text-blue-700 mt-1">
+                        Our <strong>Smart Importer</strong> can automatically clean messy data like currency (Rp) and weights (lb). 
+                        <a href="{{ route('help.article', 'smart-importer-guide') }}" target="_blank" class="underline font-bold">Read the Guide &rarr;</a>
+                    </p>
+                </div>
+            </div>
 
             <div class="mb-6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Import Type</label>

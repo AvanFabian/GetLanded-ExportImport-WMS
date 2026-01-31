@@ -147,6 +147,17 @@
                 </div>
             </div>
 
+            {{-- Support Section --}}
+            <div class="pt-4">
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Support') }}</p>
+                <div class="mt-2 space-y-1">
+                    <a href="{{ route('help.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('help.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>❓</span><span>{{ __('Help Center') }}</span>
+                    </a>
+                </div>
+            </div>
+
             {{-- Administration (Permission-based) --}}
             @if (auth()->user()->hasPermissionTo('user.manage') || auth()->user()->hasPermissionTo('role.manage') || auth()->user()->isAdmin())
                 <div class="pt-4 pb-8">

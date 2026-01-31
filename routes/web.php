@@ -18,6 +18,13 @@ Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'inde
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+    // Knowledge Base & FAQ Routes
+    Route::prefix('help')->name('help.')->group(function () {
+        Route::get('/', [App\Http\Controllers\HelpController::class, 'index'])->name('index');
+        Route::get('/faq', [App\Http\Controllers\HelpController::class, 'faq'])->name('faq');
+        Route::get('/article/{slug}', [App\Http\Controllers\HelpController::class, 'article'])->name('article');
+    });
+
 Route::middleware(['auth', 'throttle:web'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
