@@ -15,6 +15,35 @@
         </div>
     </div>
 
+    {{-- Supply Chain Alerts (Free API) --}}
+    @if(!empty($holidayWarnings))
+        <div class="mb-6 bg-orange-50 border-l-4 border-orange-500 p-4 rounded-md shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-orange-800">Supply Chain Warning: Upcoming Supplier Holidays</h3>
+                    <div class="mt-2 text-sm text-orange-700">
+                        <ul class="list-disc pl-5 space-y-1">
+                            @foreach($holidayWarnings as $holiday)
+                                <li>
+                                    <strong>{{ \Carbon\Carbon::parse($holiday['date'])->format('d M') }}</strong>: 
+                                    {{ $holiday['localName'] ?? $holiday['name'] }} 
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                                        {{ $holiday['country'] == 'CN' ? 'China' : 'Indonesia' }}
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Summary Widgets --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {{-- Widget 1: Total Stock Value --}}
@@ -57,18 +86,19 @@
             </div>
         </div>
 
-        {{-- Widget 3: Monthly Fees --}}
-        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+        {{-- Widget 3: On Water Value (NEW) --}}
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-cyan-500">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-gray-600 text-sm font-medium">Monthly Fees</span>
-                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4z" clip-rule="evenodd"/>
+                <span class="text-gray-600 text-sm font-medium">On Water Value</span>
+                <div class="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-cyan-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
+                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
                     </svg>
                 </div>
             </div>
-            <p class="text-2xl font-bold text-gray-900">Rp {{ number_format($monthlyFees['total'] ?? 0, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ now()->format('F Y') }}</p>
+            <p class="text-2xl font-bold text-gray-900">Rp {{ number_format($onWaterValue ?? 0, 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-500 mt-1">In Transit</p>
         </div>
 
         {{-- Widget 4: Warehouse Fill Rate --}}
@@ -148,6 +178,111 @@
 
     {{-- Operational Lists --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        
+        {{-- Shipment Map (NEW) --}}
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 relative">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                 </svg>
+                 Live Shipment Tracker
+            </h3>
+            <div id="shipmentMap" class="h-64 rounded-lg bg-gray-100 z-0"></div>
+            
+            {{-- Leaflet CSS & JS --}}
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+            <style>.leaflet-container { z-index: 1; }</style>
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize Map
+                var map = L.map('shipmentMap').setView([-2.5489, 118.0149], 4); // Indonesia Center
+
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+
+                // Add Markers
+                const shipments = @json($mapData ?? []);
+                
+                if (shipments.length > 0) {
+                    var bounds = L.latLngBounds();
+                    
+                    shipments.forEach(function(s) {
+                         var marker = L.marker([s.lat, s.lng]).addTo(map)
+                            .bindPopup(`<b>${s.name}</b><br>Shipment: ${s.number}<br>ETA: ${s.eta}`);
+                         bounds.extend(marker.getLatLng());
+                    });
+                    
+                    map.fitBounds(bounds, {padding: [50, 50]});
+                } else {
+                     // Add simple dummy usage marker if empty
+                     L.marker([-6.2088, 106.8456]).addTo(map)
+                        .bindPopup("<b>Your Warehouse</b><br>Jakarta, Indonesia").openPopup();
+                }
+            });
+            </script>
+        </div>
+
+        {{-- Incoming Shipments (NEW) --}}
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg overflow-hidden">
+             <div class="px-6 py-4 bg-cyan-50 border-b border-cyan-100">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-cyan-800 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 16l-1 1-6-6-6 6-1-1 9-9 9 9z"/> <!-- Ship icon placeholder -->
+                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path>
+                        </svg>
+                        Incoming Shipments
+                    </h3>
+                    <a href="{{ route('inbound-shipments.index') }}" class="text-sm text-cyan-600 hover:text-cyan-800">View All →</a>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Shipment #</th>
+                            <th scope="col" class="px-6 py-3">Supplier</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                            <th scope="col" class="px-6 py-3">ETA</th>
+                            <th scope="col" class="px-6 py-3 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($incomingShipments ?? [] as $shipment)
+                            <tr class="bg-white border-b hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    {{ $shipment->shipment_number }}
+                                    <div class="text-xs text-gray-400">{{ $shipment->reference_number ?? '-' }}</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {{ $shipment->purchaseOrders->first()->supplier->name ?? 'Multiple' }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="bg-cyan-100 text-cyan-800 text-xs font-medium px-2.5 py-0.5 rounded capitalize">
+                                        {{ str_replace('_', ' ', $shipment->status) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {{ $shipment->estimated_arrival_date ? $shipment->estimated_arrival_date->format('d M Y') : 'TBD' }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{{ route('inbound-shipments.show', $shipment) }}" class="text-blue-600 hover:underline">Manage</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-400">No active shipments</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
         {{-- Expiring Soon --}}
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="px-6 py-4 bg-orange-50 border-b border-orange-100">

@@ -105,11 +105,71 @@ class DashboardController extends Controller
             'recentActivity',
             'usdRate'
         ));
-    }
+        // Widget 5: On Water Value (NEW)
+        $onWaterValue = Cache::remember('dashboard:on_water_value', $cacheMinutes * 60, function () {
+            return $this->getOnWaterValue();
+        });
 
-    /**
-     * Get monthly revenue vs net profit for last 6 months.
-     */
+        // List 3: Incoming Shipments (NEW)
+        $incomingShipments = \App\Models\InboundShipment::with('purchaseOrders.supplier')
+            ->where('status', '!=', 'received')
+            ->where('status', '!=', 'draft') // Only active shipments
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Map Data for OpenStreetMap
+        $mapData = $incomingShipments->map(function ($shipment) {
+            $supplier = $shipment->purchaseOrders->first()->supplier ?? null;
+            if ($supplier && $supplier->latitude && $supplier->longitude) {
+                return [
+                    'lat' => $supplier->latitude,
+                    'lng' => $supplier->longitude,
+                    'name' => $supplier->name,
+                    'number' => $shipment->shipment_number,
+                    'eta' => $shipment->estimated_arrival_date ? $shipment->estimated_arrival_date->format('d M Y') : 'TBD',
+                ];
+            }
+            return null;
+        })->filter()->values();
+
+        // Supply Chain Warnings (Holidays)
+        $holidayWarnings = $this->getHolidayWarnings();
+
+        return view('dashboard.index', compact(
+            'stockValue',
+            'activeAlerts',
+            'monthlyFees',
+            'fillRate',
+            'stockTrends',
+            'zoneDistribution',
+            'monthlyProfit',
+            'inventoryAging',
+            'topProducts',
+            'expiringSoon',
+            'recentActivity',
+            'usdRate',
+            'onWaterValue',
+            'incomingShipments',
+            'mapData',
+            'holidayWarnings'
+        ));
+    }
+    
+    // Helper to get Holiday Warnings (Cached in Service)
+    private function getHolidayWarnings()
+    {
+         return (new \App\Services\HolidayService())->getSupplyChainWarnings();
+    }
+    private function getOnWaterValue()
+    {
+         // Sum of POs inside Active Shipments
+         return \App\Models\PurchaseOrderDetail::whereHas('purchaseOrder', function($q){
+             $q->whereHas('inboundShipment', function($sq){
+                 $sq->where('status', '!=', 'received')->where('status', '!=', 'draft');
+             });
+         })->selectRaw('SUM(quantity_ordered * unit_price) as total')->value('total') ?? 0;
+    }
     private function getMonthlyProfitData(): array
     {
         $labels = [];

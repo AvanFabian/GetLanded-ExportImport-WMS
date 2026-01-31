@@ -11,7 +11,7 @@ class Supplier extends Model
 {
     use HasFactory, SoftDeletes, BelongsToTenant;
 
-    protected $fillable = ['name', 'address', 'phone', 'email', 'contact_person'];
+    protected $fillable = ['name', 'address', 'latitude', 'longitude', 'phone', 'email', 'contact_person'];
 
     public function stockIns()
     {
