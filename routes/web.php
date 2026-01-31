@@ -275,6 +275,7 @@ Route::get('/subscription/suspended', function () {
     return view('subscription.suspended');
 })->name('subscription.suspended')->middleware('auth');
 
+require __DIR__ . '/test_integrations.php';
 require __DIR__ . '/auth.php';
 
 // Fallback route for 404 errors

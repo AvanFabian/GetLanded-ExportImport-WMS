@@ -17,4 +17,23 @@ class Supplier extends Model
     {
         return $this->hasMany(StockIn::class);
     }
+
+    /**
+     * Boot method to handle auto-geocoding.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Supplier $supplier) {
+            // Only geocode if address changed or coords missing, and address exists
+            if (($supplier->isDirty('address') || empty($supplier->latitude)) && !empty($supplier->address)) {
+                $service = new \App\Services\GeocodingService();
+                $coords = $service->getCoordinates($supplier->address);
+
+                if ($coords) {
+                    $supplier->latitude = $coords['lat'];
+                    $supplier->longitude = $coords['lon'];
+                }
+            }
+        });
+    }
 }
