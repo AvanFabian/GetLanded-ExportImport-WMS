@@ -36,8 +36,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('stock_ins', function (Blueprint $table) {
-            $table->dropForeign(['warehouse_id']);
-            $table->dropColumn('warehouse_id');
+            // $table->dropForeign(['warehouse_id']);
+            // $table->dropColumn('warehouse_id');
         });
 
         Schema::table('stock_outs', function (Blueprint $table) {

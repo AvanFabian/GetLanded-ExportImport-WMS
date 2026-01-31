@@ -32,6 +32,7 @@ class Document extends Model
         'batch_id',
         'sales_order_id',
         'purchase_order_id',
+        'inbound_shipment_id',
         'document_type',
         'title',
         'file_name',
@@ -69,6 +70,11 @@ class Document extends Model
     public function purchaseOrder()
     {
         return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    public function inboundShipment()
+    {
+        return $this->belongsTo(InboundShipment::class);
     }
 
     public function uploader()

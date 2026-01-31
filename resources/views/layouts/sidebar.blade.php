@@ -71,6 +71,11 @@
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('purchase-orders.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
                         <span>📋</span><span>{{ __('Purchase Orders') }}</span>
                     </a>
+                    <!-- New Inbound Shipment Link -->
+                    <a href="{{ route('inbound-shipments.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('inbound-shipments.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>🚢</span><span>{{ __('Inbound Shipments') }}</span>
+                    </a>
                     <a href="{{ route('stock-ins.index') }}" @click="sidebarOpen = false"
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('stock-ins.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
                         <span>📥</span><span>{{ __('Stock In') }}</span>

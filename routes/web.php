@@ -74,9 +74,13 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
         Route::resource('stock-opnames', App\Http\Controllers\StockOpnameController::class)->except(['edit', 'update', 'show']);
     });
 
-    // Purchase Orders
+    // Purchasing Section
     Route::resource('purchase-orders', App\Http\Controllers\PurchaseOrderController::class);
-    Route::post('purchase-orders/{purchaseOrder}/submit', [App\Http\Controllers\PurchaseOrderController::class, 'submit'])->name('purchase-orders.submit');
+    Route::resource('inbound-shipments', App\Http\Controllers\InboundShipmentController::class); // New Module
+    Route::post('inbound-shipments/{inboundShipment}/expenses', [App\Http\Controllers\InboundShipmentController::class, 'storeExpense'])->name('inbound-shipments.expenses.store');
+    Route::post('inbound-shipments/{inboundShipment}/documents', [App\Http\Controllers\InboundShipmentController::class, 'storeDocument'])->name('inbound-shipments.documents.store');
+    Route::post('inbound-shipments/{inboundShipment}/receive', [App\Http\Controllers\InboundShipmentController::class, 'receive'])->name('inbound-shipments.receive');
+    Route::resource('stock-ins', App\Http\Controllers\StockInController::class)->except(['edit', 'update']);
     Route::post('purchase-orders/{purchaseOrder}/approve', [App\Http\Controllers\PurchaseOrderController::class, 'approve'])->name('purchase-orders.approve');
     Route::post('purchase-orders/{purchaseOrder}/reject', [App\Http\Controllers\PurchaseOrderController::class, 'reject'])->name('purchase-orders.reject');
     Route::get('purchase-orders/{purchaseOrder}/receive', [App\Http\Controllers\PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');

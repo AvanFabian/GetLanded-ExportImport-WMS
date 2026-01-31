@@ -14,6 +14,7 @@ class PurchaseOrder extends Model
 
     protected $fillable = [
         'po_number',
+        'inbound_shipment_id',
         'warehouse_id',
         'supplier_id',
         'order_date',
@@ -94,6 +95,11 @@ class PurchaseOrder extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function inboundShipment(): BelongsTo
+    {
+        return $this->belongsTo(InboundShipment::class);
     }
 
     public function details(): HasMany
