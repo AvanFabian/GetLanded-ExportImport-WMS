@@ -16,6 +16,7 @@ class ImportService
         'products' => 'importProducts',
         'customers' => 'importCustomers',
         'suppliers' => 'importSuppliers',
+        'stock' => 'importStock',
     ];
 
     /**
@@ -91,7 +92,7 @@ class ImportService
         
         foreach ($mapping as $targetField => $sourceColumn) {
             if ($sourceColumn && isset($record[$sourceColumn])) {
-                $result[$targetField] = $record[$sourceColumn];
+                $result[$targetField] = trim($record[$sourceColumn]);
             }
         }
 
@@ -100,29 +101,45 @@ class ImportService
 
     protected function importProducts(array $data, int $companyId): void
     {
+        // Require Name
+        if (empty($data['name'])) {
+            throw new \Exception("Product Name is required");
+        }
+
+        // Generate Code/SKU if missing
+        $code = $data['code'] ?? $data['sku'] ?? 'PRD-' . strtoupper(uniqid());
+
         Product::updateOrCreate(
             [
                 'company_id' => $companyId,
-                'sku' => $data['sku'] ?? null,
+                'code' => $code,
             ],
             [
-                'name' => $data['name'] ?? 'Unknown',
+                'name' => $data['name'],
                 'description' => $data['description'] ?? null,
                 'unit' => $data['unit'] ?? 'pcs',
-                'category_id' => $data['category_id'] ?? null,
+                // Exim Fields
+                'hs_code' => $data['hs_code'] ?? null,
+                'origin_country' => $data['origin_country'] ?? null,
+                'purchase_price' => $data['purchase_price'] ?? 0,
+                'selling_price' => $data['selling_price'] ?? 0,
+                'min_stock' => $data['min_stock'] ?? 0,
             ]
         );
     }
 
     protected function importCustomers(array $data, int $companyId): void
     {
+        // Require Email or Phone or Name to identify uniqueness
+        if (empty($data['name'])) throw new \Exception("Customer Name is required");
+
         Customer::updateOrCreate(
             [
                 'company_id' => $companyId,
                 'email' => $data['email'] ?? null,
             ],
             [
-                'name' => $data['name'] ?? 'Unknown',
+                'name' => $data['name'],
                 'phone' => $data['phone'] ?? null,
                 'address' => $data['address'] ?? null,
             ]
@@ -131,55 +148,97 @@ class ImportService
 
     protected function importSuppliers(array $data, int $companyId): void
     {
+        if (empty($data['name'])) throw new \Exception("Supplier Name is required");
+
         Supplier::updateOrCreate(
             [
                 'company_id' => $companyId,
                 'email' => $data['email'] ?? null,
             ],
             [
-                'name' => $data['name'] ?? 'Unknown',
+                'name' => $data['name'],
                 'phone' => $data['phone'] ?? null,
                 'address' => $data['address'] ?? null,
             ]
         );
     }
 
+    protected function importStock(array $data, int $companyId): void
+    {
+        // To be implemented: Batch import logic
+        // This requires finding the product and creating a StockIn transaction
+    }
+
     /**
-     * Get suggested mappings based on header names
+     * Get suggested mappings based on header names and smart aliases
      */
     public function suggestMappings(array $headers, string $type): array
     {
         $suggestions = [];
-        
-        $targetFields = match($type) {
-            'products' => ['sku', 'name', 'description', 'unit', 'category_id'],
-            'customers' => ['name', 'email', 'phone', 'address'],
-            'suppliers' => ['name', 'email', 'phone', 'address'],
-            default => [],
-        };
+        $aliases = $this->getAliases($type);
 
-        foreach ($targetFields as $field) {
-            $suggestions[$field] = $this->findBestMatch($field, $headers);
+        foreach ($aliases as $targetField => $possibleNames) {
+            $suggestions[$targetField] = $this->findBestMatch($possibleNames, $headers);
         }
 
         return $suggestions;
     }
 
-    protected function findBestMatch(string $field, array $headers): ?string
+    /**
+     * Define Industry-Standard Aliases for "Smart Matching"
+     */
+    public function getAliases(string $type): array
     {
-        $fieldLower = strtolower($field);
-        
-        foreach ($headers as $header) {
-            $headerLower = strtolower($header);
+        $common = [
+            'name' => ['name', 'product name', 'item name', 'description', 'customer name', 'supplier'],
+            'email' => ['email', 'mail', 'e-mail', 'contact email'],
+            'phone' => ['phone', 'mobile', 'tel', 'telp', 'whatsapp', 'wa', 'contact'],
+            'address' => ['address', 'addr', 'location', 'city', 'street'],
+        ];
+
+        $products = [
+            'code' => ['code', 'sku', 'product code', 'item code', 'part number', 'p/n', 'id'],
+            'unit' => ['unit', 'uom', 'measure', 'satuan'],
+            'purchase_price' => ['purchase price', 'cost', 'buy price', 'hpp', 'modal', 'cogs'],
+            'selling_price' => ['selling price', 'price', 'sell price', 'rp', 'harga', 'retail price'],
+            'min_stock' => ['min stock', 'minimum', 'safety stock', 'alert'],
+            // Exim Fields
+            'hs_code' => ['hs code', 'hscode', 'hs', 'commodity code', 'tariff code', 'pos tarif', 'harmonized'],
+            'origin_country' => ['origin', 'country', 'coo', 'made in', 'country of origin'],
+        ];
+
+        return match($type) {
+            'products' => array_merge($products, ['name' => $common['name']]),
+            'customers' => $common,
+            'suppliers' => $common,
+            'stock' => array_merge($products, [
+                'qty' => ['qty', 'quantity', 'stock', 'count', 'pcs', 'pieces', 'amount'],
+                'batch' => ['batch', 'lot', 'serial'],
+                'expiry' => ['expiry', 'exp', 'expiration', 'best before'],
+            ]),
+            default => [],
+        };
+    }
+
+    protected function findBestMatch(array $aliases, array $headers): ?string
+    {
+        // Pre-process headers 
+        $normalizedHeaders = array_map(fn($h) => strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '', $h))), $headers);
+        $originalHeaders = array_combine($normalizedHeaders, $headers);
+
+        foreach ($aliases as $alias) {
+            $normalizedAlias = strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '', $alias)));
             
-            // Exact match
-            if ($headerLower === $fieldLower) {
-                return $header;
+            // 1. Exact Match (Normalized)
+            if (isset($originalHeaders[$normalizedAlias])) {
+                return $originalHeaders[$normalizedAlias];
             }
             
-            // Partial match
-            if (str_contains($headerLower, $fieldLower) || str_contains($fieldLower, $headerLower)) {
-                return $header;
+            // 2. Contains Match (e.g., "Net Weight (kg)" matches "Weight")
+            foreach ($originalHeaders as $normHeader => $original) {
+                if (str_contains($normHeader, $normalizedAlias)) {
+                    return $original;
+                }
             }
         }
 

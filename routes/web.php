@@ -209,6 +209,7 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
         Route::get('imports', [App\Http\Controllers\ImportController::class, 'index'])->name('imports.index');
         Route::get('imports/create', [App\Http\Controllers\ImportController::class, 'create'])->name('imports.create');
         Route::post('imports/upload', [App\Http\Controllers\ImportController::class, 'upload'])->name('imports.upload');
+        Route::get('imports/{job}/mapping', [App\Http\Controllers\ImportController::class, 'mapping'])->name('imports.mapping');
         Route::post('imports/{job}/confirm-mapping', [App\Http\Controllers\ImportController::class, 'confirmMapping'])->name('imports.confirm-mapping');
         Route::get('imports/{job}', [App\Http\Controllers\ImportController::class, 'show'])->name('imports.show');
         Route::get('imports/{job}/progress', [App\Http\Controllers\ImportController::class, 'progress'])->name('imports.progress');

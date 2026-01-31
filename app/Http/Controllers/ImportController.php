@@ -6,7 +6,6 @@ use App\Models\ImportJob;
 use App\Services\ImportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 
 class ImportController extends Controller
 {
@@ -21,20 +20,18 @@ class ImportController extends Controller
             ->latest()
             ->paginate(20);
 
-        return Inertia::render('Import/Index', [
-            'jobs' => $jobs,
-        ]);
+        return view('imports.index', compact('jobs'));
     }
 
     public function create()
     {
-        return Inertia::render('Import/Create', [
-            'importTypes' => [
-                ImportJob::TYPE_PRODUCTS => 'Products',
-                ImportJob::TYPE_CUSTOMERS => 'Customers',
-                ImportJob::TYPE_SUPPLIERS => 'Suppliers',
-            ],
-        ]);
+        $importTypes = [
+            'products' => 'Products',
+            'customers' => 'Customers',
+            'suppliers' => 'Suppliers',
+        ];
+
+        return view('imports.create', compact('importTypes'));
     }
 
     public function upload(Request $request)
@@ -45,25 +42,52 @@ class ImportController extends Controller
         ]);
 
         $path = $request->file('file')->store('imports');
-        $parsed = $this->importService->parseFile($path);
+        
+        try {
+            $parsed = $this->importService->parseFile($path);
 
-        $job = ImportJob::create([
-            'company_id' => auth()->user()->company_id,
-            'type' => $validated['type'],
-            'file_path' => $path,
-            'status' => ImportJob::STATUS_MAPPING,
-            'total_rows' => $parsed['total_rows'],
-            'created_by' => auth()->id(),
-        ]);
+            $job = ImportJob::create([
+                'company_id' => auth()->user()->company_id,
+                'type' => $validated['type'],
+                'file_path' => $path,
+                'status' => ImportJob::STATUS_MAPPING,
+                'total_rows' => $parsed['total_rows'],
+                // Store headers/sample in metadata/options if needed, 
+                // but for now we'll re-parse in the mapping step or just rely on the file
+                'created_by' => auth()->id(),
+            ]);
 
-        $suggestions = $this->importService->suggestMappings($parsed['headers'], $validated['type']);
+            return redirect()->route('imports.mapping', $job);
 
-        return Inertia::render('Import/Mapping', [
-            'job' => $job,
-            'headers' => $parsed['headers'],
-            'sample' => $parsed['sample'],
-            'suggestions' => $suggestions,
-        ]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['file' => 'Error parsing file: ' . $e->getMessage()]);
+        }
+    }
+
+    public function mapping(ImportJob $job)
+    {
+        $this->authorize('update', $job);
+
+        if ($job->status !== ImportJob::STATUS_MAPPING) {
+            return redirect()->route('imports.show', $job);
+        }
+
+        try {
+            // content re-parse to get headers
+            $parsed = $this->importService->parseFile($job->file_path);
+            $suggestions = $this->importService->suggestMappings($parsed['headers'], $job->type);
+            $fields = array_keys($this->importService->getAliases($job->type));
+            
+            return view('imports.mapping', [
+                'job' => $job,
+                'headers' => $parsed['headers'],
+                'sample' => $parsed['sample'],
+                'suggestions' => $suggestions,
+                'fields' => $fields,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->route('imports.index')->with('error', 'File not found or invalid.');
+        }
     }
 
     public function confirmMapping(Request $request, ImportJob $job)
@@ -80,20 +104,19 @@ class ImportController extends Controller
 
         // Start processing in background
         dispatch(function () use ($job) {
-            $this->importService->process($job);
+            app(ImportService::class)->process($job);
         })->afterResponse();
 
         return redirect()->route('imports.show', $job)
-            ->with('success', 'Import started. You will be notified when complete.');
+            ->with('success', 'Import process started in background.');
     }
 
     public function show(ImportJob $job)
     {
         $this->authorize('view', $job);
+        $job->load('creator');
 
-        return Inertia::render('Import/Show', [
-            'job' => $job->load('creator'),
-        ]);
+        return view('imports.show', compact('job'));
     }
 
     public function progress(ImportJob $job)
@@ -101,20 +124,11 @@ class ImportController extends Controller
         $this->authorize('view', $job);
 
         return response()->json([
-            'status' => $job->status,
-            'progress' => $job->progress_percentage,
-            'processed' => $job->processed_rows,
-            'failed' => $job->failed_rows,
-            'total' => $job->total_rows,
-        ]);
-    }
-
-    public function errors(ImportJob $job)
-    {
-        $this->authorize('view', $job);
-
-        return response()->json([
-            'errors' => $job->error_log ?? [],
+             'status' => $job->status,
+             'progress' => ($job->total_rows > 0) ? round(($job->processed_rows / $job->total_rows) * 100) : 0,
+             'processed' => $job->processed_rows,
+             'failed' => $job->failed_rows,
+             'total' => $job->total_rows,
         ]);
     }
 }
