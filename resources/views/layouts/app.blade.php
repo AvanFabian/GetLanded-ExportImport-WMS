@@ -64,18 +64,35 @@
          <!-- Main Content -->
          <main class="flex-1 overflow-y-auto">
             <!-- Flash Messages -->
-            @if (session('success'))
-               <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative m-4"
-                  role="alert">
-                  <span class="block sm:inline">{{ session('success') }}</span>
-               </div>
-            @endif
+            <!-- Flash Messages (SweetAlert2) -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
 
-            @if (session('error'))
-               <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative m-4" role="alert">
-                  <span class="block sm:inline">{{ session('error') }}</span>
-               </div>
-            @endif
+                @if (session('success'))
+                    Toast.fire({
+                        icon: 'success',
+                        title: "{{ session('success') }}"
+                    });
+                @endif
+
+                @if (session('error'))
+                    Toast.fire({
+                        icon: 'error',
+                        title: "{{ session('error') }}"
+                    });
+                @endif
+            </script>
 
             @yield('content')
          </main>

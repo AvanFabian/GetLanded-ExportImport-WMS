@@ -160,34 +160,34 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
         Route::resource('roles', App\Http\Controllers\RoleController::class);
     });
 
-    // Phase M: Commercial Operations
+    // Phase M: Commercial Operations (ABANDONED/INCOMPLETE - Requires Inertia/Vue Rebuild)
     
     // Payments & AR
-    Route::resource('payments', App\Http\Controllers\PaymentController::class)->except(['edit', 'update', 'destroy']);
-    Route::post('payments/{payment}/allocate', [App\Http\Controllers\PaymentController::class, 'allocate'])->name('payments.allocate');
-    Route::get('payments/aging-dashboard', [App\Http\Controllers\PaymentController::class, 'agingDashboard'])->name('payments.aging');
+    // Route::resource('payments', App\Http\Controllers\PaymentController::class)->except(['edit', 'update', 'destroy']);
+    // Route::post('payments/{payment}/allocate', [App\Http\Controllers\PaymentController::class, 'allocate'])->name('payments.allocate');
+    // Route::get('payments/aging-dashboard', [App\Http\Controllers\PaymentController::class, 'agingDashboard'])->name('payments.aging');
 
     // Sales Returns
-    Route::resource('sales-returns', App\Http\Controllers\SalesReturnController::class)->except(['edit', 'update', 'destroy']);
-    Route::post('sales-returns/{salesReturn}/approve', [App\Http\Controllers\SalesReturnController::class, 'approve'])->name('sales-returns.approve');
-    Route::post('sales-returns/{salesReturn}/process', [App\Http\Controllers\SalesReturnController::class, 'process'])->name('sales-returns.process');
+    // Route::resource('sales-returns', App\Http\Controllers\SalesReturnController::class)->except(['edit', 'update', 'destroy']);
+    // Route::post('sales-returns/{salesReturn}/approve', [App\Http\Controllers\SalesReturnController::class, 'approve'])->name('sales-returns.approve');
+    // Route::post('sales-returns/{salesReturn}/process', [App\Http\Controllers\SalesReturnController::class, 'process'])->name('sales-returns.process');
 
     // Stock Transfers
-    Route::resource('stock-transfers', App\Http\Controllers\StockTransferController::class)->except(['edit', 'update', 'destroy']);
-    Route::post('stock-transfers/{stockTransfer}/dispatch', [App\Http\Controllers\StockTransferController::class, 'dispatch'])->name('stock-transfers.dispatch');
-    Route::post('stock-transfers/{stockTransfer}/receive', [App\Http\Controllers\StockTransferController::class, 'receive'])->name('stock-transfers.receive');
+    // Route::resource('stock-transfers', App\Http\Controllers\StockTransferController::class)->except(['edit', 'update', 'destroy']);
+    // Route::post('stock-transfers/{stockTransfer}/dispatch', [App\Http\Controllers\StockTransferController::class, 'dispatch'])->name('stock-transfers.dispatch');
+    // Route::post('stock-transfers/{stockTransfer}/receive', [App\Http\Controllers\StockTransferController::class, 'receive'])->name('stock-transfers.receive');
 
-    // Stock Takes (Blind Opname)
-    Route::resource('stock-takes', App\Http\Controllers\StockTakeController::class)->except(['edit', 'update', 'destroy']);
-    Route::post('stock-takes/{stockTake}/update-counts', [App\Http\Controllers\StockTakeController::class, 'updateCounts'])->name('stock-takes.update-counts');
-    Route::post('stock-takes/{stockTake}/complete', [App\Http\Controllers\StockTakeController::class, 'complete'])->name('stock-takes.complete');
-    Route::get('stock-takes/{stockTake}/variance-report', [App\Http\Controllers\StockTakeController::class, 'varianceReport'])->name('stock-takes.variance-report');
+    // Stock Takes (Blind Opname) (INERTIA - DEPRECATED)
+    // Route::resource('stock-takes', App\Http\Controllers\StockTakeController::class)->except(['edit', 'update', 'destroy']);
+    // Route::post('stock-takes/{stockTake}/update-counts', [App\Http\Controllers\StockTakeController::class, 'updateCounts'])->name('stock-takes.update-counts');
+    // Route::post('stock-takes/{stockTake}/complete', [App\Http\Controllers\StockTakeController::class, 'complete'])->name('stock-takes.complete');
+    // Route::get('stock-takes/{stockTake}/variance-report', [App\Http\Controllers\StockTakeController::class, 'varianceReport'])->name('stock-takes.variance-report');
 
     // Claims
-    Route::resource('claims', App\Http\Controllers\ClaimController::class)->except(['edit', 'update', 'destroy']);
-    Route::post('claims/{claim}/upload-evidence', [App\Http\Controllers\ClaimController::class, 'uploadEvidence'])->name('claims.upload-evidence');
-    Route::post('claims/{claim}/submit', [App\Http\Controllers\ClaimController::class, 'submit'])->name('claims.submit');
-    Route::post('claims/{claim}/settle', [App\Http\Controllers\ClaimController::class, 'settle'])->name('claims.settle');
+    // Route::resource('claims', App\Http\Controllers\ClaimController::class)->except(['edit', 'update', 'destroy']);
+    // Route::post('claims/{claim}/upload-evidence', [App\Http\Controllers\ClaimController::class, 'uploadEvidence'])->name('claims.upload-evidence');
+    // Route::post('claims/{claim}/submit', [App\Http\Controllers\ClaimController::class, 'submit'])->name('claims.submit');
+    // Route::post('claims/{claim}/settle', [App\Http\Controllers\ClaimController::class, 'settle'])->name('claims.settle');
 
     // Operations
     Route::get('sales-orders/{order}/picking-list', [App\Http\Controllers\OperationsController::class, 'pickingList'])->name('sales-orders.picking-list');
@@ -274,6 +274,11 @@ Route::prefix('admin/platform')->middleware(['auth', 'super-admin'])->name('plat
 Route::get('/subscription/suspended', function () {
     return view('subscription.suspended');
 })->name('subscription.suspended')->middleware('auth');
+
+// Scanner Verification Route
+Route::get('/scanner-test', function () {
+    return view('scanner-test');
+})->middleware(['auth', 'verified'])->name('scanner.test');
 
 require __DIR__ . '/test_integrations.php';
 require __DIR__ . '/auth.php';

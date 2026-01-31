@@ -188,6 +188,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Export for module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ScannerFocusTrap;
-}
+export default ScannerFocusTrap;
