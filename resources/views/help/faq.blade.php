@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Frequently Asked Questions')
+@section('title', 'GetLanded')
 
 @section('content')
 <div class="max-w-4xl mx-auto">
     <div class="text-center mb-10">
-        <h1 class="text-3xl font-bold text-gray-900">Frequently Asked Questions</h1>
-        <p class="text-gray-600 mt-2">Answers to the most common questions about using AgroWMS.</p>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">GetLanded</h1>
+        <p class="text-gray-500">Everything you need to know about GetLanded</p>
     </div>
 
     <div class="space-y-4">
@@ -19,7 +19,7 @@
                 <span x-show="open" class="text-gray-400">-</span>
             </button>
             <div x-show="open" class="mt-4 text-gray-600 border-t pt-4" style="display: none;">
-                <p><strong>Yes, absolutely.</strong> AgroWMS uses "Tenant Isolation" technology. Every database query automatically filters for your specific <code>Company ID</code>. It is physically impossible for another company to see your data unless they have your login credentials.</p>
+                <p><strong>Yes, absolutely.</strong> GetLanded uses "Tenant Isolation" technology. Every database query automatically filters for your specific <code>Company ID</code>. It is physically impossible for another company to see your data unless they have your login credentials.</p>
             </div>
         </div>
 

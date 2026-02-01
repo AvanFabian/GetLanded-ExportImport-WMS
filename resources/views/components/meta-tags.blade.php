@@ -7,7 +7,7 @@
 ])
 
 @php
-    $finalTitle = $title ? $title . ' - ' . config('app.name', 'AgroWMS') : config('app.name', 'AgroWMS') . ' - ' . __('landing.hero_badge');
+    $finalTitle = $title ? $title . ' - ' . config('app.name', 'GetLanded') : config('app.name', 'GetLanded') . ' - ' . __('landing.hero_badge');
     $finalDescription = $description ?? __('landing.hero_sub');
     $finalImage = $image ?? asset('images/og-image.jpg'); // Fallback image needed
     $finalUrl = $url ?? url()->current();
@@ -16,13 +16,14 @@
 {{-- Primary Meta Tags --}}
 <title>{{ $finalTitle }}</title>
 <meta name="title" content="{{ $finalTitle }}">
-<meta name="description" content="{{ $finalDescription }}">
+<meta name="description" content="{{ $description ?? 'GetLanded - Real-time smart logistics and warehouse management system.' }}">
+<meta name="author" content="Avan Digital">
 
 {{-- Open Graph / Facebook --}}
 <meta property="og:type" content="{{ $type }}">
 <meta property="og:url" content="{{ $finalUrl }}">
-<meta property="og:title" content="{{ $finalTitle }}">
-<meta property="og:description" content="{{ $finalDescription }}">
+<meta property="og:title" content="{{ $title ?? 'GetLanded' }}">
+<meta property="og:description" content="{{ $description ?? 'GetLanded - Real-time smart logistics and warehouse management system.' }}">
 <meta property="og:image" content="{{ $finalImage }}">
 
 {{-- Twitter --}}

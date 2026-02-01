@@ -1,6 +1,5 @@
-# 🚀 AgroWMS Setup Guide
-
-> **Complete installation guide for VPS and Coolify deployment.**
+# 🚀 GetLanded - Enterprise Deployment Guide
+This document covers everything needed to get **GetLanded** running on your infrastructure.
 
 ---
 
@@ -44,7 +43,7 @@ In Coolify's **Environment Variables** section, configure:
 
 ```env
 # App Configuration
-APP_NAME="AgroWMS"
+APP_NAME="GetLanded"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://your-domain.com
@@ -53,8 +52,8 @@ APP_URL=https://your-domain.com
 DB_CONNECTION=mysql
 DB_HOST=mysql                    # Coolify service name
 DB_PORT=3306
-DB_DATABASE=agrowms
-DB_USERNAME=agrowms
+DB_DATABASE=getlanded
+DB_USERNAME=getlanded
 DB_PASSWORD=your_secure_password
 
 # Security
@@ -131,9 +130,9 @@ sudo apt install -y mysql-server
 ```bash
 # Clone repository
 cd /var/www
-sudo git clone https://github.com/YourOrg/AgroWMS.git agrowms
-sudo chown -R $USER:www-data agrowms
-cd agrowms
+sudo git clone https://github.com/YourOrg/GetLanded.git getlanded
+sudo chown -R $USER:www-data getlanded
+cd getlanded
 
 # Install dependencies
 composer install --no-dev --optimize-autoloader
@@ -148,23 +147,23 @@ php artisan key:generate
 php artisan migrate --force
 php artisan storage:link
 php artisan db:seed --class=PermissionSeeder --force
-php artisan db:seed --class=DemoUserSeeder --force
+php artisan db:seed --class=UserSeeder --force
 
 # Set permissions
-sudo chown -R www-data:www-data /var/www/agrowms
-sudo chmod -R 755 /var/www/agrowms
+sudo chown -R www-data:www-data /var/www/getlanded
+sudo chmod -R 755 /var/www/getlanded
 sudo chmod -R 775 storage bootstrap/cache
 ```
 
 ### Step 3: Nginx Configuration
 
-Create `/etc/nginx/sites-available/agrowms`:
+Create `/etc/nginx/sites-available/getlanded`:
 
 ```nginx
 server {
     listen 80;
     server_name your-domain.com;
-    root /var/www/agrowms/public;
+    root /var/www/getlanded/public;
     index index.php;
 
     # Security headers
@@ -189,7 +188,7 @@ server {
 
 Enable and restart:
 ```bash
-sudo ln -s /etc/nginx/sites-available/agrowms /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/getlanded /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 

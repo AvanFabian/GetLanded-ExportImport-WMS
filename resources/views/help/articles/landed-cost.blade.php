@@ -7,16 +7,16 @@
     <!-- Breadcrumb -->
     <nav class="flex text-sm text-gray-500 mb-6">
         <a href="{{ route('help.index') }}" class="hover:text-blue-600">Help Center</a>
+        <a href="{{ route('help.index') }}" class="hover="text-blue-600">Help Center</a>
         <span class="mx-2">/</span>
         <span class="text-gray-900">Landed Cost Engine</span>
     </nav>
 
     <article class="prose max-w-none bg-white p-8 rounded-lg shadow-sm">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">The Profit Brain: Landed Cost Engine</h1>
-        
-        <p class="lead text-xl text-gray-600 mb-8">
-            Calculate your True Profit by tracking hidden costs like Freight, Duty, and Insurance.
-        </p>
+        <p class="text-gray-600 mb-6">
+                Understanding your true product cost is critical for profitability. **GetLanded** automates the calculation of Landed Cost by distributing import charges (Freight, Duty, Insurance) across your inventory items.
+            </p>
 
         <div class="bg-green-50, border-l-4 border-green-500 p-4 mb-8">
             <p class="font-bold text-green-800">The Problem</p>
@@ -24,7 +24,7 @@
         </div>
 
         <h3>How it Works</h3>
-        <p>AgroWMS automatically distributes your shipping bills across the items in the container, so your inventory value is accurate.</p>
+        <p>GetLanded automatically distributes your shipping bills across the items in the container, so your inventory value is accurate.</p>
 
         <h3>Step-by-Step Guide</h3>
         <ol>

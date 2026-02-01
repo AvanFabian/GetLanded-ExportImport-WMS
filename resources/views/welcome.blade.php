@@ -178,7 +178,7 @@
                         {{-- Main Image Container with Glass-morphism --}}
                         <div class="relative rounded-2xl ring-1 ring-gray-900/5 shadow-2xl overflow-hidden glass-card">
                             <img src="{{ asset('images/hero-warehouse.jpg') }}" 
-                                 alt="AgroWMS - Warehouse Management and Export-Import Analytics" 
+                                 alt="GetLanded - Warehouse Management and Export-Import Analytics" 
                                  class="w-full h-auto object-cover transform transition duration-500 hover:scale-105">
                             
                             {{-- Glass Overlay Gradient --}}
@@ -408,7 +408,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                             </svg>
                         </div>
-                        <span class="text-xl font-bold text-white">{{ config('app.name', 'AgroWMS') }}</span>
+                        <span class="text-xl font-bold text-white">{{ config('app.name', 'GetLanded') }}</span>
                     </div>
                         {{ __('landing.footer_desc') }}
                     </p>
@@ -434,7 +434,7 @@
             </div>
             
             <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                <p class="text-sm">© {{ date('Y') }} {{ config('app.name', 'AgroWMS') }}. All rights reserved.</p>
+                <p class="text-sm">© {{ date('Y') }} {{ config('app.name', 'GetLanded') }}. All rights reserved.</p>
                 <div class="flex items-center gap-4 text-sm">
                     <a href="{{ route('terms') }}" class="hover:text-white transition">{{ __('landing.nav_terms') }}</a>
                     <span>•</span>

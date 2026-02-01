@@ -1,15 +1,15 @@
 <div align="center">
   <a href="https://avandigital.id">
-    <img src="public/images/hero-warehouse.jpg" alt="AgroWMS Hero" width="100%" style="border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <img src="public/images/hero-warehouse.jpg" alt="GetLanded Hero" width="100%" style="border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
   </a>
 
-  <h1 align="center" style="font-size: 3rem; margin-top: 1rem;">AgroWMS</h1>
+  <h1 align="center" style="font-size: 3rem; margin-top: 1rem;">GetLanded</h1>
 
   <p align="center" style="font-size: 1.2rem; color: #555;">
     <b>Manajemen Gudang Tanpa Pusing.</b>
-    <br>
-    The Enterprise-Grade Warehouse Management System for Modern Business.
   </p>
+  # 📦 [GetLanded] - Enterprise Smart Logistics & WMS
+> The modern Warehouse Management System designed for efficiency, transparency, and high-volume operations.
 
   <p align="center">
     <a href="#-features">Features</a> •
@@ -29,9 +29,9 @@
 
 ---
 
-## 🚀 Why AgroWMS?
+## 🚀 Why GetLanded?
 
-Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replaces chaotic Excel sheets and manual tracking with a streamlined, intelligent system desigend for precision and speed.
+Managing a warehouse shouldn't be a headache. **GetLanded** ("Anti-Pusing") replaces chaotic Excel sheets and manual tracking with a streamlined, intelligent system desigend for precision and speed.
 
 ### 🌟 Unique Selling Propositions
 *   **🎯 Precision Inventory**: Real-time tracking down to the **Bin Location** level. Never lose an item again.
@@ -69,7 +69,7 @@ Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replac
 
 **Backend**
 *   **Framework**: Laravel 12 (PHP 8.2+)
-*   **Database**: MySQL 8.0 / MariaDB 10.5
+*   **Database**: MySQL 8.0
 *   **Caching**: Redis
 *   **Queue**: Database / Redis
 
@@ -80,7 +80,20 @@ Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replac
 
 ---
 
-## 🚀 Getting Started
+### 🛡️ Secure by Design
+GetLanded implements military-grade security layers:
+*   **Logical Isolation**: Your data is yours. Multi-tenancy is baked into every query.
+*   **Activity Logs**: Every stock move, every price change, every login is tracked.
+*   **Compliance Ready**: Built with **GDPR** and **UU PDP** (Indonesia) standards in mind.
+
+---
+
+### 🚀 Getting Started
+1. Follow the [SETUP.md](file:///f:/AvanD/PRIBADI/PEKERJAAN/FREELANCE/Avan%20Consultant/Website/warehouse-inventory/SETUP.md) guide.
+2. Run the [TESTING_GUIDE.md](file:///f:/AvanD/PRIBADI/PEKERJAAN/FREELANCE/Avan%20Consultant/Website/warehouse-inventory/TESTING_GUIDE.md) to verify your installation.
+
+---
+© 2026 Avan Digital. [GetLanded] is a registered trademark.
 
 ### Prerequisites
 *   PHP >= 8.2
@@ -92,14 +105,13 @@ Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replac
 
 1.  **Clone the Repo**
     ```bash
-    git clone https://github.com/StartAgro/AgroWMS.git
-    cd AgroWMS
+    git clone https://github.com/StartAgro/GetLanded.git
+    cd GetLanded
     ```
 
 2.  **Install Dependencies**
     ```bash
     composer install
-    npm install
     ```
 
 3.  **Environment Setup**
@@ -124,9 +136,9 @@ Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replac
 
 ### Default Demo Credentials
 
-Run the demo seeder to create test users:
+Run the seeder to create test users:
 ```bash
-php artisan db:seed --class=DemoUserSeeder
+php artisan db:seed --class=UserSeeder
 ```
 
 | Role | Email | Password |

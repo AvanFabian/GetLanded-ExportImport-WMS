@@ -1,6 +1,5 @@
-# AgroWMS Business Logic Documentation
-
-> **Purpose**: This document explains the core business logic, workflows, and authorization rules for AgroWMS. It serves as a reference for developers and stakeholders.
+# 🧠 GetLanded - Core Business Logic
+This document explains the internal mechanics and workflows of **GetLanded** and authorization rules. It serves as a reference for developers and stakeholders.
 
 ---
 
@@ -18,7 +17,7 @@
 
 ## 1. Multi-Tenancy & Data Isolation
 
-AgroWMS is a **multi-tenant SaaS application**. Each tenant (company) has completely isolated data.
+GetLanded is a **multi-tenant SaaS application**. Each tenant (company) has completely isolated data.
 
 ### How It Works
 
@@ -48,7 +47,7 @@ User → company_id → TenantScope → Filtered Data
 
 ## 2. Authorization & Policies
 
-AgroWMS uses Laravel's **Policy-based authorization** combined with **Spatie Permission** for role-based access control.
+GetLanded uses Laravel's **Policy-based authorization** combined with **Spatie Permission** for role-based access control.
 
 ### Two-Layer Authorization
 
@@ -323,7 +322,7 @@ erDiagram
 
 ## Quick Reference: Demo Credentials
 
-Run `php artisan db:seed --class=DemoUserSeeder` to create these users:
+Run `php artisan db:seed --class=UserSeeder` to create these users:
 
 | Role | Email | Password |
 |------|-------|----------|
@@ -349,4 +348,4 @@ All users belong to **AVANDIGITAL** company (ID: 1).
 
 ---
 
-*Last Updated: 2026-01-27*
+*Last Updated: 2026-02-01*

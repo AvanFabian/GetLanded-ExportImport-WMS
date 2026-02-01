@@ -1,8 +1,7 @@
 # Security Implementation Guide
 
-## 🔒 Overview
-
-This application implements multiple layers of security protection including:
+## 🛡️ GetLanded Security Implementation
+This document details the multi-layered security architecture protecting **GetLanded** data.
 - DDoS Protection & Rate Limiting
 - Security Headers
 - Request Validation & Blocking
@@ -477,7 +476,7 @@ $decrypted = Crypt::decryptString($encrypted);
 ## ⚖️ Compliance & Data Sovereignty
 
 ### **UU PDP (Indonesia Personal Data Protection)**
-AgroWMS is designed to comply with **UU No. 27 Tahun 2022**:
+GetLanded is designed to comply with **UU No. 27 Tahun 2022**:
 
 1.  **Data Isolation**: 
     - Every database query is scoped by `company_id`.

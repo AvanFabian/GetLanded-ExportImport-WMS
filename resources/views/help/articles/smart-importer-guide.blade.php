@@ -22,10 +22,9 @@
 
     <article class="prose prose-blue max-w-none bg-white p-8 rounded-lg shadow-sm">
         <h1 class="text-4xl font-bold text-gray-900 mb-6">Using the Smart Importer</h1>
-        
-        <p class="lead text-xl text-gray-600 mb-8">
-            The Smart Importer allows you to bring messy data from Excel/CSV directly into AgroWMS without manual cleanup. It automatically fixes currency formats, weight units, and typos.
-        </p>
+                <p class="text-gray-600 mb-6">
+                The **GetLanded Smart Importer** is an enterprise-grade engine designed to handle massive datasets with ease. Whether you're migrating from legacy systems or onboarding new clients, our importer cleans, validates, and optimizes your data in real-time.
+            </p>
 
         <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8">
             <p class="text-blue-700 font-bold">🚀 Key Capability</p>

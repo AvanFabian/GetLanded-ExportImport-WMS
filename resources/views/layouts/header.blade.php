@@ -14,10 +14,10 @@
                @if(isset($currentCompany) && $currentCompany->logo_url)
                    <img src="{{ $currentCompany->logo_url }}" alt="{{ $currentCompany->name }}" class="h-8 w-auto">
                @else
-                   <img src="{{ asset('storage/agrowms-logo.png') }}" alt="{{ config('app.name') }}" class="h-8 w-8 rounded-full">
+                   <img src="{{ asset('storage/getlanded-logo.png') }}" alt="{{ config('app.name') }}" class="h-8 w-8 rounded-full">
                @endif
+                <span class="text-xl font-bold text-emerald-600 tracking-tight">GetLanded</span>
                <span class="text-lg font-semibold text-gray-800 hidden sm:inline">{{ $currentCompany->name ?? config('app.name') }}</span>
-               <span class="text-lg font-semibold text-gray-800 sm:hidden">{{ config('app.name') }}</span>
             </a>
          </div>
 

@@ -3,7 +3,7 @@
 <head>
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1">
-   <title>Privacy Policy - {{ config('app.name', 'AgroWMS') }}</title>
+   <title>Privacy Policy - {{ config('app.name', 'GetLanded') }}</title>
    <link rel="preconnect" href="https://fonts.bunny.net">
    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
    @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,7 +19,7 @@
                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                   </svg>
                </div>
-               <span class="font-bold text-gray-900">{{ config('app.name', 'AgroWMS') }}</span>
+               <span class="font-bold text-gray-900">{{ config('app.name', 'GetLanded') }}</span>
             </a>
             <nav class="flex items-center gap-4 text-sm">
                <a href="{{ route('terms') }}" class="text-gray-600 hover:text-gray-900">Terms of Service</a>
@@ -35,11 +35,11 @@
    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-12">
          <h1 class="text-3xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
-         <p class="text-gray-500 mb-8">Last updated: {{ date('F d, Y') }}</p>
+         <p class="text-gray-500">Last updated: February 1, 2026 | Effective for GetLanded Users</p>
 
          <div class="prose prose-gray max-w-none">
             <h2>1. Introduction</h2>
-            <p>{{ config('app.name', 'AgroWMS') }} ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our warehouse management system.</p>
+            <p>{{ config('app.name', 'GetLanded') }} ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our warehouse management system.</p>
 
             <h2>2. Information We Collect</h2>
             <h3>2.1 Personal Information</h3>
@@ -153,7 +153,7 @@
    {{-- Footer --}}
    <footer class="border-t border-gray-200 bg-white py-8 mt-12">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center text-sm text-gray-500">
-         <p>© {{ date('Y') }} {{ config('app.name', 'AgroWMS') }} by avandigital.id. All rights reserved.</p>
+         <p>© {{ date('Y') }} {{ config('app.name', 'GetLanded') }} by avandigital.id. All rights reserved.</p>
          <div class="mt-2 flex items-center justify-center gap-4">
             <a href="{{ route('terms') }}" class="text-gray-600 hover:text-gray-900">Terms of Service</a>
             <span class="text-gray-300">|</span>

@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('🔐 Creating Consolidated Demo Users for AgroWMS...');
+        $this->command->info('🔐 Creating Consolidated Demo Users for GetLanded...');
 
         // 1. Create or Get Default Company
         $companyId = DB::table('companies')->where('code', 'AVANDIGITAL')->value('id');

@@ -13,9 +13,8 @@
 
     <article class="prose max-w-none bg-white p-8 rounded-lg shadow-sm">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Mastering Inbound Shipments & The Digital Vault</h1>
-        
-        <p class="lead text-xl text-gray-600 mb-8">
-            Stop waiting for goods to arrive. Start tracking them the moment they leave the supplier.
+        <p class="text-gray-600 mb-6">
+            Efficiently managing incoming goods is the foundation of accurate inventory. **GetLanded** provides a structured workflow for recording, verifying, and shelving stock from suppliers or inter-warehouse transfers.
         </p>
 
         <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8">
@@ -43,7 +42,7 @@
         <h3>3. One-Click Receive</h3>
         <p>When the truck arrives at your warehouse:</p>
         <ol>
-            <li>Open the Shipment in AgroWMS.</li>
+            <li>Open the Shipment in GetLanded.</li>
             <li>Verify the contents match the paper packing list.</li>
             <li>Click the green <strong>One-Click Receive</strong> button.</li>
         </ol>

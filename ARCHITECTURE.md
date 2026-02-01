@@ -1,10 +1,9 @@
-# 🏗 AgroWMS Architecture Guide
-
-This document provides a high-level overview of the **AgroWMS** architecture, designed for Scalability, Security, and Maintainability.
+# 🏛️ GetLanded Architecture Guide
+High-level overview of the **GetLanded** ecosystem and data flow.
 
 ## 1. Multi-Tenancy (Phase K)
 
-AgroWMS uses a **Single Database, Logical Isolation** strategy. This is optimal for SaaS applications requiring rapid scaling and unified analytics.
+GetLanded uses a **Single Database, Logical Isolation** strategy. This is optimal for SaaS applications requiring rapid scaling and unified analytics.
 
 ### The `TenantScope`
 Isolation is enforced at the **Row Level** using Laravel's Global Scopes.
@@ -54,7 +53,7 @@ app/
 
 ## 4. Batch Traceability Engine
 
-AgroWMS features a sophisticated traceability engine:
+GetLanded features a sophisticated traceability engine:
 1.  **Inbound**: Stock In -> Batch Created (Lot #123).
 2.  **Movement**: Transfer -> New Batch Created (Linked to Parent Batch).
 3.  **Outbound**: Sales Order -> Batch Allocated (FIFO).

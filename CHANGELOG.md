@@ -1,6 +1,5 @@
-# Changelog
-
-All notable changes to this project will be documented in this file.
+# 📜 GetLanded Changelog
+Notable changes to the **GetLanded** ecosystem. will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Phase S (Documentation)**:
-    - Rebranded README with "AgroWMS" identity.
+    - Rebranded documentation with "GetLanded" identity.
     - Added comprehensive Architecture guide.
 - **Phase I (Import Engine 2.0)**:
     - **High-Volume Support**: Validated stability with 25,000+ SKU records in a single upload.
@@ -25,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **I18n**: Cookie-based language persistence for guests.
 
 ### Changed
-- **Branding**: Renamed application from "Warehouse Inventory" to "AgroWMS".
+- **Branding**: Renamed application from "Warehouse Inventory" to "GetLanded".
 - **Middleware**: Refactored `SetLocaleMiddleware` to prioritize Session > Cookie > User > Header.
 
 ## [v1.2.0] - Phase Q - 2026-01-20

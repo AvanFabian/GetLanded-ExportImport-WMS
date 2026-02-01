@@ -3,7 +3,7 @@
 <head>
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1">
-   <title>Terms of Service - {{ config('app.name', 'AgroWMS') }}</title>
+   <title>Terms of Service - {{ config('app.name', 'GetLanded') }}</title>
    <link rel="preconnect" href="https://fonts.bunny.net">
    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
    @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,7 +19,7 @@
                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                   </svg>
                </div>
-               <span class="font-bold text-gray-900">{{ config('app.name', 'AgroWMS') }}</span>
+               <span class="font-bold text-gray-900">{{ config('app.name', 'GetLanded') }}</span>
             </a>
             <nav class="flex items-center gap-4 text-sm">
                <a href="{{ route('privacy') }}" class="text-gray-600 hover:text-gray-900">Privacy Policy</a>
@@ -35,14 +35,14 @@
    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-12">
          <h1 class="text-3xl font-bold text-gray-900 mb-2">Terms of Service</h1>
-         <p class="text-gray-500 mb-8">Last updated: {{ date('F d, Y') }}</p>
+         <p class="text-gray-500">Last updated: February 1, 2026 | Agreement for GetLanded Platform</p>
 
          <div class="prose prose-gray max-w-none">
             <h2>1. Acceptance of Terms</h2>
-            <p>By accessing and using {{ config('app.name', 'AgroWMS') }} ("The Service"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
+            <p>By accessing and using {{ config('app.name', 'GetLanded') }} ("The Service"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
 
             <h2>2. Description of Service</h2>
-            <p>{{ config('app.name', 'AgroWMS') }} is a warehouse and inventory management system that provides:</p>
+            <p>{{ config('app.name', 'GetLanded') }} is a warehouse and inventory management system that provides:</p>
             <ul>
                <li>Real-time inventory tracking and management</li>
                <li>Multi-warehouse support</li>
@@ -87,10 +87,10 @@
             </ul>
 
             <h2>8. Limitation of Liability</h2>
-            <p>To the maximum extent permitted by law, {{ config('app.name', 'AgroWMS') }} and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities.</p>
+            <p>To the maximum extent permitted by law, {{ config('app.name', 'GetLanded') }} and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities.</p>
 
             <h2>9. Indemnification</h2>
-            <p>You agree to indemnify and hold harmless {{ config('app.name', 'AgroWMS') }}, its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from your use of the service or violation of these terms.</p>
+            <p>You agree to indemnify and hold harmless {{ config('app.name', 'GetLanded') }}, its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from your use of the service or violation of these terms.</p>
 
             <h2>10. Termination</h2>
             <p>We may terminate or suspend your account at any time for violation of these terms. Upon termination, your right to use the service ceases immediately. You may export your data within 30 days of account termination.</p>
@@ -114,7 +114,7 @@
    {{-- Footer --}}
    <footer class="border-t border-gray-200 bg-white py-8 mt-12">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center text-sm text-gray-500">
-         <p>© {{ date('Y') }} {{ config('app.name', 'AgroWMS') }} by avandigital.id. All rights reserved.</p>
+         <p>© {{ date('Y') }} {{ config('app.name', 'GetLanded') }} by avandigital.id. All rights reserved.</p>
          <div class="mt-2 flex items-center justify-center gap-4">
             <a href="{{ route('terms') }}" class="text-gray-600 hover:text-gray-900">Terms of Service</a>
             <span class="text-gray-300">|</span>
