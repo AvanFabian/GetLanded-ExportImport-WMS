@@ -1,5 +1,5 @@
 # Menggunakan image PHP 8.3 FPM Nginx yang stabil
-FROM serversideup/php:8.3-fpm-nginx
+FROM serversideup/php:8.4-fpm-nginx
 
 # Atur direktori kerja
 WORKDIR /var/www/html
