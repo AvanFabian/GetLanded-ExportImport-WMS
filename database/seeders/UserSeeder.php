@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
             $companyId = DB::table('companies')->insertGetId([
                 'uuid' => Str::uuid()->toString(),
                 'code' => 'AVANDIGITAL',
-                'name' => 'AvanDigital Demo',
+                'name' => 'GetLanded Demo',
                 'base_currency_code' => 'IDR',
                 'subscription_plan' => 'enterprise',
                 'is_active' => true,

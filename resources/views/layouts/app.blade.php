@@ -11,8 +11,8 @@
    <meta name="mobile-web-app-capable" content="yes">
    <meta name="apple-mobile-web-app-capable" content="yes">
    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-   <meta name="apple-mobile-web-app-title" content="AgroWMS">
-   <meta name="application-name" content="AgroWMS">
+   <meta name="apple-mobile-web-app-title" content="GetLanded">
+   <meta name="application-name" content="GetLanded">
    <meta name="msapplication-TileColor" content="#064E3B">
    <meta name="msapplication-config" content="/browserconfig.xml">
 
@@ -102,7 +102,7 @@
     <footer class="bg-white border-t border-gray-200 py-4">
        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <p class="text-center text-sm text-gray-500">
-            © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+            © {{ date('Y') }} {{ config('app.name', 'GetLanded') }}. All rights reserved.
         </p>
        </div>
     </footer>

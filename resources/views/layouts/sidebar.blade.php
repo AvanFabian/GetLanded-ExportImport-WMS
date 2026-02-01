@@ -20,7 +20,7 @@
         
         {{-- Mobile Header with Close --}}
         <div class="flex items-center justify-between p-4 border-b md:hidden bg-gradient-to-r from-emerald-700 to-emerald-800 text-white">
-            <span class="font-bold text-lg">📦 AgroWMS</span>
+            <span class="font-bold text-lg">📦 GetLanded</span>
             <button @click="sidebarOpen = false" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition touch-manipulation">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
