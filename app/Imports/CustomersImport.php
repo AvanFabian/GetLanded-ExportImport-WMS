@@ -6,9 +6,11 @@ use App\Models\Customer;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Facades\Auth;
 
-class CustomersImport implements ToModel, WithHeadingRow, WithValidation
+class CustomersImport implements ToModel, WithHeadingRow, WithValidation, WithBatchInserts, WithChunkReading
 {
     public function model(array $row)
     {
@@ -36,5 +38,15 @@ class CustomersImport implements ToModel, WithHeadingRow, WithValidation
             'name' => 'required|string|unique:customers,name',
             'email' => 'nullable|email',
         ];
+    }
+
+    public function batchSize(): int
+    {
+        return 1000;
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 }

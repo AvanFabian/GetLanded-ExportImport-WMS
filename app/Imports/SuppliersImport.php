@@ -6,8 +6,10 @@ use App\Models\Supplier;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class SuppliersImport implements ToModel, WithHeadingRow, WithValidation
+class SuppliersImport implements ToModel, WithHeadingRow, WithValidation, WithBatchInserts, WithChunkReading
 {
     public function model(array $row)
     {
@@ -28,5 +30,15 @@ class SuppliersImport implements ToModel, WithHeadingRow, WithValidation
             'name' => 'required|string',
             'email' => 'nullable|email',
         ];
+    }
+
+    public function batchSize(): int
+    {
+        return 1000;
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 }
