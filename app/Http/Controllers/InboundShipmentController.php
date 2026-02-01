@@ -159,6 +159,29 @@ class InboundShipmentController extends Controller
                     'allocated_landed_cost' => $allocatedCost,
                     'total' => ($item['purchase_price'] * $item['quantity']) // Base total
                 ]);
+
+                // --- 4. Update Product WAC (TDD Implementation) ---
+                $product = \App\Models\Product::find($item['product_id']);
+                
+                // Get Current State
+                $currentStock = $product->total_stock; // Uses the accessor
+                $currentCost = $product->cost; // Uses the accessor (WAC or Purchase Price)
+                
+                $incomingQty = $item['quantity'];
+                // Incoming Cost = Factory Price + Allocated Landed Cost
+                $incomingCost = $item['purchase_price'] + $allocatedCost; 
+
+                // Calculate WAC
+                // Formula: ((OldQty * OldCost) + (NewQty * NewCost)) / (OldQty + NewQty)
+                $totalQty = $currentStock + $incomingQty;
+                
+                if ($totalQty > 0) {
+                    $newWAC = (($currentStock * $currentCost) + ($incomingQty * $incomingCost)) / $totalQty;
+                    
+                    $product->update([
+                        'weighted_average_cost' => round($newWAC, 2)
+                    ]);
+                }
             }
             
             // Mark Shipment as Received

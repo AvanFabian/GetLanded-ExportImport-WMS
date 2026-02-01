@@ -27,7 +27,16 @@ class Product extends Model
         'has_variants',
         'enable_batch_tracking',
         'batch_method',
+        'weighted_average_cost',
     ];
+
+    /**
+     * Get the dynamic cost (WAC) or fallback to static purchase price.
+     */
+    public function getCostAttribute()
+    {
+        return $this->weighted_average_cost ?? $this->purchase_price;
+    }
 
     protected $casts = [
         'has_variants' => 'boolean',

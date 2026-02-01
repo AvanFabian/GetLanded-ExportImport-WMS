@@ -143,7 +143,7 @@ class ReportController extends Controller
             ->get()
             ->sum(function ($product) {
                 $totalStock = $product->warehouses->sum('pivot.stock');
-                return $totalStock * $product->purchase_price;
+                return $totalStock * $product->cost;
             });
 
         // Get categories with their total values
@@ -157,7 +157,7 @@ class ReportController extends Controller
 
                 $total_value = $categoryProducts->sum(function ($product) {
                     $totalStock = $product->warehouses->sum('pivot.stock');
-                    return $totalStock * $product->purchase_price;
+                    return $totalStock * $product->cost;
                 });
 
                 $category->total_value = $total_value;
