@@ -18,9 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             UserSeeder::class,
-            WarehouseSeeder::class,
-            DemoDataSeeder::class, 
-            // MasterDataSeeder::class, // Disabled - will be created manually during testing
+            // WarehouseSeeder::class, // Disabled for manual import testing
+            // DemoDataSeeder::class,  // Disabled for manual import testing
         ]);
     }
 }

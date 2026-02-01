@@ -37,6 +37,7 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     // Master data
     Route::resource('categories', App\Http\Controllers\CategoryController::class);
     Route::resource('suppliers', App\Http\Controllers\SupplierController::class);
+    Route::post('suppliers/import', [App\Http\Controllers\SupplierController::class, 'import'])->name('suppliers.import');
     Route::resource('products', App\Http\Controllers\ProductController::class);
     Route::post('products/import', [App\Http\Controllers\ProductController::class, 'import'])->name('products.import');
     Route::get('products-export', [App\Http\Controllers\ProductController::class, 'export'])->name('products.export');
@@ -88,6 +89,7 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
 
     // Sales Management
     Route::resource('customers', App\Http\Controllers\CustomerController::class);
+    Route::post('customers/import', [App\Http\Controllers\CustomerController::class, 'import'])->name('customers.import');
     Route::resource('sales-orders', App\Http\Controllers\SalesOrderController::class);
     Route::post('sales-orders/{salesOrder}/confirm', [App\Http\Controllers\SalesOrderController::class, 'confirm'])->name('sales-orders.confirm');
     Route::post('sales-orders/{salesOrder}/ship', [App\Http\Controllers\SalesOrderController::class, 'ship'])->name('sales-orders.ship');

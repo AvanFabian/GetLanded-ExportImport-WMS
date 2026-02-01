@@ -63,4 +63,25 @@ class SupplierController extends Controller
         $supplier->delete();
         return redirect()->route('suppliers.index')->with('status', 'Supplier deleted');
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv,xls',
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\SuppliersImport, $request->file('file'));
+            return back()->with('success', 'Suppliers imported successfully!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $messages = [];
+            foreach ($failures as $failure) {
+                $messages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+            return back()->with('error', 'Import Validation Failed: ' . implode(' | ', array_slice($messages, 0, 5)));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Import Failed: ' . $e->getMessage());
+        }
+    }
 }

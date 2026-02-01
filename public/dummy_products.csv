@@ -1,0 +1,6 @@
+name,sku,category_name,unit,purchase_price,selling_price,min_stock,description,hs_code,origin_country,weight_unit,weight_value
+"Industrial Pallet Rack",RACK-001,Storage,Unit,150.00,250.00,10,"Heavy duty storage rack",7308.90,CN,KG,45.5
+"Forklift Tire",TIRE-FL-02,Spare Parts,Unit,75.00,120.00,20,"Standard forklift tire",4011.20,JP,KG,12.0
+"Safety Gloves (L)",PPE-001,Safety Gear,Pair,5.00,12.00,100,"Protective gloves large",6116.10,ID,KG,0.2
+"Shipping Carton (Box)",BOX-S,Packaging,Piece,0.50,1.20,500,"Standard shipping box",4819.10,VN,KG,0.5
+"Hydraulic Oil (Drum)",OIL-HYD-55,Fluids,Drum,200.00,350.00,5,"55 Gallon Drum",2710.19,US,KG,200.0

@@ -180,8 +180,23 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
-        // TODO: Implement CSV import using maatwebsite/excel
-        return back()->with('status', 'Import feature coming soon');
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv,xls',
+        ]);
+
+        try {
+            Excel::import(new \App\Imports\ProductsImport, $request->file('file'));
+            return back()->with('success', 'Products imported successfully!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $messages = [];
+            foreach ($failures as $failure) {
+                $messages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+            return back()->with('error', 'Import Validation Failed: ' . implode(' | ', array_slice($messages, 0, 5)));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Import Failed: ' . $e->getMessage());
+        }
     }
 
     public function export(Request $request)
