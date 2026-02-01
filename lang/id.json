@@ -34,6 +34,8 @@
     "Platform Admin": "Admin Platform",
     "All Companies": "Semua Perusahaan",
     "Document Language": "Bahasa Dokumen",
+    "app.action": "Aksi",
+    "app.actions": "Aksi",
     "sales.create_success": "Pesanan penjualan berhasil dibuat.",
     "sales.create_error": "Gagal membuat pesanan penjualan: ",
     "sales.edit_draft_only": "Hanya pesanan dengan status draft yang dapat diedit.",

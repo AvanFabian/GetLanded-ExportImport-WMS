@@ -123,11 +123,21 @@ class SalesOrderController extends Controller
                 $itemSubtotal = $item['quantity'] * $item['unit_price'];
                 $subtotal += $itemSubtotal;
 
+                // PROFIT PROTECTION & COST BASIS
+                $product = Product::find($item['product_id']);
+                $costBasis = $product->cost; // WAC or Purchase Price
+
+                // Margin Check (Strict Mode)
+                if ($item['unit_price'] < $costBasis) {
+                    throw new \Exception("Price for {$product->name} ({$item['unit_price']}) is below cost ({$costBasis}). Sale blocked.");
+                }
+
                 SalesOrderItem::create([
                     'sales_order_id' => $salesOrder->id,
                     'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
+                    'cost_basis' => $costBasis, // Record historical cost
                     'subtotal' => $itemSubtotal,
                 ]);
             }
@@ -232,11 +242,21 @@ class SalesOrderController extends Controller
                 $itemSubtotal = $item['quantity'] * $item['unit_price'];
                 $subtotal += $itemSubtotal;
 
+                // PROFIT PROTECTION & COST BASIS
+                $product = Product::find($item['product_id']);
+                $costBasis = $product->cost;
+
+                // Margin Check
+                if ($item['unit_price'] < $costBasis) {
+                    throw new \Exception("Price for {$product->name} ({$item['unit_price']}) is below cost ({$costBasis}). Sale blocked.");
+                }
+
                 SalesOrderItem::create([
                     'sales_order_id' => $salesOrder->id,
                     'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
+                    'cost_basis' => $costBasis,
                     'subtotal' => $itemSubtotal,
                 ]);
             }

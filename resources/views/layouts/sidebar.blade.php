@@ -149,6 +149,10 @@
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('reports.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
                         <span>📊</span><span>{{ __('All Reports') }}</span>
                     </a>
+                    <a href="{{ route('reports.profit-loss') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('reports.profit-loss') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>💰</span><span>{{ __('Profit & Loss') }}</span>
+                    </a>
                 </div>
             </div>
 

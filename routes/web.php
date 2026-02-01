@@ -113,6 +113,7 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     Route::get('reports/transactions', [App\Http\Controllers\ReportController::class, 'transactions'])->name('reports.transactions');
     Route::get('reports/inventory-value', [App\Http\Controllers\ReportController::class, 'inventoryValue'])->name('reports.inventory-value');
     Route::get('reports/stock-card', [App\Http\Controllers\ReportController::class, 'stockCard'])->name('reports.stock-card');
+    Route::get('reports/profit-loss', [App\Http\Controllers\ProfitLossController::class, 'index'])->name('reports.profit-loss');
 
     // Batch Management (Phase B UI)
     Route::get('batches', [App\Http\Controllers\BatchController::class, 'index'])->name('batches.index');

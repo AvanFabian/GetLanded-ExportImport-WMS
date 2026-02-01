@@ -21,13 +21,65 @@
         
         <div class="flex gap-2">
             @if($inboundShipment->status !== 'received' && $inboundShipment->status !== 'cancelled')
-            <form action="{{ route('inbound-shipments.receive', $inboundShipment) }}" method="POST" onsubmit="return confirm('Start receiving for this shipment?');">
-                @csrf
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    One-Click Receive
-                </button>
-            </form>
+            <button onclick="document.getElementById('receiveModal').showModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Receive Shipment
+            </button>
+
+            <!-- Receive Modal -->
+            <dialog id="receiveModal" class="modal bg-white rounded-lg shadow-xl p-0 w-11/12 max-w-4xl backdrop:bg-gray-900/50">
+                <div class="p-6">
+                    <h3 class="font-bold text-lg mb-4">Receive Inbound Shipment</h3>
+                    <form action="{{ route('inbound-shipments.receive', $inboundShipment) }}" method="POST">
+                        @csrf
+                        <div class="overflow-x-auto mb-6">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-gray-50 text-gray-700 uppercase">
+                                    <tr>
+                                        <th class="px-4 py-3">Product</th>
+                                        <th class="px-4 py-3 text-center">Ordered</th>
+                                        <th class="px-4 py-3 text-center">Received</th>
+                                        <th class="px-4 py-3 text-center">Remaining</th>
+                                        <th class="px-4 py-3 text-center w-32">Receive Now</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach($inboundShipment->purchaseOrders as $po)
+                                        @foreach($po->details as $item)
+                                            @php
+                                                $remaining = $item->quantity_ordered - $item->quantity_received;
+                                            @endphp
+                                            @if($remaining > 0)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 font-medium text-gray-900">
+                                                    {{ $item->product->name }} <br>
+                                                    <span class="text-xs text-gray-500">{{ $item->product->code }}</span>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">{{ $item->quantity_ordered }}</td>
+                                                <td class="px-4 py-3 text-center text-gray-500">{{ $item->quantity_received }}</td>
+                                                <td class="px-4 py-3 text-center font-bold text-orange-600">{{ $remaining }}</td>
+                                                <td class="px-4 py-3">
+                                                    <input type="number" 
+                                                           name="items[{{ $item->product_id }}]" 
+                                                           value="{{ $remaining }}" 
+                                                           max="{{ $remaining }}" 
+                                                           min="0"
+                                                           class="w-full rounded border-gray-300 text-center font-bold focus:ring-green-500 focus:border-green-500">
+                                                </td>
+                                            </tr>
+                                            @endif
+                                        @endforeach
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+                            <button type="button" onclick="document.getElementById('receiveModal').close()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                            <button type="submit" class="px-6 py-2 bg-green-600 text-white font-bold rounded hover:bg-green-700">Confirm Receipt</button>
+                        </div>
+                    </form>
+                </div>
+            </dialog>
             @endif
         </div>
     </div>

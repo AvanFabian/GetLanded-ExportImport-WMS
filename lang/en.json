@@ -34,6 +34,8 @@
     "Platform Admin": "Platform Admin",
     "All Companies": "All Companies",
     "Document Language": "Document Language",
+    "app.action": "Action",
+    "app.actions": "Actions",
     "sales.create_success": "Sales order created successfully.",
     "sales.create_error": "Failed to create sales order: ",
     "sales.edit_draft_only": "Only draft orders can be edited.",

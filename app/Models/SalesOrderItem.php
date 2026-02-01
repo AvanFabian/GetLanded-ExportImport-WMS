@@ -12,6 +12,7 @@ class SalesOrderItem extends Model
         'quantity',
         'unit_price',
         'subtotal',
+        'cost_basis',
         'notes',
     ];
 

@@ -96,102 +96,159 @@ class InboundShipmentController extends Controller
     }
 
     // Phase 1 Unique Feature: One Click Receive (With Landed Cost Calculation)
-    public function receive(InboundShipment $inboundShipment)
+    public function receive(Request $request, InboundShipment $inboundShipment)
     {
-        // 1. Collect all items from all POs
-        $inboundShipment->load(['purchaseOrders.details', 'expenses']);
+        $request->validate([
+            'items' => 'required|array',
+            'items.*' => 'required|integer|min:1',
+        ]);
+
+        $inboundShipment->load(['purchaseOrders.details.product', 'expenses']);
         
-        $allItems = collect();
+        // Flatten all PO details for easy access
+        $poDetails = collect();
         foreach ($inboundShipment->purchaseOrders as $po) {
             foreach ($po->details as $detail) {
-                $allItems->push([
-                    'product_id' => $detail->product_id,
-                    'quantity' => $detail->quantity_ordered, // Assuming full receipt for v1
-                    'purchase_price' => $detail->unit_price,
-                    'total_line_value' => $detail->quantity_ordered * $detail->unit_price
-                ]);
+                $poDetails->put($detail->product_id, $detail);
             }
         }
 
-        if ($allItems->isEmpty()) {
-            return back()->with('error', 'No items to receive.');
-        }
-
-        // 2. Calculate Allocation Ratios
-        $totalValue = $allItems->sum('total_line_value');
-        $totalQuantity = $allItems->sum('quantity');
-        $expenses = $inboundShipment->expenses;
-
-        // 3. Create Draft Stock In
-        // In a real app, we'd use a Service for this transaction
-        $stockIn = DB::transaction(function () use ($inboundShipment, $allItems, $expenses, $totalValue, $totalQuantity) {
+        DB::transaction(function () use ($inboundShipment, $request, $poDetails) {
             
-            // Create Header
+            $inputItems = $request->items;
+            $itemsToProcess = [];
+            $totalValue = 0;
+            $totalQuantity = 0;
+
+            // 1. Validate & Prepare Data
+            foreach ($inputItems as $productId => $qtyToReceive) {
+                if (!$poDetails->has($productId)) {
+                    continue; // Skip items not in this shipment's POs
+                }
+
+                $detail = $poDetails->get($productId);
+                $remaining = $detail->quantity_ordered - $detail->quantity_received;
+
+                if ($qtyToReceive > $remaining) {
+                    throw new \Exception("Cannot receive {$qtyToReceive} for Product #{$productId}. Only {$remaining} remaining.");
+                }
+
+                $itemsToProcess[] = [
+                    'product_id' => $productId,
+                    'quantity' => $qtyToReceive,
+                    'purchase_price' => $detail->unit_price,
+                    'detail_model' => $detail,
+                    'total_line_value' => $qtyToReceive * $detail->unit_price
+                ];
+
+                $totalValue += ($qtyToReceive * $detail->unit_price);
+                $totalQuantity += $qtyToReceive;
+            }
+
+            if (empty($itemsToProcess)) {
+                throw new \Exception("No valid items to receive.");
+            }
+
+            // 2. Create Stock In Header
             $stockIn = \App\Models\StockIn::create([
-                'warehouse_id' => $inboundShipment->purchaseOrders->first()->warehouse_id ?? 1, // Defaulting for v1
+                'warehouse_id' => $inboundShipment->purchaseOrders->first()->warehouse_id ?? 1,
                 'supplier_id' => $inboundShipment->purchaseOrders->first()->supplier_id,
                 'date' => now(),
-                'status' => 'draft', // User must review
+                'status' => 'completed', // Direct complete for now
+                'transaction_code' => 'IN-' . date('YmdHis'), // Simple generator
                 'note' => 'Received from Shipment ' . $inboundShipment->shipment_number,
                 'created_by' => auth()->id(),
+                'total' => $totalValue // Base total
             ]);
 
-            // Create Details with Cost Allocation
-            foreach ($allItems as $item) {
-                
-                $allocatedCost = 0;
+            $expenses = $inboundShipment->expenses;
 
+            // 3. Process Items
+            foreach ($itemsToProcess as $item) {
+                
+                // Calculate Allocated Cost
+                $allocatedCost = 0;
                 foreach ($expenses as $expense) {
                     if ($expense->allocation_method === 'value' && $totalValue > 0) {
                         $ratio = $item['total_line_value'] / $totalValue;
-                        $allocatedCost += ($expense->amount * $ratio) / $item['quantity']; // Cost PER UNIT
+                        $allocatedCost += ($expense->amount * $ratio) / $item['quantity'];
                     } elseif ($expense->allocation_method === 'quantity' && $totalQuantity > 0) {
                         $ratio = $item['quantity'] / $totalQuantity;
                         $allocatedCost += ($expense->amount * $ratio) / $item['quantity'];
                     }
                 }
 
+                // Create Stock In Detail
                 \App\Models\StockInDetail::create([
                     'stock_in_id' => $stockIn->id,
                     'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
                     'purchase_price' => $item['purchase_price'],
                     'allocated_landed_cost' => $allocatedCost,
-                    'total' => ($item['purchase_price'] * $item['quantity']) // Base total
+                    'total' => ($item['purchase_price'] * $item['quantity'])
                 ]);
 
-                // --- 4. Update Product WAC (TDD Implementation) ---
+                // Update WAC
                 $product = \App\Models\Product::find($item['product_id']);
-                
-                // Get Current State
-                $currentStock = $product->total_stock; // Uses the accessor
-                $currentCost = $product->cost; // Uses the accessor (WAC or Purchase Price)
-                
+                $currentStock = $product->total_stock; 
+                $currentCost = $product->cost;
                 $incomingQty = $item['quantity'];
-                // Incoming Cost = Factory Price + Allocated Landed Cost
                 $incomingCost = $item['purchase_price'] + $allocatedCost; 
-
-                // Calculate WAC
-                // Formula: ((OldQty * OldCost) + (NewQty * NewCost)) / (OldQty + NewQty)
                 $totalQty = $currentStock + $incomingQty;
                 
                 if ($totalQty > 0) {
                     $newWAC = (($currentStock * $currentCost) + ($incomingQty * $incomingCost)) / $totalQty;
-                    
-                    $product->update([
-                        'weighted_average_cost' => round($newWAC, 2)
+                    $product->update(['weighted_average_cost' => round($newWAC, 2)]);
+                }
+
+                // Update PO Detail Quantity Received
+                $item['detail_model']->increment('quantity_received', $item['quantity']);
+                
+                // Update Stock in Warehouse (Pivot) - Simplified/Assuming Service does this usually
+                // For now, let's look for a method explicitly or do raw update if needed.
+                // Assuming StockIn creation doesn't auto-update stock in this codebase based on previous view.
+                // We need to increment the stock in product_warehouse pivot.
+                $warehouseId = $stockIn->warehouse_id;
+                $product = \App\Models\Product::find($item['product_id']);
+                
+                $pivot = $product->warehouses()->where('warehouse_id', $warehouseId)->first();
+                if ($pivot) {
+                    $product->warehouses()->updateExistingPivot($warehouseId, [
+                        'stock' => $pivot->pivot->stock + $item['quantity']
                     ]);
+                } else {
+                    $product->warehouses()->attach($warehouseId, ['stock' => $item['quantity']]);
+                }
+            }
+
+            // 4. Update PO Statuses
+            foreach ($inboundShipment->purchaseOrders as $po) {
+                $isFullyReceived = true;
+                $isPartiallyReceived = false;
+
+                foreach ($po->details as $detail) {
+                    $detail->refresh(); // getting updated qty
+                    if ($detail->quantity_received < $detail->quantity_ordered) {
+                        $isFullyReceived = false;
+                    }
+                    if ($detail->quantity_received > 0) {
+                        $isPartiallyReceived = true;
+                    }
+                }
+
+                if ($isFullyReceived) {
+                    $po->update(['status' => 'completed']);
+                } elseif ($isPartiallyReceived) {
+                    $po->update(['status' => 'partially_received']);
                 }
             }
             
-            // Mark Shipment as Received
+            // Mark Shipment as Received (Closed)
             $inboundShipment->update(['status' => 'received']);
-            
-            // Mark POs as Received (Simplified)
-            $inboundShipment->purchaseOrders()->update(['status' => 'completed']); // Assuming 'completed' exist
-
-            return $stockIn;
         });
+
+        return redirect()->route('stock-ins.index')
+             ->with('success', 'Shipment processed successfully.');
         
         return redirect()->route('stock-ins.show', $stockIn)
              ->with('success', 'Shipment received! Landed Costs have been allocated.');
