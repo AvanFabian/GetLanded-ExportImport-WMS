@@ -13,6 +13,7 @@
 | **Owner/Admin** | `owner@avandigital.id` | Full system access |
 | **Manager** | `manager@avandigital.id` | Operations management |
 | **Staff** | `staff@avandigital.id` | Daily operations |
+| **Viewer** | `viewer@avandigital.id` | Read-only access |
 
 > All users belong to **AVANDIGITAL** tenant (Company ID: 1).
 
@@ -24,6 +25,7 @@
 - **MySQL**: 8.0+ or MariaDB 10.5+
 - **Node.js**: 18+ (LTS recommended)
 - **Composer**: 2.0+
+- **Python 3.x + Pandas**: (Optional) Required only for generating stress test data (`pip install pandas openpyxl`)
 - **Redis**: Optional (for caching/queues)
 
 ---
@@ -95,7 +97,7 @@ php artisan storage:link
 After first deployment, run via Coolify terminal:
 ```bash
 php artisan db:seed --class=PermissionSeeder --force
-php artisan db:seed --class=DemoUserSeeder --force
+php artisan db:seed --class=UserSeeder --force
 ```
 
 ---

@@ -38,15 +38,15 @@ product_warehouse (pivot table)
 php artisan migrate:fresh --seed
 
 # This will create:
-# - 3 Users: admin@warehouse.test, manager@warehouse.test, staff@warehouse.test
+# - 4 Primary Users: owner@avandigital.id, manager@avandigital.id, staff@avandigital.id, viewer@avandigital.id
 # - 2 Warehouses: Main Warehouse (Jakarta), Secondary Warehouse (Surabaya)
 # - NO categories, suppliers, or products (you'll create them manually)
 ```
 
 ### 2. Login Credentials
 ```
-Email: admin@warehouse.test
-Password: password
+Email: owner@avandigital.id
+Password: demo1234
 Role: Admin (full access)
 ```
 
@@ -57,6 +57,32 @@ We'll test the **COMPLETE inventory workflow** in this order:
 3. **Inter-Warehouse Transfers**
 4. **Sales Cycle** (Customers, Sales Orders, Invoices)
 5. **Reports & Dashboard**
+
+---
+
+---
+
+## 🧪 EXTRA: Stress Testing (High Volume)
+
+### **Objective: Validate 25,000 Record Import**
+
+**1. Generate Data**
+Run the generator script to create a 4MB+ XLSX file with 25,000 realistic records:
+```bash
+python generate_stress_test.py
+```
+*File created: `public/stress_test_products.xlsx`*
+
+**2. Run Import**
+1. Go to **Products**
+2. Click **Import**
+3. Select `public/stress_test_products.xlsx`
+4. Click **Upload**
+
+**Expected Results:**
+- ✅ Process completes in ~60-120 seconds.
+- ✅ RAM usage stays steady (Chunk Reading active).
+- ✅ 25,000 new products appear.
 
 ---
 

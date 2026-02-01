@@ -8,9 +8,11 @@ use App\Models\Warehouse;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
-class ProductsImport implements ToModel, WithHeadingRow, WithValidation
+class ProductsImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
 {
     private $categories;
     private $defaultWarehouseId;
@@ -19,28 +21,27 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation
     {
         // Cache categories to avoid N+1 queries
         $this->categories = Category::pluck('id', 'name')->toArray();
-        // Default to the first active warehouse if none specified (Enhancement: Allow passing warehouse_id)
+        // Default to the first active warehouse if none specified
         $this->defaultWarehouseId = Warehouse::first()->id ?? null;
     }
 
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
     public function model(array $row)
     {
         // Find or create category
         $categoryId = $this->categories[$row['category_name']] ?? null;
         if (!$categoryId && !empty($row['category_name'])) {
-            $category = Category::create(['name' => $row['category_name'], 'type' => 'raw_material']);
+            $category = Category::firstOrCreate(
+                ['name' => $row['category_name']],
+                ['type' => 'raw_material']
+            );
             $this->categories[$row['category_name']] = $category->id;
             $categoryId = $category->id;
         }
 
+        // Create Product immediately to get ID
         $product = Product::create([
             'name' => $row['name'],
-            'code' => $row['sku'], // Map SKU to Code
+            'code' => $row['sku'],
             'description' => $row['description'] ?? null,
             'category_id' => $categoryId,
             'unit' => $row['unit'],
@@ -52,11 +53,6 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation
             'hs_code' => $row['hs_code'] ?? null,
             'origin_country' => $row['origin_country'] ?? null,
             'weight_unit' => $row['weight_unit'] ?? 'KG',
-            // Note: Weight value (scalar) doesn't have a direct column in products table yet 
-            // based on migration 2026_01_20_000004, but we have weight_unit.
-            // Assuming we might need to add it or it was missed. 
-            // Checking migration again... only weight_unit is there?
-            // "add_weight_fields_to_batches" exists. "add_trade_fields_to_products" has weight_unit.
             
             'status' => true,
         ]);
@@ -76,10 +72,16 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation
     {
         return [
             'name' => 'required|string',
-            'sku' => 'required|unique:products,code', // Unique check
+            'sku' => 'required|string|unique:products,code',
+            'category_name' => 'required|string',
             'unit' => 'required|string',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
         ];
+    }
+
+    public function chunkSize(): int
+    {
+        return 500;
     }
 }

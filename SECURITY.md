@@ -100,6 +100,10 @@ Automatically blocks requests containing:
 - Maximum 10MB per request
 - Returns 413 (Payload Too Large) if exceeded
 
+#### **File Upload Security**
+- **MIME Validation**: Strict `mimes:xlsx,csv,xls` check for imports.
+- **Processing Limits**: `set_time_limit(600)` and optimized memory chunks for admin imports to prevent DoS.
+
 **All blocked attempts are logged to `security.log`**
 
 **File**: `app/Http/Middleware/BlockSuspiciousRequests.php`

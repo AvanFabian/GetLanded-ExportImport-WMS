@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -10,15 +11,20 @@ use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
-        // 1. Create Default Company
+        $this->command->info('🔐 Creating Consolidated Demo Users for AgroWMS...');
+
+        // 1. Create or Get Default Company
         $companyId = DB::table('companies')->where('code', 'AVANDIGITAL')->value('id');
         if (!$companyId) {
             $companyId = DB::table('companies')->insertGetId([
                 'uuid' => Str::uuid()->toString(),
                 'code' => 'AVANDIGITAL',
-                'name' => 'GetLanded Demo',
+                'name' => 'Avan Digital Demo',
                 'base_currency_code' => 'IDR',
                 'subscription_plan' => 'enterprise',
                 'is_active' => true,
@@ -27,26 +33,65 @@ class UserSeeder extends Seeder
             ]);
         }
 
-        // 2. Create Demo Owner User
-        $demo = User::firstOrCreate(
-            ['email' => 'demo@avandigital.id'],
+        // 2. Define standard demo users
+        $demoUsers = [
             [
-                'name' => 'Demo Owner',
-                'password' => Hash::make('demo1234'),
-                'email_verified_at' => now(),
+                'email' => 'owner@avandigital.id',
+                'name' => 'Avan Digital Owner',
                 'role' => 'admin',
-                'is_active' => true,
-                'company_id' => $companyId,
                 'locale' => 'id',
-            ]
-        );
-        $demo->assignRole('admin');
+            ],
+            [
+                'email' => 'manager@avandigital.id',
+                'name' => 'Warehouse Manager',
+                'role' => 'manager',
+                'locale' => 'id',
+            ],
+            [
+                'email' => 'staff@avandigital.id',
+                'name' => 'Warehouse Staff',
+                'role' => 'staff',
+                'locale' => 'id',
+            ],
+            [
+                'email' => 'viewer@avandigital.id',
+                'name' => 'System Viewer',
+                'role' => 'viewer',
+                'locale' => 'en',
+            ],
+        ];
 
-        // 3. Create Standard Users
-        $admin = User::firstOrCreate(
+        foreach ($demoUsers as $userData) {
+            // Check if role exists in DB (assigned via PermissionSeeder)
+            if (!Role::where('name', $userData['role'])->exists()) {
+                $this->command->error("❌ Role '{$userData['role']}' not found. Ensure PermissionSeeder is run first.");
+                continue;
+            }
+
+            $user = User::updateOrCreate(
+                ['email' => $userData['email']],
+                [
+                    'name' => $userData['name'],
+                    'password' => Hash::make('demo1234'),
+                    'email_verified_at' => now(),
+                    'company_id' => $companyId,
+                    'is_active' => true,
+                    'locale' => $userData['locale'],
+                    'role' => $userData['role'], // For systems still using the string column
+                ]
+            );
+
+            // Sync Spatie Role
+            $user->syncRoles([$userData['role']]);
+
+            $this->command->info("  ✅ Created: {$userData['name']} ({$userData['email']})");
+        }
+
+        // 3. Keep Legacy/Internal Dev Users (Optional - keeping for backward compatibility)
+        User::firstOrCreate(
             ['email' => 'admin@warehouse.test'],
             [
-                'name' => 'Admin User',
+                'name' => 'Dev Admin',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
                 'role' => 'admin',
@@ -54,35 +99,13 @@ class UserSeeder extends Seeder
                 'company_id' => $companyId,
                 'locale' => 'en',
             ]
-        );
-        $admin->assignRole('admin');
+        )->syncRoles(['admin']);
 
-        $manager = User::firstOrCreate(
-            ['email' => 'manager@warehouse.test'],
-            [
-                'name' => 'Manager User',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-                'role' => 'manager',
-                'is_active' => true,
-                'company_id' => $companyId,
-                'locale' => 'id',
-            ]
+        $this->command->newLine();
+        $this->command->info('🎉 User Seeding Complete!');
+        $this->command->table(
+            ['Name', 'Email', 'Password', 'Role'],
+            array_map(fn($u) => [$u['name'], $u['email'], 'demo1234', $u['role']], $demoUsers)
         );
-        $manager->assignRole('manager');
-
-        $staff = User::firstOrCreate(
-            ['email' => 'staff@warehouse.test'],
-            [
-                'name' => 'Staff User',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-                'role' => 'staff',
-                'is_active' => true,
-                'company_id' => $companyId,
-                'locale' => 'id',
-            ]
-        );
-        $staff->assignRole('staff');
     }
 }

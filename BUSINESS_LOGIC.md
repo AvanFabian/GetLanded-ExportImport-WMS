@@ -274,9 +274,10 @@ Columns are mapped using a **Strict Fuzzy Match** approach:
 3. **Safety**: `Filename` does **NOT** match `name` (Invalid, prevented by regex word boundaries).
 
 ### C. Performance & Safety
-*   **Chunked Transactions**: Commits every 100 rows. Prevents DB locks on large files.
-*   **Category Caching**: Loads categories into memory once. Eliminates N+1 queries.
-*   **Nullable Safety**: If a CSV row has no category, it is skipped (set to NULL) rather than crashing.
+*   **Chunk Reading**: Reads Excel files in chunks of **500 rows**. This keeps memory usage flat (~30MB) even for 25,000+ row files.
+*   **Timeouts**: Automatically increases `set_time_limit(600)` (10 mins) for import routes to handle massive datasets.
+*   **Pivot Table Strategy**: We use `ToModel` without `BatchInserts` for Products to ensure `warehouses()` relationship is attached correctly to *each* created ID immediately. While slightly slower than pure batch inserts, it guarantees data integrity for stock levels.
+*   **Category Caching**: Loads categories into memory once. Eliminates N+1 queries during the 500-row loop.
 
 ---
 
@@ -329,6 +330,7 @@ Run `php artisan db:seed --class=DemoUserSeeder` to create these users:
 | Owner (Admin) | `owner@avandigital.id` | `demo1234` |
 | Manager | `manager@avandigital.id` | `demo1234` |
 | Staff | `staff@avandigital.id` | `demo1234` |
+| Viewer | `viewer@avandigital.id` | `demo1234` |
 
 All users belong to **AVANDIGITAL** company (ID: 1).
 

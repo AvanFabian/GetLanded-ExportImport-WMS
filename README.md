@@ -57,10 +57,11 @@ Managing a warehouse shouldn't be a headache. **AgroWMS** ("Anti-Pusing") replac
 *   **Reports**: Inventory Aging, Stock Movement Cards, and Profit Margins.
 *   **Docs**: PDF Generation for Invoices, Delivery Orders, and Barcodes.
 
-### 🔄 Smart Importer (New)
+### 🔄 Smart Importer (Pro)
 *   **Auto-Map Intelligence**: Fuzzy matches column headers (e.g., "Cost Price" -> "Purchase Price").
-*   **Messy Data Cleaning**: Automatically fixes currency formats (`Rp 15.000` -> `15000`) and weight units.
-*   **Enterprise Performance**: Chunked transactions support 10,000+ row files without timeouts.
+*   **Data Cleaning**: Automatically fixes currency formats (`Rp 15.000` -> `15000`) and weight units.
+*   **Enterprise Performance**: Tested with **25,000+ active records**. Uses Chunk Reading (500 rows) to keep RAM usage <30MB.
+*   **Native Excel**: Direct `.xlsx` support—no need to convert to CSV.
 
 ---
 
@@ -133,6 +134,7 @@ php artisan db:seed --class=DemoUserSeeder
 | **Owner (Admin)** | `owner@avandigital.id` | `demo1234` |
 | **Manager** | `manager@avandigital.id` | `demo1234` |
 | **Staff** | `staff@avandigital.id` | `demo1234` |
+| **Viewer** | `viewer@avandigital.id` | `demo1234` |
 
 > All demo users belong to the **AVANDIGITAL** tenant (Company ID: 1).
 

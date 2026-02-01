@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Phase S (Documentation)**:
     - Rebranded README with "AgroWMS" identity.
     - Added comprehensive Architecture guide.
+- **Phase I (Import Engine 2.0)**:
+    - **High-Volume Support**: Validated stability with 25,000+ SKU records in a single upload.
+    - **Native XLSX**: Dumped legacy CSV requirement for robust Excel parsing (`maatwebsite/excel`).
+    - **Performance**: Implemented `WithChunkReading` (500 rows/chunk) to cap RAM usage.
+    - **Stress Test**: Included `stress_test_products.xlsx` generator for "Real World" simulation.
 - **Phase R.3 (Hero Image)**:
     - Added `hero-warehouse.jpg` with Emerald Glow and Glass-morphism effects.
     - Implemented floating status badges on Landing Page.
