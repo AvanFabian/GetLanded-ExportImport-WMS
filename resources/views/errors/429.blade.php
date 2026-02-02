@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<x-guest-layout>
 
 @section('title', '429 - Too Many Requests')
 
@@ -89,4 +89,4 @@
          }
       }, 1000);
    </script>
-@endsection
+</x-guest-layout>

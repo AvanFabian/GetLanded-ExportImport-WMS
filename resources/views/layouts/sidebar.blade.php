@@ -118,7 +118,7 @@
                        class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('transfers.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
                         <span>🔄</span><span>{{ __('Warehouse Transfers') }}</span>
                     </a>
-                    @if (auth()->user()->isAdmin() || auth()->user()->isManager())
+                    @if (auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isManager()))
                         <a href="{{ route('stock-opnames.index') }}" @click="sidebarOpen = false"
                            class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('stock-opnames.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
                             <span>📋</span><span>{{ __('Stock Opname') }}</span>

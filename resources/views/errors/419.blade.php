@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<x-guest-layout>
 
 @section('title', '419 - Session Expired')
 
@@ -58,4 +58,4 @@
          </div>
       </div>
    </div>
-@endsection
+</x-guest-layout>
