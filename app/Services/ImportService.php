@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use Illuminate\Support\Facades\Storage;
 use League\Csv\Reader;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ImportService
 {
@@ -20,9 +21,20 @@ class ImportService
     ];
 
     /**
-     * Parse CSV file and return headers + sample data
+     * Parse CSV or Excel file and return headers + sample data
      */
     public function parseFile(string $filePath): array
+    {
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        if ($extension === 'xlsx') {
+            return $this->parseExcel($filePath);
+        }
+
+        return $this->parseCsv($filePath);
+    }
+
+    protected function parseCsv(string $filePath): array
     {
         $csv = Reader::createFromPath(Storage::path($filePath), 'r');
         $csv->setHeaderOffset(0);
@@ -42,6 +54,23 @@ class ImportService
         ];
     }
 
+    protected function parseExcel(string $filePath): array
+    {
+        $data = Excel::toArray(new \stdClass(), Storage::path($filePath))[0];
+        $headers = array_shift($data) ?? [];
+        $sample = [];
+
+        foreach (array_slice($data, 0, 5) as $row) {
+            $sample[] = array_combine($headers, $row);
+        }
+
+        return [
+            'headers' => $headers,
+            'sample' => $sample,
+            'total_rows' => count($data),
+        ];
+    }
+
     /**
      * Process import job with column mapping
      */
@@ -50,48 +79,70 @@ class ImportService
         $job->update(['status' => ImportJob::STATUS_PROCESSING]);
 
         try {
-            $csv = Reader::createFromPath(Storage::path($job->file_path), 'r');
-            $csv->setHeaderOffset(0);
-
-            $method = $this->importers[$job->type] ?? null;
+            $extension = pathinfo($job->file_path, PATHINFO_EXTENSION);
             
-            if (!$method) {
-                throw new \Exception("Unknown import type: {$job->type}");
+            if ($extension === 'xlsx') {
+                $this->processExcel($job);
+            } else {
+                $this->processCsv($job);
             }
 
-            // Batch Processing to prevent memory/lock issues
-            $batchSize = 100;
-            $batchCount = 0;
-
-            DB::beginTransaction();
-
-            foreach ($csv->getRecords() as $rowIndex => $record) {
-                try {
-                    $mappedData = $this->mapColumns($record, $job->column_mapping);
-                    $this->$method($mappedData, $job->company_id);
-                    $job->incrementProcessed();
-
-                    $batchCount++;
-                    if ($batchCount >= $batchSize) {
-                        DB::commit();
-                        DB::beginTransaction();
-                        $batchCount = 0;
-                    }
-
-                } catch (\Exception $e) {
-                    $job->incrementFailed($e->getMessage(), $rowIndex + 2);
-                }
-            }
-
-            DB::commit();
             $job->complete();
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback currently open transaction
             $job->update([
                 'status' => ImportJob::STATUS_FAILED, 
                 'error_log' => array_merge($job->error_log ?? [], [['error' => $e->getMessage(), 'time' => now()->toISOString()]]),
             ]);
         }
+    }
+
+    protected function processCsv(ImportJob $job): void
+    {
+        $csv = Reader::createFromPath(Storage::path($job->file_path), 'r');
+        $csv->setHeaderOffset(0);
+        $this->iteratorProcess($csv->getRecords(), $job);
+    }
+
+    protected function processExcel(ImportJob $job): void
+    {
+        $data = Excel::toArray(new \stdClass(), Storage::path($job->file_path))[0];
+        $headers = array_shift($data);
+        
+        $records = collect($data)->map(function($row) use ($headers) {
+            return array_combine($headers, $row);
+        });
+
+        $this->iteratorProcess($records, $job);
+    }
+
+    protected function iteratorProcess(iterable $records, ImportJob $job): void
+    {
+        $method = $this->importers[$job->type] ?? null;
+        if (!$method) throw new \Exception("Unknown import type: {$job->type}");
+
+        $batchSize = 100;
+        $batchCount = 0;
+
+        DB::beginTransaction();
+
+        foreach ($records as $rowIndex => $record) {
+            try {
+                $mappedData = $this->mapColumns($record, $job->column_mapping);
+                $this->$method($mappedData, $job->company_id);
+                $job->incrementProcessed();
+
+                $batchCount++;
+                if ($batchCount >= $batchSize) {
+                    DB::commit();
+                    DB::beginTransaction();
+                    $batchCount = 0;
+                }
+            } catch (\Exception $e) {
+                $job->incrementFailed($e->getMessage(), $rowIndex + 2);
+            }
+        }
+
+        DB::commit();
     }
 
     /**

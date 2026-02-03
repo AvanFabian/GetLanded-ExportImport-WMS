@@ -37,7 +37,7 @@ class ImportController extends Controller
     public function upload(Request $request)
     {
         $validated = $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:10240',
+            'file' => 'required|file|mimes:csv,txt,xlsx|max:10240',
             'type' => 'required|in:products,customers,suppliers,stock',
         ]);
 
