@@ -57,7 +57,7 @@ class DashboardController extends Controller
             ->get();
 
         $lowStock = Product::where('company_id', auth()->user()->company_id)
-            ->whereColumn('stock', '<=', 'min_stock')
+            ->whereRaw('(SELECT COALESCE(SUM(stock), 0) FROM product_warehouse WHERE product_warehouse.product_id = products.id) <= products.min_stock')
             ->take(5)
             ->get();
             
