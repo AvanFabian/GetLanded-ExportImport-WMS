@@ -39,9 +39,9 @@ class SecurityHeaders
             // Extend allowances for Vite dev server (IPv4, IPv6) and HMR websocket only in local env.
             $isLocal = config('app.env') === 'local';
 
-            $scriptSrc      = ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net'];
+            $scriptSrc      = ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net', 'https://unpkg.com'];
             $scriptSrcElem  = $scriptSrc; // browsers may differentiate script-src-elem
-            $styleSrc       = ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://cdn.jsdelivr.net'];
+            $styleSrc       = ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net', 'https://cdn.jsdelivr.net', 'https://unpkg.com'];
             $styleSrcElem   = $styleSrc;  // style-src-elem fallback
             $fontSrc        = ["'self'", 'https://fonts.bunny.net', 'data:'];
             $imgSrc         = ["'self'", 'data:', 'https:', 'http:'];

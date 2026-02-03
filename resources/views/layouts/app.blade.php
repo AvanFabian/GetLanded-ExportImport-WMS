@@ -20,12 +20,12 @@
    <link rel="manifest" href="/manifest.json">
 
    {{-- iOS Icons --}}
-   <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
-   <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+   <link rel="apple-touch-icon" href="/logo.png">
+   <link rel="apple-touch-icon" sizes="180x180" href="/logo.png">
 
    {{-- Favicon --}}
-   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
-   <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
+   <link rel="icon" type="image/png" sizes="32x32" href="/logo.png">
+   <link rel="icon" type="image/png" sizes="16x16" href="/logo.png">
 
    <title>@yield('title', config('app.name', 'Warehouse Inventory'))</title>
 

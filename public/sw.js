@@ -11,8 +11,8 @@ const PRECACHE_ASSETS = [
     '/manifest.json',
     '/css/app.css',
     '/js/app.js',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
+    '/manifest.json',
+    '/logo.png',
 ];
 
 // Install event - precache essential assets
@@ -114,8 +114,8 @@ self.addEventListener('push', (event) => {
         event.waitUntil(
             self.registration.showNotification(data.title || 'GetLanded', {
                 body: data.body || 'New notification',
-                icon: '/icons/icon-192x192.png',
-                badge: '/icons/icon-72x72.png',
+                icon: '/logo.png',
+                badge: '/logo.png',
                 tag: data.tag || 'default',
                 data: data.url || '/'
             })
