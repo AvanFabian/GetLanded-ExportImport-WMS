@@ -201,27 +201,89 @@
 
                 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
-                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    attribution: '&copy; OpenStreetMap'
                 }).addTo(map);
 
-                // Add Markers
+                // Add Markers & Paths
                 const shipments = @json($mapData ?? []);
                 
+                // Custom Icons
+                var planeIcon = L.divIcon({
+                    className: 'plane-icon',
+                    html: '<div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg pulse"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg></div>',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+
+                var shipIcon = L.divIcon({
+                    className: 'ship-icon',
+                    html: '<div class="w-8 h-8 bg-cyan-600 rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg pulse"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></div>',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+
                 if (shipments.length > 0) {
                     var bounds = L.latLngBounds();
                     
                     shipments.forEach(function(s) {
-                         var marker = L.marker([s.lat, s.lng]).addTo(map)
-                            .bindPopup(`<b>${s.name}</b><br>Shipment: ${s.number}<br>ETA: ${s.eta}`);
-                         bounds.extend(marker.getLatLng());
+                         // 1. Draw Flight Path (Dashed Line)
+                         var latlngs = [
+                             [s.origin.lat, s.origin.lng],
+                             [s.destination.lat, s.destination.lng]
+                         ];
+                         
+                         var polyline = L.polyline(latlngs, {
+                             color: '#94a3b8', 
+                             weight: 2,
+                             dashArray: '10, 10', 
+                             opacity: 0.6 
+                         }).addTo(map);
+
+                         // 2. Draw Moving Marker at Calculated Position
+                         var icon = s.carrier.toLowerCase().includes('air') ? planeIcon : shipIcon;
+                         
+                         var marker = L.marker([s.position.lat, s.position.lng], {icon: icon}).addTo(map)
+                            .bindPopup(`
+                                <div class="text-sm">
+                                    <div class="font-bold text-gray-800">${s.number}</div>
+                                    <div class="text-xs text-gray-500 mb-1">${s.carrier}</div>
+                                    <div class="flex justify-between gap-4">
+                                        <div><div class="text-xs font-semibold">Origin</div><div>${s.supplier_name}</div></div>
+                                        <div class="text-right"><div class="text-xs font-semibold">ETA</div><div>${s.eta}</div></div>
+                                    </div>
+                                    <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: ${s.progress}%"></div>
+                                    </div>
+                                </div>
+                            `);
+                         
+                         // 3. Add Origin/Dest markers (small dots)
+                         L.circleMarker([s.origin.lat, s.origin.lng], {radius: 4, color: '#64748b', fillOpacity: 1}).addTo(map);
+                         
+                         bounds.extend([s.origin.lat, s.origin.lng]);
+                         bounds.extend([s.destination.lat, s.destination.lng]);
                     });
                     
                     map.fitBounds(bounds, {padding: [50, 50]});
                 } else {
-                     // Add simple dummy usage marker if empty
-                     L.marker([-6.2088, 106.8456]).addTo(map)
-                        .bindPopup("<b>Your Warehouse</b><br>Jakarta, Indonesia").openPopup();
+                     // Default view if no shipments
+                     L.marker([-6.1751, 106.8650]).addTo(map)
+                        .bindPopup("<b>Central Warehouse</b><br>Jakarta, Indonesia").openPopup();
                 }
+
+                // CSS for Pulse Animation
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    @keyframes pulse-ring {
+                        0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+                        70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+                        100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+                    }
+                    .pulse {
+                        animation: pulse-ring 2s infinite;
+                    }
+                `;
+                document.head.appendChild(style);
             });
             </script>
         </div>

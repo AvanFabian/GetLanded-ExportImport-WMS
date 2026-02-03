@@ -8,6 +8,7 @@ use App\Models\Currency;
 use App\Models\Product;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
+use App\Models\InboundShipment;
 use App\Models\StockIn;
 use App\Models\StockInDetail;
 use App\Models\StockOut;
@@ -21,58 +22,31 @@ class DashboardController extends Controller
     /**
      * Executive Dashboard with data visualization.
      */
-    public function index()
+    public function index(\App\Services\TrackingService $trackingService)
     {
-        // Cache expensive aggregations for 5 minutes
-        $cacheMinutes = 5;
+        // 1. Live Shipment Tracker (Using Predictive Service)
+        $mapData = $trackingService->getDashboardMapData(auth()->user()->company_id);
 
-        // Widget 1: Total Stock Value (IDR & USD)
-        $stockValue = Cache::remember('dashboard:stock_value', $cacheMinutes * 60, function () {
-            return $this->calculateStockValue();
-        });
+        /**
+         * 2. Key Performance Indicators (KPIs)
+         */
+        
+        // Total Stock Value
+        $stockValue = $this->calculateStockValue();
 
-        // Widget 2: Active Alerts (Low Stock + Expiring Batches)
-        $activeAlerts = Cache::remember('dashboard:active_alerts', $cacheMinutes * 60, function () {
-            return $this->getActiveAlerts();
-        });
+        // Warehouse Fill Rate
+        $fillRate = $this->getWarehouseFillRate();
 
-        // Widget 3: Monthly Transaction Fees
-        $monthlyFees = Cache::remember('dashboard:monthly_fees:' . now()->format('Y-m'), $cacheMinutes * 60, function () {
-            return $this->getMonthlyFees();
-        });
+        // 7-Day Sales Trend (Placeholder for now)
+        $salesTrend = [12, 19, 3, 5, 2, 3, 15]; // Dummy data
 
-        // Widget 4: Warehouse Fill Rate
-        $fillRate = Cache::remember('dashboard:fill_rate', $cacheMinutes * 60, function () {
-            return $this->getWarehouseFillRate();
-        });
-
-        // Chart 1: Stock Trends (14 days)
-        $stockTrends = Cache::remember('dashboard:stock_trends', $cacheMinutes * 60, function () {
-            return $this->getStockTrends();
-        });
-
-        // Chart 2: Stock Distribution by Zone
-        $zoneDistribution = Cache::remember('dashboard:zone_distribution', $cacheMinutes * 60, function () {
-            return $this->getZoneDistribution();
-        });
-
-        // Chart 3: Monthly Profit Data (NEW)
-        $monthlyProfit = Cache::remember('dashboard:monthly_profit', $cacheMinutes * 60, function () {
-            return $this->getMonthlyProfitData();
-        });
-
-        // Chart 4: Inventory Aging (NEW)
-        $inventoryAging = Cache::remember('dashboard:inventory_aging', $cacheMinutes * 60, function () {
-            return $this->getInventoryAgingData();
-        });
-
-        // Chart 5: Top Profitable Products (NEW)
-        $topProducts = Cache::remember('dashboard:top_products', $cacheMinutes * 60, function () {
-            return $this->getTopProfitableProducts();
-        });
-
-        // List 1: Expiring Soon (Top 5)
-        $expiringSoon = Batch::whereNotNull('expiry_date')
+        /**
+         * 3. Actionable Widgets
+         */
+        $alerts = $this->getActiveAlerts(); 
+        
+        $expiringSoon = Batch::where('company_id', auth()->user()->company_id)
+            ->whereNotNull('expiry_date')
             ->where('expiry_date', '>=', now())
             ->where('expiry_date', '<=', now()->addDays(30))
             ->where('status', '!=', 'depleted')
@@ -82,79 +56,68 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // List 2: Recent Activity (from AuditLog)
-        $recentActivity = AuditLog::with('user')
-            ->latest()
-            ->take(10)
+        $lowStock = Product::where('company_id', auth()->user()->company_id)
+            ->whereColumn('stock', '<=', 'min_stock')
+            ->take(5)
             ->get();
+            
+        $activeAlerts = [
+            'total' => $expiringSoon->count() + $lowStock->count(),
+            'low_stock' => $lowStock->count(),
+            'expiring' => $expiringSoon->count()
+        ];
 
-        // Get USD rate for display
-        $usdRate = Currency::where('code', 'USD')->first()?->exchange_rate ?? 15850;
-
-        return view('dashboard.index', compact(
-            'stockValue',
-            'activeAlerts',
-            'monthlyFees',
-            'fillRate',
-            'stockTrends',
-            'zoneDistribution',
-            'monthlyProfit',
-            'inventoryAging',
-            'topProducts',
-            'expiringSoon',
-            'recentActivity',
-            'usdRate'
-        ));
-        // Widget 5: On Water Value (NEW)
-        $onWaterValue = Cache::remember('dashboard:on_water_value', $cacheMinutes * 60, function () {
-            return $this->getOnWaterValue();
-        });
-
-        // List 3: Incoming Shipments (NEW)
-        $incomingShipments = \App\Models\InboundShipment::with('purchaseOrders.supplier')
-            ->where('status', '!=', 'received')
-            ->where('status', '!=', 'draft') // Only active shipments
-            ->orderBy('created_at', 'desc')
+        /**
+         * 4. Charts Data
+         */
+        $stockTrends = $this->getStockTrends();
+        $zoneDistribution = $this->getZoneDistribution();
+        
+        // 5. Financials
+        $monthlyProfit = $this->getMonthlyProfitData();
+        $monthlyFees = $this->getMonthlyFees();
+        $usdRate = Currency::where('code', 'USD')->value('exchange_rate') ?? 16000;
+        
+        // 6. Recent Activity
+        $recentActivity = AuditLog::where('company_id', auth()->user()->company_id)
+            ->with('user')
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        // 7. Supply Chain & Shipments
+        $onWaterValue = $this->getOnWaterValue();
+        $inventoryAging = $this->getInventoryAgingData();
+        $topProducts = $this->getTopProfitableProducts();
+        $holidayWarnings = $this->getHolidayWarnings();
+        $incomingShipments = InboundShipment::where('company_id', auth()->user()->company_id)
+            ->whereIn('status', ['on_water', 'booked'])
+            ->with('purchaseOrders.supplier')
+            ->latest()
             ->take(5)
             ->get();
 
-        // Map Data for OpenStreetMap
-        $mapData = $incomingShipments->map(function ($shipment) {
-            $supplier = $shipment->purchaseOrders->first()->supplier ?? null;
-            if ($supplier && $supplier->latitude && $supplier->longitude) {
-                return [
-                    'lat' => $supplier->latitude,
-                    'lng' => $supplier->longitude,
-                    'name' => $supplier->name,
-                    'number' => $shipment->shipment_number,
-                    'eta' => $shipment->estimated_arrival_date ? $shipment->estimated_arrival_date->format('d M Y') : 'TBD',
-                ];
-            }
-            return null;
-        })->filter()->values();
-
-        // Supply Chain Warnings (Holidays)
-        $holidayWarnings = $this->getHolidayWarnings();
-
         return view('dashboard.index', compact(
+            'mapData',
             'stockValue',
-            'activeAlerts',
-            'monthlyFees',
             'fillRate',
+            'salesTrend',
+            'activeAlerts',
             'stockTrends',
             'zoneDistribution',
             'monthlyProfit',
+            'monthlyFees',
+            'usdRate',
+            'recentActivity',
+            'onWaterValue',
             'inventoryAging',
             'topProducts',
-            'expiringSoon',
-            'recentActivity',
-            'usdRate',
-            'onWaterValue',
+            'holidayWarnings',
             'incomingShipments',
-            'mapData',
-            'holidayWarnings'
+            'expiringSoon'
         ));
     }
+
     
     // Helper to get Holiday Warnings (Cached in Service)
     private function getHolidayWarnings()
