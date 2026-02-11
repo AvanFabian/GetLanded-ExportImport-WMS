@@ -39,7 +39,7 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation, WithChu
     public function model(array $row)
     {
         // Find or create category — scoped to tenant
-        $categoryName = $row['category_name'] ?? '';
+        $categoryName = trim($row['category_name'] ?? '');
         if (!isset($this->categories[$categoryName]) && !empty($categoryName)) {
             $category = Category::withoutGlobalScopes()->firstOrCreate(
                 ['name' => $categoryName, 'company_id' => $this->companyId],
@@ -48,31 +48,36 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation, WithChu
             $this->categories[$categoryName] = $category->id;
         }
 
-        // Explicitly set company_id — WithBatchInserts bypasses Eloquent events,
-        // so the BelongsToTenant boot trait's creating() hook never fires.
-        
+        // Build update array DYNAMICALLY — only include fields present in the XLSX.
+        // This prevents wiping data when users upload partial files (e.g., only SKU + price).
+        $updateData = [
+            'name' => trim($row['name']),
+        ];
+
+        // Optional fields — only update if the column exists in the file
+        if (array_key_exists('description', $row))    $updateData['description'] = $row['description'];
+        if (array_key_exists('unit', $row))            $updateData['unit'] = strtolower(trim($row['unit']));
+        if (array_key_exists('purchase_price', $row))  $updateData['purchase_price'] = $this->cleanNumeric($row['purchase_price']);
+        if (array_key_exists('selling_price', $row))   $updateData['selling_price'] = $this->cleanNumeric($row['selling_price']);
+        if (array_key_exists('min_stock', $row))       $updateData['min_stock'] = (int) $row['min_stock'];
+        if (array_key_exists('hs_code', $row))         $updateData['hs_code'] = trim($row['hs_code'] ?? '');
+        if (array_key_exists('origin_country', $row))  $updateData['origin_country'] = strtoupper(trim($row['origin_country'] ?? ''));
+        if (array_key_exists('weight_unit', $row))     $updateData['weight_unit'] = strtoupper(trim($row['weight_unit'] ?? 'KG'));
+
+        // Category — only update if column present
+        if (!empty($categoryName)) {
+            $updateData['category_id'] = $this->categories[$categoryName] ?? null;
+        }
+
+        $updateData['status'] = true;
+
         // Use updateOrCreate to allow existing SKUs to be updated instead of blocking
         $product = Product::withoutGlobalScopes()->updateOrCreate(
             [
                 'company_id' => $this->companyId,
-                'code' => $row['sku'],
+                'code' => trim($row['sku']),
             ],
-            [
-                'name' => $row['name'],
-                'description' => $row['description'] ?? null,
-                'category_id' => $this->categories[$categoryName] ?? null,
-                'unit' => $row['unit'],
-                'purchase_price' => $row['purchase_price'],
-                'selling_price' => $row['selling_price'],
-                'min_stock' => $row['min_stock'] ?? 0,
-    
-                // Exim Fields
-                'hs_code' => $row['hs_code'] ?? null,
-                'origin_country' => $row['origin_country'] ?? null,
-                'weight_unit' => $row['weight_unit'] ?? 'KG',
-    
-                'status' => true,
-            ]
+            $updateData
         );
 
         return $product;
@@ -82,19 +87,33 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation, WithChu
     {
         return [
             'name' => 'required|string',
-            // Allow SKU to exist if it belongs to this company (for updates)
-            // But we still need to validate it's unique if we were strictly creating.
-            // Since we switched to updateOrCreate, we can technically relax this check,
-            // OR use a rule that ignores the current ID (which we don't know).
-            // SAFEST OPTION: Remove the unique check here and let updateOrCreate handle it.
-            // If the user INTENDS to create new, they might typo an existing SKU and overwrite it.
-            // But for bulk import, "Upsert" is usually the desired behavior.
-            'sku' => 'required|string', 
-            'category_name' => 'required|string',
-            'unit' => 'required|string',
-            'purchase_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
+            'sku' => 'required|string',
+            'category_name' => 'nullable|string',
+            'unit' => 'nullable|string',
+            'purchase_price' => 'nullable',
+            'selling_price' => 'nullable',
         ];
+    }
+
+    /**
+     * Clean numeric values — handles IDR (Rp 1.500.000) and USD ($1,500.00) formats.
+     */
+    private function cleanNumeric($value): float
+    {
+        if (is_numeric($value)) return (float) $value;
+        if (empty($value)) return 0;
+
+        $upper = strtoupper((string) $value);
+
+        // IDR format: dots = thousands, comma = decimal (e.g., "Rp 1.500.000,50")
+        if (str_contains($upper, 'RP') || str_contains($upper, 'IDR')) {
+            $cleaned = str_replace('.', '', $value);   // Remove dots (thousands)
+            $cleaned = str_replace(',', '.', $cleaned); // Comma → decimal
+            return (float) preg_replace('/[^0-9.\-]/', '', $cleaned);
+        }
+
+        // Default/USD: commas = thousands, dot = decimal (e.g., "$1,500.00")
+        return (float) preg_replace('/[^0-9.\-]/', '', str_replace(',', '', $value));
     }
 
     public function chunkSize(): int

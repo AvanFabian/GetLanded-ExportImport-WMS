@@ -27,4 +27,21 @@ class ShipmentExpense extends Model
     {
         return $this->belongsTo(InboundShipment::class, 'inbound_shipment_id');
     }
+
+    /**
+     * Get expense amount converted to IDR using the Currency model's exchange rate.
+     */
+    public function getAmountInIdr(): float
+    {
+        if (empty($this->currency_code) || strtoupper($this->currency_code) === 'IDR') {
+            return (float) $this->amount;
+        }
+
+        $currency = \App\Models\Currency::findByCode($this->currency_code);
+        if (!$currency || $currency->is_base) {
+            return (float) $this->amount;
+        }
+
+        return (float) $this->amount * (float) $currency->exchange_rate;
+    }
 }

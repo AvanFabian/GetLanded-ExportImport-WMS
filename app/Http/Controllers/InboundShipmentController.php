@@ -107,13 +107,15 @@ class InboundShipmentController extends Controller
         
         // Flatten all PO details for easy access
         $poDetails = collect();
+        $poLookup = []; // product_id → PurchaseOrder (for supplier_id)
         foreach ($inboundShipment->purchaseOrders as $po) {
             foreach ($po->details as $detail) {
                 $poDetails->put($detail->product_id, $detail);
+                $poLookup[$detail->product_id] = $po;
             }
         }
 
-        DB::transaction(function () use ($inboundShipment, $request, $poDetails) {
+        DB::transaction(function () use ($inboundShipment, $request, $poDetails, $poLookup) {
             
             $inputItems = $request->items;
             $itemsToProcess = [];
@@ -133,15 +135,24 @@ class InboundShipmentController extends Controller
                     throw new \Exception("Cannot receive {$qtyToReceive} for Product #{$productId}. Only {$remaining} remaining.");
                 }
 
+                // Convert unit_price to IDR if PO is in foreign currency
+                $po = $poLookup[$productId] ?? null;
+                $unitPriceIdr = $detail->unit_price;
+                if ($po && $po->currency_code && strtoupper($po->currency_code) !== 'IDR') {
+                    $unitPriceIdr = $detail->unit_price * (float) ($po->exchange_rate_at_transaction ?? 1);
+                }
+
                 $itemsToProcess[] = [
                     'product_id' => $productId,
                     'quantity' => $qtyToReceive,
-                    'purchase_price' => $detail->unit_price,
+                    'purchase_price' => $detail->unit_price,       // Original currency
+                    'purchase_price_idr' => $unitPriceIdr,         // IDR equivalent
                     'detail_model' => $detail,
-                    'total_line_value' => $qtyToReceive * $detail->unit_price
+                    'total_line_value' => $qtyToReceive * $unitPriceIdr,
+                    'unit_price' => $unitPriceIdr,                 // For LandedCostService
                 ];
 
-                $totalValue += ($qtyToReceive * $detail->unit_price);
+                $totalValue += ($qtyToReceive * $unitPriceIdr);
                 $totalQuantity += $qtyToReceive;
             }
 
@@ -154,62 +165,54 @@ class InboundShipmentController extends Controller
                 'warehouse_id' => $inboundShipment->purchaseOrders->first()->warehouse_id ?? 1,
                 'supplier_id' => $inboundShipment->purchaseOrders->first()->supplier_id,
                 'date' => now(),
-                'status' => 'completed', // Direct complete for now
-                'transaction_code' => 'IN-' . date('YmdHis'), // Simple generator
+                'status' => 'completed',
+                'transaction_code' => 'IN-' . date('YmdHis'),
                 'note' => 'Received from Shipment ' . $inboundShipment->shipment_number,
                 'created_by' => auth()->id(),
-                'total' => $totalValue // Base total
+                'total' => $totalValue
             ]);
 
-            $expenses = $inboundShipment->expenses;
+            // 3. Allocate Landed Costs via Service
+            $landedCostService = app(\App\Services\LandedCostService::class);
+            $allocations = $landedCostService->allocate($itemsToProcess, $inboundShipment->expenses);
 
-            // 3. Process Items
+            // 4. Process Items — Create StockInDetail + Batch + Update WAC
             foreach ($itemsToProcess as $item) {
-                
-                // Calculate Allocated Cost
-                $allocatedCost = 0;
-                foreach ($expenses as $expense) {
-                    if ($expense->allocation_method === 'value' && $totalValue > 0) {
-                        $ratio = $item['total_line_value'] / $totalValue;
-                        $allocatedCost += ($expense->amount * $ratio) / $item['quantity'];
-                    } elseif ($expense->allocation_method === 'quantity' && $totalQuantity > 0) {
-                        $ratio = $item['quantity'] / $totalQuantity;
-                        $allocatedCost += ($expense->amount * $ratio) / $item['quantity'];
-                    }
-                }
+                $pid = $item['product_id'];
+                $allocatedCostPerUnit = $allocations[$pid] ?? 0;
 
                 // Create Stock In Detail
                 \App\Models\StockInDetail::create([
                     'stock_in_id' => $stockIn->id,
-                    'product_id' => $item['product_id'],
+                    'product_id' => $pid,
                     'quantity' => $item['quantity'],
-                    'purchase_price' => $item['purchase_price'],
-                    'allocated_landed_cost' => $allocatedCost,
-                    'total' => ($item['purchase_price'] * $item['quantity'])
+                    'purchase_price' => $item['purchase_price_idr'],
+                    'allocated_landed_cost' => $allocatedCostPerUnit,
+                    'total' => ($item['purchase_price_idr'] + $allocatedCostPerUnit) * $item['quantity'],
                 ]);
 
-                // Update WAC
-                $product = \App\Models\Product::find($item['product_id']);
-                $currentStock = $product->total_stock; 
-                $currentCost = $product->cost;
-                $incomingQty = $item['quantity'];
-                $incomingCost = $item['purchase_price'] + $allocatedCost; 
-                $totalQty = $currentStock + $incomingQty;
-                
-                if ($totalQty > 0) {
-                    $newWAC = (($currentStock * $currentCost) + ($incomingQty * $incomingCost)) / $totalQty;
-                    $product->update(['weighted_average_cost' => round($newWAC, 2)]);
-                }
+                // Create Batch with TRUE cost (purchase price + landed cost)
+                $po = $poLookup[$pid] ?? null;
+                \App\Models\Batch::create([
+                    'company_id' => auth()->user()->company_id,
+                    'product_id' => $pid,
+                    'batch_number' => $inboundShipment->shipment_number . '-' . $pid,
+                    'cost_price' => round($item['purchase_price_idr'] + $allocatedCostPerUnit, 2),
+                    'supplier_id' => $po?->supplier_id,
+                    'stock_in_id' => $stockIn->id,
+                    'status' => 'active',
+                    'notes' => 'Landed cost: ' . number_format($allocatedCostPerUnit, 2) . '/unit',
+                ]);
+
+                // Update Weighted Average Cost
+                $landedCostService->updateWAC($pid, $item['quantity'], $item['purchase_price_idr'] + $allocatedCostPerUnit);
 
                 // Update PO Detail Quantity Received
                 $item['detail_model']->increment('quantity_received', $item['quantity']);
                 
-                // Update Stock in Warehouse (Pivot) - Simplified/Assuming Service does this usually
-                // For now, let's look for a method explicitly or do raw update if needed.
-                // Assuming StockIn creation doesn't auto-update stock in this codebase based on previous view.
-                // We need to increment the stock in product_warehouse pivot.
+                // Update Stock in Warehouse (Pivot)
                 $warehouseId = $stockIn->warehouse_id;
-                $product = \App\Models\Product::find($item['product_id']);
+                $product = \App\Models\Product::find($pid);
                 
                 $pivot = $product->warehouses()->where('warehouse_id', $warehouseId)->first();
                 if ($pivot) {
@@ -221,13 +224,13 @@ class InboundShipmentController extends Controller
                 }
             }
 
-            // 4. Update PO Statuses
+            // 5. Update PO Statuses
             foreach ($inboundShipment->purchaseOrders as $po) {
                 $isFullyReceived = true;
                 $isPartiallyReceived = false;
 
                 foreach ($po->details as $detail) {
-                    $detail->refresh(); // getting updated qty
+                    $detail->refresh();
                     if ($detail->quantity_received < $detail->quantity_ordered) {
                         $isFullyReceived = false;
                     }
@@ -243,16 +246,14 @@ class InboundShipmentController extends Controller
                 }
             }
             
-            // Mark Shipment as Received (Closed)
+            // Mark Shipment as Received
             $inboundShipment->update(['status' => 'received']);
         });
 
         return redirect()->route('stock-ins.index')
-             ->with('success', 'Shipment processed successfully.');
-        
-        return redirect()->route('stock-ins.show', $stockIn)
-             ->with('success', 'Shipment received! Landed Costs have been allocated.');
+             ->with('success', 'Shipment received! Landed costs allocated and batches created.');
     }
+
     // Phase 3 Unique Feature: Digital Vault (Documents)
     public function storeDocument(Request $request, InboundShipment $inboundShipment)
     {

@@ -182,23 +182,29 @@ class ImportService
         // Generate Code/SKU if missing
         $code = $data['code'] ?? $data['sku'] ?? 'PRD-' . strtoupper(uniqid());
 
+        // Build update array DYNAMICALLY — only include fields present in the data.
+        // Prevents wiping data when users import partial spreadsheets.
+        $updateData = [
+            'name' => trim($data['name']),
+        ];
+
+        if (isset($data['description']))    $updateData['description'] = $data['description'];
+        if (isset($data['unit']))           $updateData['unit'] = $this->cleanUnit($data['unit']);
+        if (isset($data['category']) || isset($data['category_id'])) {
+            $updateData['category_id'] = $this->resolveCategory($data['category'] ?? $data['category_id'] ?? null, $companyId);
+        }
+        if (isset($data['hs_code']))        $updateData['hs_code'] = trim($data['hs_code']);
+        if (isset($data['origin_country'])) $updateData['origin_country'] = strtoupper(trim($data['origin_country']));
+        if (isset($data['purchase_price'])) $updateData['purchase_price'] = $this->cleanCurrency($data['purchase_price']);
+        if (isset($data['selling_price']))  $updateData['selling_price'] = $this->cleanCurrency($data['selling_price']);
+        if (isset($data['min_stock']))      $updateData['min_stock'] = $this->cleanWeight($data['min_stock']);
+
         Product::withoutGlobalScopes()->updateOrCreate(
             [
                 'company_id' => $companyId,
-                'code' => $code,
+                'code' => trim($code),
             ],
-            [
-                'name' => $data['name'],
-                'description' => $data['description'] ?? null,
-                'unit' => $this->cleanUnit($data['unit'] ?? 'pcs'),
-                'category_id' => $this->resolveCategory($data['category'] ?? $data['category_id'] ?? null, $companyId),
-                // Exim Fields
-                'hs_code' => $data['hs_code'] ?? null,
-                'origin_country' => strtoupper($data['origin_country'] ?? ''),
-                'purchase_price' => $this->cleanCurrency($data['purchase_price'] ?? 0),
-                'selling_price' => $this->cleanCurrency($data['selling_price'] ?? 0),
-                'min_stock' => $this->cleanWeight($data['min_stock'] ?? 0),
-            ]
+            $updateData
         );
     }
 
@@ -272,16 +278,17 @@ class ImportService
 
     protected function importCustomers(array $data, int $companyId): void
     {
-        // Require Email or Phone or Name to identify uniqueness
         if (empty($data['name'])) throw new \Exception("Customer Name is required");
 
+        // Use email as unique key if available, otherwise fall back to name
+        $uniqueKey = !empty($data['email'])
+            ? ['company_id' => $companyId, 'email' => $data['email']]
+            : ['company_id' => $companyId, 'name' => trim($data['name'])];
+
         Customer::withoutGlobalScopes()->updateOrCreate(
+            $uniqueKey,
             [
-                'company_id' => $companyId,
-                'email' => $data['email'] ?? null,
-            ],
-            [
-                'name' => $data['name'],
+                'name' => trim($data['name']),
                 'phone' => $data['phone'] ?? null,
                 'address' => $data['address'] ?? null,
             ]
@@ -292,13 +299,15 @@ class ImportService
     {
         if (empty($data['name'])) throw new \Exception("Supplier Name is required");
 
+        // Use email as unique key if available, otherwise fall back to name
+        $uniqueKey = !empty($data['email'])
+            ? ['company_id' => $companyId, 'email' => $data['email']]
+            : ['company_id' => $companyId, 'name' => trim($data['name'])];
+
         Supplier::withoutGlobalScopes()->updateOrCreate(
+            $uniqueKey,
             [
-                'company_id' => $companyId,
-                'email' => $data['email'] ?? null,
-            ],
-            [
-                'name' => $data['name'],
+                'name' => trim($data['name']),
                 'phone' => $data['phone'] ?? null,
                 'address' => $data['address'] ?? null,
             ]

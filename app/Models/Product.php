@@ -28,6 +28,13 @@ class Product extends Model
         'enable_batch_tracking',
         'batch_method',
         'weighted_average_cost',
+        // Trade / Landed Cost fields
+        'hs_code',
+        'origin_country',
+        'weight_unit',
+        'dimension_unit',
+        'net_weight',
+        'cbm_volume',
     ];
 
     /**
