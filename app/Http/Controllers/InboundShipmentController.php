@@ -65,8 +65,9 @@ class InboundShipmentController extends Controller
 
     public function show(InboundShipment $inboundShipment)
     {
-        $inboundShipment->load(['purchaseOrders.supplier', 'purchaseOrders.details.product']);
-        return view('inbound_shipments.show', compact('inboundShipment'));
+        $inboundShipment->load(['purchaseOrders.supplier', 'purchaseOrders.details.product', 'expenses']);
+        $currencies = \App\Models\Currency::orderBy('code')->get();
+        return view('inbound_shipments.show', compact('inboundShipment', 'currencies'));
     }
 
     public function update(Request $request, InboundShipment $inboundShipment)
@@ -87,10 +88,11 @@ class InboundShipmentController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
-            'allocation_method' => 'required|in:value,quantity', // Simple v1
+            'currency_code' => 'required|exists:currencies,code',
+            'allocation_method' => 'required|in:value,quantity,weight,volume',
         ]);
 
-        $inboundShipment->expenses()->create($request->only(['name', 'amount', 'allocation_method', 'notes']));
+        $inboundShipment->expenses()->create($request->only(['name', 'amount', 'currency_code', 'allocation_method', 'notes']));
 
         return back()->with('success', 'Expense added successfully.');
     }

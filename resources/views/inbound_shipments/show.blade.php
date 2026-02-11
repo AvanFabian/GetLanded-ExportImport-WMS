@@ -139,10 +139,17 @@
                         <input type="text" name="name" placeholder="Expense Name (e.g. Ocean Freight)" class="w-full text-sm rounded border-gray-300">
                     </div>
                     <div class="flex gap-2">
-                        <input type="number" step="0.01" name="amount" placeholder="Amount" class="w-2/3 text-sm rounded border-gray-300">
-                        <select name="allocation_method" class="w-1/3 text-sm rounded border-gray-300">
+                        <select name="currency_code" class="w-1/4 text-sm rounded border-gray-300">
+                            @foreach($currencies as $currency)
+                                <option value="{{ $currency->code }}" {{ $currency->code == 'IDR' ? 'selected' : '' }}>{{ $currency->code }}</option>
+                            @endforeach
+                        </select>
+                        <input type="number" step="0.01" name="amount" placeholder="Amount" class="w-2/4 text-sm rounded border-gray-300">
+                        <select name="allocation_method" class="w-1/4 text-sm rounded border-gray-300">
                             <option value="value">By Value</option>
                             <option value="quantity">By Qty</option>
+                            <option value="weight">By Weight</option>
+                            <option value="volume">By Volume</option>
                         </select>
                     </div>
                     <button type="submit" class="w-full bg-gray-800 text-white text-sm py-2 rounded hover:bg-gray-700">
