@@ -180,24 +180,27 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
-        // Increase limits for stress testing (20k records)
-        set_time_limit(600); // 10 minutes
-        ini_set('memory_limit', '512M');
-
         $request->validate([
-            'file' => 'required|mimes:xlsx,csv,xls',
+            'file' => 'required|mimes:xlsx,csv,xls|max:10240',
         ]);
 
         try {
-            Excel::import(new \App\Imports\ProductsImport, $request->file('file'));
-            return back()->with('success', 'Products imported successfully!');
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            $failures = $e->failures();
-            $messages = [];
-            foreach ($failures as $failure) {
-                $messages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
-            }
-            return back()->with('error', 'Import Validation Failed: ' . implode(' | ', array_slice($messages, 0, 5)));
+            $path = $request->file('file')->store('imports');
+
+            // Create an ImportJob record for tracking
+            $job = \App\Models\ImportJob::create([
+                'company_id' => auth()->user()->company_id,
+                'type' => 'products',
+                'file_path' => $path,
+                'status' => \App\Models\ImportJob::STATUS_PROCESSING,
+                'total_rows' => 0, // Will be updated by the job
+                'created_by' => auth()->id(),
+            ]);
+
+            // Dispatch to queue — this returns immediately
+            \App\Jobs\ProcessImportJob::dispatch($job->id, auth()->user()->company_id);
+
+            return back()->with('success', __('Import started in background. Check the Import Center for progress.'));
         } catch (\Exception $e) {
             return back()->with('error', 'Import Failed: ' . $e->getMessage());
         }

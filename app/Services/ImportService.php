@@ -167,7 +167,8 @@ class ImportService
     {
         // Preload cache if empty
         if (empty($this->categoryCache)) {
-            $this->categoryCache = \App\Models\Category::where('company_id', $companyId)
+            $this->categoryCache = \App\Models\Category::withoutGlobalScopes()
+                ->where('company_id', $companyId)
                 ->pluck('id', 'name')
                 ->mapWithKeys(fn($id, $name) => [strtolower($name) => $id])
                 ->toArray();
@@ -181,7 +182,7 @@ class ImportService
         // Generate Code/SKU if missing
         $code = $data['code'] ?? $data['sku'] ?? 'PRD-' . strtoupper(uniqid());
 
-        Product::updateOrCreate(
+        Product::withoutGlobalScopes()->updateOrCreate(
             [
                 'company_id' => $companyId,
                 'code' => $code,
@@ -196,7 +197,7 @@ class ImportService
                 'origin_country' => strtoupper($data['origin_country'] ?? ''),
                 'purchase_price' => $this->cleanCurrency($data['purchase_price'] ?? 0),
                 'selling_price' => $this->cleanCurrency($data['selling_price'] ?? 0),
-                'min_stock' => $this->cleanWeight($data['min_stock'] ?? 0), // Assuming min_stock can track weight for now
+                'min_stock' => $this->cleanWeight($data['min_stock'] ?? 0),
             ]
         );
     }
@@ -214,7 +215,7 @@ class ImportService
         }
 
         // Create & Cache
-        $category = \App\Models\Category::firstOrCreate(
+        $category = \App\Models\Category::withoutGlobalScopes()->firstOrCreate(
             ['company_id' => $companyId, 'name' => trim($value)],
             ['description' => 'Auto-created from Import']
         );
@@ -274,7 +275,7 @@ class ImportService
         // Require Email or Phone or Name to identify uniqueness
         if (empty($data['name'])) throw new \Exception("Customer Name is required");
 
-        Customer::updateOrCreate(
+        Customer::withoutGlobalScopes()->updateOrCreate(
             [
                 'company_id' => $companyId,
                 'email' => $data['email'] ?? null,
@@ -291,7 +292,7 @@ class ImportService
     {
         if (empty($data['name'])) throw new \Exception("Supplier Name is required");
 
-        Supplier::updateOrCreate(
+        Supplier::withoutGlobalScopes()->updateOrCreate(
             [
                 'company_id' => $companyId,
                 'email' => $data['email'] ?? null,

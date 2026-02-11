@@ -102,10 +102,8 @@ class ImportController extends Controller
             'column_mapping' => $validated['mapping'],
         ]);
 
-        // Start processing in background
-        dispatch(function () use ($job) {
-            app(ImportService::class)->process($job);
-        })->afterResponse();
+        // Dispatch to queue as a proper job (not a closure)
+        \App\Jobs\ProcessImportJob::dispatch($job->id, auth()->user()->company_id);
 
         return redirect()->route('imports.show', $job)
             ->with('success', 'Import process started in background.');

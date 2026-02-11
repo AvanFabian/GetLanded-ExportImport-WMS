@@ -17,60 +17,64 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation, WithChu
 {
     private $categories;
     private $defaultWarehouseId;
+    private int $companyId;
 
-    public function __construct()
+    public function __construct(?int $companyId = null)
     {
-        // Cache categories to avoid N+1 queries
-        $this->categories = Category::pluck('id', 'name')->toArray();
-        // Default to the first active warehouse if none specified
-        $this->defaultWarehouseId = Warehouse::first()->id ?? null;
+        // Accept explicit company_id for queue context, fallback to auth for HTTP context
+        $this->companyId = $companyId ?? auth()->user()?->company_id ?? 0;
+
+        // Cache categories scoped to this tenant
+        $this->categories = Category::withoutGlobalScopes()
+            ->where('company_id', $this->companyId)
+            ->pluck('id', 'name')
+            ->toArray();
+
+        // Default to the first active warehouse for this tenant
+        $this->defaultWarehouseId = Warehouse::withoutGlobalScopes()
+            ->where('company_id', $this->companyId)
+            ->first()?->id;
     }
 
     public function model(array $row)
     {
-        // Find or create category
-        // Note: For batch inserts, we ideally shouldn't create relations on the fly 
-        // as it breaks the batch purity, but for categories it's acceptable if cached immediately.
-        $categoryName = $row['category_name'];
+        // Find or create category — scoped to tenant
+        $categoryName = $row['category_name'] ?? '';
         if (!isset($this->categories[$categoryName]) && !empty($categoryName)) {
-            $category = Category::firstOrCreate(
-                ['name' => $categoryName],
+            $category = Category::withoutGlobalScopes()->firstOrCreate(
+                ['name' => $categoryName, 'company_id' => $this->companyId],
                 ['type' => 'raw_material']
             );
             $this->categories[$categoryName] = $category->id;
         }
 
-        $product = new Product([
-            'name' => $row['name'],
-            'code' => $row['sku'],
-            'description' => $row['description'] ?? null,
-            'category_id' => $this->categories[$categoryName] ?? null,
-            'unit' => $row['unit'],
-            'purchase_price' => $row['purchase_price'],
-            'selling_price' => $row['selling_price'],
-            'min_stock' => $row['min_stock'] ?? 0,
-            
-            // Real World Import Fields
-            'hs_code' => $row['hs_code'] ?? null,
-            'origin_country' => $row['origin_country'] ?? null,
-            'weight_unit' => $row['weight_unit'] ?? 'KG',
-            
-            'status' => true,
-        ]);
+        // Explicitly set company_id — WithBatchInserts bypasses Eloquent events,
+        // so the BelongsToTenant boot trait's creating() hook never fires.
         
-        // Note: attach() cannot be used directly on the model instance before it's saved.
-        // With Maatwebsite batch inserts, listeners or separate handling is often needed for relations.
-        // However, standard ToModel saves the model. 
-        // For relationships like belongsToMany (warehouses), we need the ID.
-        // Optimization: We will handle warehouse attachment in a loop after the batch is imported 
-        // OR rely on a simpler 'after import' job if strict batching is needed.
-        // For this implementation, we will stick to creating the product, but we need to handle the warehouse relation.
-        // Since ToModel with BatchInserts persists the model, we can try using the 'created' event 
-        // or just accept that pivot table inserts might be separate queries for now, 
-        // or use a closure/hook. 
-        // A better approach for bulk high-performance is avoiding Eloquent for the pivot 
-        // and using DB::table('product_warehouse')->insert() in bulk events.
-        
+        // Use updateOrCreate to allow existing SKUs to be updated instead of blocking
+        $product = Product::withoutGlobalScopes()->updateOrCreate(
+            [
+                'company_id' => $this->companyId,
+                'code' => $row['sku'],
+            ],
+            [
+                'name' => $row['name'],
+                'description' => $row['description'] ?? null,
+                'category_id' => $this->categories[$categoryName] ?? null,
+                'unit' => $row['unit'],
+                'purchase_price' => $row['purchase_price'],
+                'selling_price' => $row['selling_price'],
+                'min_stock' => $row['min_stock'] ?? 0,
+    
+                // Exim Fields
+                'hs_code' => $row['hs_code'] ?? null,
+                'origin_country' => $row['origin_country'] ?? null,
+                'weight_unit' => $row['weight_unit'] ?? 'KG',
+    
+                'status' => true,
+            ]
+        );
+
         return $product;
     }
 
@@ -78,7 +82,14 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation, WithChu
     {
         return [
             'name' => 'required|string',
-            'sku' => 'required|string|unique:products,code',
+            // Allow SKU to exist if it belongs to this company (for updates)
+            // But we still need to validate it's unique if we were strictly creating.
+            // Since we switched to updateOrCreate, we can technically relax this check,
+            // OR use a rule that ignores the current ID (which we don't know).
+            // SAFEST OPTION: Remove the unique check here and let updateOrCreate handle it.
+            // If the user INTENDS to create new, they might typo an existing SKU and overwrite it.
+            // But for bulk import, "Upsert" is usually the desired behavior.
+            'sku' => 'required|string', 
             'category_name' => 'required|string',
             'unit' => 'required|string',
             'purchase_price' => 'required|numeric|min:0',
@@ -88,11 +99,11 @@ class ProductsImport implements ToModel, WithHeadingRow, WithValidation, WithChu
 
     public function chunkSize(): int
     {
-        return 1000;
+        return 500;
     }
 
     public function batchSize(): int
     {
-        return 1000;
+        return 500;
     }
 }
