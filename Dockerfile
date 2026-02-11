@@ -29,3 +29,10 @@ ENV AUTORUN_ENABLED=true
 
 # Expose port internal Nginx
 EXPOSE 8080
+
+# Copy start script for role switching
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
+# Set cmd to our script
+CMD ["/usr/local/bin/start.sh"]
