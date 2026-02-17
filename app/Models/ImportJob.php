@@ -20,13 +20,13 @@ class ImportJob extends Model
         'total_rows',
         'processed_rows',
         'failed_rows',
-        'error_log',
-        'created_by',
+        'errors',
+        'user_id',
     ];
 
     protected $casts = [
         'column_mapping' => 'array',
-        'error_log' => 'array',
+        'errors' => 'array',
     ];
 
     const TYPE_PRODUCTS = 'products';
@@ -47,7 +47,7 @@ class ImportJob extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function getProgressPercentageAttribute(): int
@@ -64,13 +64,13 @@ class ImportJob extends Model
     public function incrementFailed(string $error, ?int $row = null): void
     {
         $this->increment('failed_rows');
-        $errors = $this->error_log ?? [];
+        $errors = $this->errors ?? [];
         $errors[] = [
             'row' => $row,
             'error' => $error,
             'time' => now()->toISOString(),
         ];
-        $this->update(['error_log' => $errors]);
+        $this->update(['errors' => $errors]);
     }
 
     public function complete(): void

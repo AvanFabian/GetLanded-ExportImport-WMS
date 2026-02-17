@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             UserSeeder::class,
+            CurrencySeeder::class,
             // WarehouseSeeder::class, // Disabled for manual import testing
             // DemoDataSeeder::class,  // Disabled for manual import testing
         ]);

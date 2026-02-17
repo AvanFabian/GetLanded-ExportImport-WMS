@@ -54,7 +54,7 @@ class ImportController extends Controller
                 'total_rows' => $parsed['total_rows'],
                 // Store headers/sample in metadata/options if needed, 
                 // but for now we'll re-parse in the mapping step or just rely on the file
-                'created_by' => auth()->id(),
+                'user_id' => auth()->id(),
             ]);
 
             return redirect()->route('imports.mapping', $job);

@@ -17,9 +17,9 @@ class CurrencyService
 {
     /**
      * The API endpoint for exchange rates.
-     * using Frankfurter API (Free, No Key)
+     * using AwesomeAPI (Free, Real-Time, 30s updates)
      */
-    protected string $apiUrl = 'https://api.frankfurter.app/latest';
+    protected string $apiUrl = 'https://economia.awesomeapi.com.br/json/last/';
 
     /**
      * Cache key for last known good rates.
@@ -35,47 +35,95 @@ class CurrencyService
     public function fetchLatestRates(): bool
     {
         try {
+            // Get all active non-base currencies
             $currencies = Currency::where('is_base', false)->get();
-            $rates = [];
-            $successCount = 0;
+            
+            if ($currencies->isEmpty()) {
+                Log::warning('No currencies to sync.');
+                return false;
+            }
 
+            // We use USD as a bridge for all currencies to ensure availability
+            // Logic: 
+            // 1. Fetch USD-IDR (Base)
+            // 2. Fetch USD-Foreign (for others)
+            // 3. Foreign-IDR = (USD-IDR) / (USD-Foreign)
+            
+            $apiPairs = [];
+            $apiPairs[] = 'USD-IDR'; // Essential base pair
+            
             foreach ($currencies as $currency) {
-                // Frankfurter doesn't support all currencies, but supports major ones (USD, EUR, CNY, etc)
-                // Query: ?from=USD&to=IDR
-                $url = "{$this->apiUrl}?from={$currency->code}&to=IDR";
-                
-                try {
-                    $response = Http::timeout(5)->get($url);
-                    
-                    if ($response->successful()) {
-                        $data = $response->json();
-                        // Shape: {"amount":1.0,"base":"USD","date":"2025-01-30","rates":{"IDR":15950}}
-                        if (isset($data['rates']['IDR'])) {
-                            $rates[$currency->code] = $data['rates']['IDR'];
-                            $successCount++;
-                        }
-                    }
-                } catch (\Exception $e) {
-                     Log::warning("Failed to fetch rate for {$currency->code}: " . $e->getMessage());
+                if ($currency->code !== 'USD') {
+                    $apiPairs[] = "USD-{$currency->code}";
                 }
             }
 
-            if ($successCount === 0) {
-                Log::error('No currency rates could be fetched from API');
-                return $this->useCachedRates();
+            // Remove duplicates and implode
+            $url = $this->apiUrl . implode(',', array_unique($apiPairs));
+            
+            $response = Http::timeout(10)->withoutVerifying()->get($url);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                $rates = [];
+                $successCount = 0;
+                $updateTime = now();
+                
+                // Get USD-IDR rate first
+                $usdIdrKey = 'USDIDR';
+                if (!isset($data[$usdIdrKey]) || !isset($data[$usdIdrKey]['bid'])) {
+                    Log::error('AwesomeAPI did not return USD-IDR rate');
+                    return $this->useCachedRates();
+                }
+                
+                $usdIdrRate = (float) $data[$usdIdrKey]['bid'];
+                
+                // Set USD rate
+                if ($currencies->where('code', 'USD')->isNotEmpty()) {
+                    $rates['USD'] = $usdIdrRate;
+                    $successCount++;
+                     // Use USD timestamp as reference
+                    if (isset($data[$usdIdrKey]['create_date'])) {
+                        $updateTime = $data[$usdIdrKey]['create_date'];
+                    }
+                }
+
+                // Calculate others
+                foreach ($currencies as $currency) {
+                    if ($currency->code === 'USD') continue;
+                    
+                    $key = "USD{$currency->code}";
+                    
+                    if (isset($data[$key]) && isset($data[$key]['bid'])) {
+                        $usdForeignRate = (float) $data[$key]['bid'];
+                        
+                        // Cross rate calculation: (USD-IDR) / (USD-Foreign)
+                        if ($usdForeignRate > 0) {
+                            $calculatedRate = $usdIdrRate / $usdForeignRate;
+                            $rates[$currency->code] = $calculatedRate;
+                            $successCount++;
+                        }
+                    }
+                }
+
+                if ($successCount > 0) {
+                    // Cache the rates
+                    Cache::forever(self::CACHE_KEY, [
+                        'rates' => $rates,
+                        'fetched_at' => now()->toIso8601String(),
+                        'provider_update' => $updateTime
+                    ]);
+
+                    // Update rates in database
+                    $this->updateDatabaseRates($rates);
+
+                    Log::info("Currency rates updated successfully for {$successCount} currencies using AwesomeAPI (Cross-Rates)");
+                    return true;
+                }
             }
             
-            // Cache the raw rates
-            Cache::forever(self::CACHE_KEY, [
-                'rates' => $rates,
-                'fetched_at' => now()->toIso8601String(),
-            ]);
-
-            // Update rates in database
-            $this->updateDatabaseRates($rates);
-
-            Log::info("Currency rates updated successfully for {$successCount} currencies");
-            return true;
+            Log::error('Failed to fetch rates from AwesomeAPI or invalid response');
+            return $this->useCachedRates();
 
         } catch (\Exception $e) {
             Log::critical('Currency rate fetch global failure', [

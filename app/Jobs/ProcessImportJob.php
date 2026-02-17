@@ -53,7 +53,7 @@ class ProcessImportJob implements ShouldQueue
 
         try {
             $importService->process($importJob);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("ProcessImportJob failed: {$e->getMessage()}", [
                 'import_job_id' => $this->importJobId,
                 'company_id' => $this->companyId,
@@ -72,7 +72,7 @@ class ProcessImportJob implements ShouldQueue
         if ($importJob) {
             $importJob->update([
                 'status' => ImportJob::STATUS_FAILED,
-                'error_log' => array_merge($importJob->error_log ?? [], [[
+                'errors' => array_merge($importJob->errors ?? [], [[
                     'error' => $exception?->getMessage() ?? 'Unknown error',
                     'time' => now()->toISOString(),
                     'context' => 'Queue job permanently failed after all retries.',

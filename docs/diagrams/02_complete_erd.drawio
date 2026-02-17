@@ -1,0 +1,342 @@
+<mxfile host="draw.io" modified="2026-02-13T01:22:00.000Z" agent="Antigravity" version="22.1.2" type="device">
+  <diagram id="erd-full" name="Complete ERD">
+    <mxGraphModel dx="2400" dy="1800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="2200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="GetLanded — Complete Entity Relationship Diagram" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=22;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="800" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== CORE / TENANT DOMAIN ==================== -->
+        <mxCell id="core-bg" value="🏢 Tenant &amp; Identity Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;arcSize=6;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="700" height="350" as="geometry" />
+        </mxCell>
+
+        <mxCell id="company" value="Company&#xa;─────────────────&#xa;PK id&#xa;name&#xa;slug&#xa;logo_path&#xa;address, phone, email&#xa;tax_id, npwp&#xa;default_currency&#xa;subscription_status&#xa;is_active&#xa;trial_ends_at&#xa;policies (JSON)&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="200" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user" value="User&#xa;────────────────&#xa;PK id&#xa;FK company_id&#xa;name, email&#xa;password (bcrypt)&#xa;role (legacy)&#xa;locale&#xa;email_verified_at&#xa;is_active&#xa;last_login_at&#xa;last_login_ip&#xa;failed_login_count&#xa;timestamps&#xa;soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="120" width="190" height="290" as="geometry" />
+        </mxCell>
+
+        <mxCell id="role" value="Role (Spatie)&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;name&#xa;guard_name&#xa;is_system&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="120" width="140" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="permission" value="Permission (Spatie)&#xa;────────────────&#xa;PK id&#xa;name&#xa;guard_name&#xa;group&#xa;description&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="320" width="150" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bankaccount" value="CompanyBankAccount&#xa;──────────────────&#xa;PK id&#xa;FK company_id&#xa;bank_name&#xa;account_number&#xa;account_name&#xa;is_default&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="430" width="200" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="setting" value="Setting&#xa;───────────&#xa;PK id&#xa;FK company_id&#xa;key&#xa;value&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="450" width="150" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== INVENTORY DOMAIN ==================== -->
+        <mxCell id="inv-bg" value="📦 Inventory &amp; Warehouse Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;arcSize=6;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="780" y="80" width="980" height="620" as="geometry" />
+        </mxCell>
+
+        <mxCell id="product" value="Product&#xa;──────────────────&#xa;PK id&#xa;FK company_id&#xa;FK category_id&#xa;name, sku&#xa;description&#xa;unit&#xa;purchase_price&#xa;selling_price&#xa;hs_code&#xa;country_of_origin&#xa;is_batch_tracked&#xa;batch_method (FIFO/FEFO)&#xa;weight_kg, volume_cbm&#xa;wac (Weighted Avg Cost)&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="120" width="220" height="340" as="geometry" />
+        </mxCell>
+
+        <mxCell id="category" value="Category&#xa;──────────&#xa;PK id&#xa;FK company_id&#xa;name&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="500" width="140" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="variant" value="ProductVariant&#xa;──────────────&#xa;PK id&#xa;FK product_id&#xa;sku_suffix&#xa;name&#xa;attributes (JSON)&#xa;purchase_price&#xa;selling_price&#xa;is_active&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="500" width="170" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="warehouse" value="Warehouse&#xa;────────────────&#xa;PK id&#xa;FK company_id&#xa;name, code&#xa;address&#xa;is_default&#xa;is_active&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="120" width="190" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="zone" value="WarehouseZone&#xa;──────────────&#xa;PK id&#xa;FK warehouse_id&#xa;FK company_id&#xa;name, code&#xa;type&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="120" width="170" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rack" value="WarehouseRack&#xa;───────────────&#xa;PK id&#xa;FK zone_id&#xa;FK company_id&#xa;name, code&#xa;max_weight&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="120" width="170" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bin" value="WarehouseBin&#xa;──────────────&#xa;PK id&#xa;FK rack_id&#xa;FK company_id&#xa;name, code (QR)&#xa;max_weight&#xa;is_active&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="330" width="170" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="batch" value="Batch&#xa;──────────────────&#xa;PK id&#xa;FK product_id&#xa;FK warehouse_id&#xa;FK bin_id (nullable)&#xa;FK company_id&#xa;FK parent_batch_id&#xa;batch_number&#xa;lot_number&#xa;quantity&#xa;unit_cost&#xa;expiry_date&#xa;manufactured_date&#xa;weight_per_unit&#xa;status (available/quarantined/depleted)&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1300" y="370" width="230" height="340" as="geometry" />
+        </mxCell>
+
+        <mxCell id="batchmov" value="BatchMovement&#xa;────────────────&#xa;PK id&#xa;FK batch_id&#xa;FK company_id&#xa;type (in/out/transfer/adjust)&#xa;quantity&#xa;reference_type&#xa;reference_id&#xa;notes&#xa;performed_by&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="560" width="190" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pivot" value="product_warehouse (Pivot)&#xa;──────────────────────&#xa;FK product_id&#xa;FK warehouse_id&#xa;stock&#xa;min_stock" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="350" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stockloc" value="StockLocation&#xa;──────────────&#xa;PK id&#xa;FK batch_id&#xa;FK bin_id&#xa;FK company_id&#xa;quantity&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="510" width="160" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== PROCUREMENT DOMAIN ==================== -->
+        <mxCell id="proc-bg" value="🛒 Procurement Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#2196F3;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;arcSize=6;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="40" y="660" width="700" height="540" as="geometry" />
+        </mxCell>
+
+        <mxCell id="supplier" value="Supplier&#xa;────────────────&#xa;PK id&#xa;FK company_id&#xa;name&#xa;contact_person&#xa;email, phone&#xa;address&#xa;lat, lng&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="700" width="180" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="po" value="PurchaseOrder&#xa;──────────────────&#xa;PK id&#xa;FK company_id&#xa;FK supplier_id&#xa;FK approved_by&#xa;po_number&#xa;status (draft/approved/rejected/received)&#xa;currency_code&#xa;exchange_rate&#xa;subtotal, tax, total&#xa;notes&#xa;approval_notes&#xa;approved_at&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="700" width="230" height="310" as="geometry" />
+        </mxCell>
+
+        <mxCell id="podetail" value="PurchaseOrderDetail&#xa;──────────────────&#xa;PK id&#xa;FK purchase_order_id&#xa;FK product_id&#xa;quantity&#xa;unit_price&#xa;subtotal&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="700" width="180" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="inbound" value="InboundShipment&#xa;─────────────────&#xa;PK id&#xa;FK company_id&#xa;FK purchase_order_id&#xa;FK supplier_id&#xa;shipment_number&#xa;status&#xa;carrier_name&#xa;tracking_number&#xa;estimated_arrival&#xa;actual_arrival&#xa;notes&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#E3F2FD;strokeColor=#2196F3;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="960" width="200" height="270" as="geometry" />
+        </mxCell>
+
+        <mxCell id="shipexp" value="ShipmentExpense&#xa;─────────────────&#xa;PK id&#xa;FK inbound_shipment_id&#xa;FK company_id&#xa;description&#xa;amount&#xa;currency_code&#xa;weight, volume&#xa;allocation_method&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#E3F2FD;strokeColor=#2196F3;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1040" width="200" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stockin" value="StockIn&#xa;───────────────&#xa;PK id&#xa;FK company_id&#xa;FK supplier_id&#xa;FK warehouse_id&#xa;FK purchase_order_id&#xa;FK inbound_shipment_id&#xa;reference_number&#xa;status&#xa;approved_by&#xa;approved_at&#xa;notes&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="910" width="200" height="290" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sidetail" value="StockInDetail&#xa;──────────────&#xa;PK id&#xa;FK stock_in_id&#xa;FK product_id&#xa;quantity&#xa;unit_price&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="1240" width="170" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== SALES DOMAIN ==================== -->
+        <mxCell id="sales-bg" value="💰 Sales &amp; Finance Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;arcSize=6;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="820" y="760" width="940" height="700" as="geometry" />
+        </mxCell>
+
+        <mxCell id="customer" value="Customer&#xa;────────────────&#xa;PK id&#xa;FK company_id&#xa;name&#xa;email, phone&#xa;address&#xa;city, country&#xa;tax_id&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="800" width="180" height="210" as="geometry" />
+        </mxCell>
+
+        <mxCell id="so" value="SalesOrder&#xa;──────────────────&#xa;PK id&#xa;FK company_id&#xa;FK customer_id&#xa;FK stock_out_id&#xa;so_number&#xa;status (draft→delivered/cancelled)&#xa;payment_status&#xa;currency_code&#xa;exchange_rate&#xa;subtotal, tax, total&#xa;shipping_cost&#xa;transaction_fees&#xa;net_amount&#xa;document_language&#xa;notes&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="800" width="230" height="370" as="geometry" />
+        </mxCell>
+
+        <mxCell id="soitem" value="SalesOrderItem&#xa;──────────────&#xa;PK id&#xa;FK sales_order_id&#xa;FK product_id&#xa;quantity&#xa;unit_price&#xa;subtotal&#xa;cost_basis&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="800" width="170" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stockout" value="StockOut&#xa;───────────────&#xa;PK id&#xa;FK company_id&#xa;FK warehouse_id&#xa;reference_number&#xa;type&#xa;status&#xa;approved_by&#xa;notes&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1580" y="800" width="170" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sodetail" value="StockOutDetail&#xa;──────────────&#xa;PK id&#xa;FK stock_out_id&#xa;FK product_id&#xa;quantity&#xa;unit_price&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1580" y="1060" width="170" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="invoice" value="Invoice&#xa;──────────────────&#xa;PK id&#xa;FK company_id&#xa;FK sales_order_id&#xa;invoice_number&#xa;status (draft/sent/paid)&#xa;due_date&#xa;subtotal, tax, total&#xa;notes&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="1050" width="200" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="payment" value="Payment&#xa;──────────────────&#xa;PK id&#xa;FK company_id&#xa;FK invoice_id&#xa;payment_number&#xa;amount&#xa;payment_method&#xa;payment_date&#xa;reference&#xa;notes&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="1310" width="200" height="220" as="geometry" />
+        </mxCell>
+
+        <mxCell id="payalloc" value="PaymentAllocation&#xa;──────────────────&#xa;PK id&#xa;FK payment_id&#xa;FK invoice_id&#xa;amount&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="1310" width="190" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="salesreturn" value="SalesReturn&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;FK sales_order_id&#xa;return_number&#xa;status&#xa;reason&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1330" y="1210" width="180" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sritem" value="SalesReturnItem&#xa;──────────────&#xa;PK id&#xa;FK sales_return_id&#xa;FK product_id&#xa;quantity&#xa;reason&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#FCE4EC;strokeColor=#E91E63;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1550" y="1250" width="170" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== OPERATIONS DOMAIN ==================== -->
+        <mxCell id="ops-bg" value="🔄 Operations Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#9C27B0;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;arcSize=6;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1280" width="760" height="380" as="geometry" />
+        </mxCell>
+
+        <mxCell id="iwt" value="InterWarehouseTransfer&#xa;────────────────────&#xa;PK id&#xa;FK company_id&#xa;FK source_warehouse_id&#xa;FK dest_warehouse_id&#xa;FK requested_by&#xa;FK approved_by&#xa;transfer_number&#xa;status (pending→completed)&#xa;notes&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1320" width="230" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="iwtitem" value="InterWarehouseTransferItem&#xa;────────────────────────&#xa;PK id&#xa;FK transfer_id&#xa;FK product_id&#xa;quantity&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1320" width="210" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stockopname" value="StockOpname&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;FK product_id&#xa;FK warehouse_id&#xa;FK batch_id&#xa;FK bin_id&#xa;system_stock&#xa;physical_stock&#xa;difference&#xa;notes&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1310" width="180" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stocktake" value="StockTake&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;FK warehouse_id&#xa;reference_number&#xa;status&#xa;type (full/partial)&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1490" width="180" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== SYSTEM DOMAIN ==================== -->
+        <mxCell id="sys-bg" value="🔧 System &amp; Support Domain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;arcSize=6;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1700" width="1720" height="340" as="geometry" />
+        </mxCell>
+
+        <mxCell id="document" value="Document&#xa;──────────────────&#xa;PK id&#xa;FK company_id&#xa;FK inbound_shipment_id&#xa;documentable (morph)&#xa;type&#xa;file_path&#xa;original_filename&#xa;file_size&#xa;timestamps, soft_deletes" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1740" width="200" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="currency" value="Currency&#xa;────────────&#xa;PK id&#xa;FK company_id&#xa;code (USD/IDR)&#xa;name&#xa;exchange_rate&#xa;is_base&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1740" width="160" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uom" value="UomConversion&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;from_unit&#xa;to_unit&#xa;factor&#xa;is_system&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="1740" width="160" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="importjob" value="ImportJob&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;FK user_id&#xa;type&#xa;original_filename&#xa;file_path&#xa;status&#xa;total_rows&#xa;processed / failed&#xa;errors (JSON)&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="750" y="1740" width="180" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auditlog" value="AuditLog&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;FK user_id&#xa;auditable (morph)&#xa;event (created/updated/deleted)&#xa;old_values (JSON)&#xa;new_values (JSON)&#xa;ip_address&#xa;user_agent&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="1740" width="200" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="seclog" value="SecurityLog&#xa;───────────────&#xa;PK id&#xa;FK user_id&#xa;event_type&#xa;ip_address&#xa;user_agent&#xa;details (JSON)&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="1740" width="170" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="webhook" value="Webhook&#xa;──────────────&#xa;PK id&#xa;FK company_id&#xa;url&#xa;events (JSON)&#xa;secret&#xa;is_active&#xa;timestamps" style="shape=table;startSize=20;container=0;collapsible=0;childLayout=tableLayout;fixedRows=0;rowLines=1;fontStyle=1;align=left;resizeLast=0;fillColor=#ECEFF1;strokeColor=#607D8B;fontSize=10;spacingLeft=5;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="1740" width="160" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== KEY RELATIONSHIPS (ARROWS) ==================== -->
+        <!-- Company → User -->
+        <mxCell id="r1" style="endArrow=ERmany;startArrow=ERone;sourcePerimeterSpacing=0;targetPerimeterSpacing=0;exitX=1;exitY=0.3;entryX=0;entryY=0.3;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" source="company" target="user" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- User → Role -->
+        <mxCell id="r2" style="endArrow=ERmany;startArrow=ERmany;exitX=1;exitY=0.3;entryX=0;entryY=0.3;strokeColor=#9673a6;strokeWidth=1.5;" edge="1" source="user" target="role" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Role → Permission -->
+        <mxCell id="r3" style="endArrow=ERmany;startArrow=ERmany;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#9673a6;strokeWidth=1.5;" edge="1" source="role" target="permission" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Company → BankAccount -->
+        <mxCell id="r4" style="endArrow=ERmany;startArrow=ERone;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#6c8ebf;strokeWidth=1;" edge="1" source="company" target="bankaccount" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Product → Category -->
+        <mxCell id="r5" style="endArrow=ERone;startArrow=ERmany;exitX=0.3;exitY=1;entryX=0.5;entryY=0;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" source="product" target="category" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Product → Variant -->
+        <mxCell id="r6" style="endArrow=ERmany;startArrow=ERone;exitX=0.7;exitY=1;entryX=0.5;entryY=0;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" source="product" target="variant" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Warehouse → Zone -->
+        <mxCell id="r7" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.3;entryX=0;entryY=0.3;strokeColor=#82b366;strokeWidth=1.5;" edge="1" source="warehouse" target="zone" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Zone → Rack -->
+        <mxCell id="r8" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#82b366;strokeWidth=1.5;" edge="1" source="zone" target="rack" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Rack → Bin -->
+        <mxCell id="r9" style="endArrow=ERmany;startArrow=ERone;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#82b366;strokeWidth=1.5;" edge="1" source="rack" target="bin" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Batch → BatchMovement -->
+        <mxCell id="r10" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.7;entryX=0;entryY=0.3;strokeColor=#b85450;strokeWidth=1.5;" edge="1" source="batch" target="batchmov" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SO → SOItem -->
+        <mxCell id="r12" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.2;entryX=0;entryY=0.3;strokeColor=#E91E63;strokeWidth=1.5;" edge="1" source="so" target="soitem" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Customer → SO -->
+        <mxCell id="r13" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.5;entryX=0;entryY=0.2;strokeColor=#E91E63;strokeWidth=1.5;" edge="1" source="customer" target="so" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SO → Invoice -->
+        <mxCell id="r14" style="endArrow=ERone;startArrow=ERone;exitX=0;exitY=0.8;entryX=0.5;entryY=0;strokeColor=#E91E63;strokeWidth=1.5;" edge="1" source="so" target="invoice" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Invoice → Payment -->
+        <mxCell id="r15" style="endArrow=ERmany;startArrow=ERone;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#E91E63;strokeWidth=1.5;" edge="1" source="invoice" target="payment" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- PO → PODetail -->
+        <mxCell id="r16" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.2;entryX=0;entryY=0.3;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" source="po" target="podetail" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Supplier → PO -->
+        <mxCell id="r17" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.3;entryX=0;entryY=0.2;strokeColor=#6c8ebf;strokeWidth=1.5;" edge="1" source="supplier" target="po" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Inbound → Expenses -->
+        <mxCell id="r18" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.5;entryX=0;entryY=0.3;strokeColor=#2196F3;strokeWidth=1.5;" edge="1" source="inbound" target="shipexp" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- StockIn → StockInDetail -->
+        <mxCell id="r19" style="endArrow=ERmany;startArrow=ERone;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" source="stockin" target="sidetail" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- StockOut → StockOutDetail -->
+        <mxCell id="r20" style="endArrow=ERmany;startArrow=ERone;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" source="stockout" target="sodetail" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- IWT → IWTItem -->
+        <mxCell id="r21" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.2;entryX=0;entryY=0.3;strokeColor=#9673a6;strokeWidth=1.5;" edge="1" source="iwt" target="iwtitem" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SO → SalesReturn -->
+        <mxCell id="r22" style="endArrow=ERmany;startArrow=ERone;exitX=0.7;exitY=1;entryX=0.5;entryY=0;strokeColor=#E91E63;strokeWidth=1;" edge="1" source="so" target="salesreturn" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SalesReturn → SRItem -->
+        <mxCell id="r23" style="endArrow=ERmany;startArrow=ERone;exitX=1;exitY=0.5;entryX=0;entryY=0.3;strokeColor=#E91E63;strokeWidth=1;" edge="1" source="salesreturn" target="sritem" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend:&#xa;─── 1:N Relationship&#xa;─── M:N Relationship&#xa;&#xa;All tenant-scoped tables&#xa;have company_id (FK)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=#666;fillColor=#f5f5f5;fontSize=11;fontColor=#333;rounded=1;spacingLeft=5;spacingRight=5;" vertex="1" parent="1">
+          <mxGeometry x="1810" y="100" width="200" height="130" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

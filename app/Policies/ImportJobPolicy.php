@@ -23,7 +23,7 @@ class ImportJobPolicy
     public function view(User $user, ImportJob $importJob): bool
     {
         return $this->belongsToSameCompany($user, $importJob) &&
-               ($user->isAdmin() || $user->isManager() || $importJob->created_by === $user->id);
+               ($user->isAdmin() || $user->isManager() || $importJob->user_id === $user->id);
     }
 
     public function create(User $user): bool

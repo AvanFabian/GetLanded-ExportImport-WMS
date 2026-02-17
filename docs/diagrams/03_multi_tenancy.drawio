@@ -1,0 +1,155 @@
+<mxfile host="draw.io" modified="2026-02-13T01:22:00.000Z" agent="Antigravity" version="22.1.2" type="device">
+  <diagram id="tenant-arch" name="Multi-Tenancy Architecture">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="GetLanded — Multi-Tenancy Architecture (TenantScope)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Single Database, Logical Row-Level Isolation" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=13;fontStyle=2;fontColor=#666;" vertex="1" parent="1">
+          <mxGeometry x="400" y="55" width="400" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== NORMAL TENANT FLOW (Left Side) ==================== -->
+        <mxCell id="flow-label" value="Normal Tenant Request Flow" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=15;fontStyle=5;fontColor=#2196F3;" vertex="1" parent="1">
+          <mxGeometry x="120" y="95" width="300" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Step 1: HTTP Request -->
+        <mxCell id="s1" value="1️⃣ HTTP Request Arrives" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="140" width="300" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Step 2: Auth Middleware -->
+        <mxCell id="s2" value="2️⃣ Auth Middleware&#xa;Authenticates user → Loads User model" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="220" width="300" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Step 3: User has company_id -->
+        <mxCell id="s3" value="3️⃣ User→company_id Retrieved&#xa;auth()->user()->company_id = 1 (AVANDIGITAL)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=0;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="310" width="300" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Step 4: Controller calls Model -->
+        <mxCell id="s4" value="4️⃣ Controller / Service Queries Model&#xa;e.g. Product::all()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="400" width="300" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Step 5: TenantScope applies -->
+        <mxCell id="s5" value="5️⃣ TenantScope::apply() Triggers&#xa;Automatically adds:&#xa;WHERE products.company_id = 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="490" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Step 6: SQL Executed -->
+        <mxCell id="s6" value="6️⃣ SQL Executed&#xa;SELECT * FROM products&#xa;WHERE company_id = 1&#xa;AND deleted_at IS NULL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;fontSize=11;fontFamily=Courier New;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="595" width="300" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Step 7: Isolated Results -->
+        <mxCell id="s7" value="7️⃣ Only Tenant's Data Returned ✅&#xa;Other tenants' data is INVISIBLE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="710" width="300" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Flow Arrows -->
+        <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="s1" target="s2" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="s2" target="s3" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="s3" target="s4" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="s4" target="s5" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="s5" target="s6" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#333;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="s6" target="s7" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ==================== CREATE FLOW (Center) ==================== -->
+        <mxCell id="create-label" value="Auto-Set on Create (BelongsToTenant)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=15;fontStyle=5;fontColor=#4CAF50;" vertex="1" parent="1">
+          <mxGeometry x="500" y="95" width="370" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c1" value="Product::create(['name' => 'Widget'])" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontFamily=Courier New;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="140" width="340" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c2" value="BelongsToTenant::creating() hook fires&#xa;↓&#xa;$model->company_id = auth()->user()->company_id" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="220" width="340" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c3" value="INSERT INTO products (name, company_id, ...)&#xa;VALUES ('Widget', 1, ...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;fontSize=11;fontFamily=Courier New;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="325" width="340" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c4" value="company_id is IMMUTABLE after creation ✅" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="415" width="340" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ca1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4CAF50;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="c1" target="c2" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ca2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4CAF50;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="c2" target="c3" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ca3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4CAF50;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="c3" target="c4" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ==================== SUPER-ADMIN BYPASS (Right Side) ==================== -->
+        <mxCell id="sa-label" value="Super-Admin Bypass" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=15;fontStyle=5;fontColor=#F44336;" vertex="1" parent="1">
+          <mxGeometry x="940" y="95" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sa1" value="Super-Admin logs in" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="140" width="250" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sa2" value="SuperAdminMiddleware fires:&#xa;app()->bind('disable_tenant_scope',&#xa;    fn() => true)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontFamily=Courier New;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="215" width="250" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sa3" value="TenantScope::apply() checks:&#xa;if app('disable_tenant_scope') === true&#xa;→ SKIP WHERE clause" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="325" width="250" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sa4" value="SELECT * FROM products&#xa;(NO WHERE company_id filter)&#xa;→ ALL tenants' data visible" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#b85450;fontSize=11;fontFamily=Courier New;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="435" width="250" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="saa1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F44336;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="sa1" target="sa2" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="saa2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F44336;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="sa2" target="sa3" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="saa3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#F44336;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" source="sa3" target="sa4" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ==================== DATABASE VISUALIZATION ==================== -->
+        <mxCell id="db-label" value="Database: Single MySQL Instance, Multiple Tenants" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=15;fontStyle=5;fontColor=#333;" vertex="1" parent="1">
+          <mxGeometry x="350" y="530" width="500" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Tenant A data -->
+        <mxCell id="dbA" value="🏢 Tenant A (company_id = 1)&#xa;──────────────────────────&#xa;products: Widget, Gadget...&#xa;warehouses: WH-Jakarta...&#xa;sales_orders: SO-20260201-001..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="570" width="290" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Tenant B data -->
+        <mxCell id="dbB" value="🏭 Tenant B (company_id = 2)&#xa;──────────────────────────&#xa;products: Steel, Iron...&#xa;warehouses: WH-Surabaya...&#xa;sales_orders: SO-20260201-001..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="710" width="290" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Tenant C data -->
+        <mxCell id="dbC" value="🏪 Tenant C (company_id = 3)&#xa;──────────────────────────&#xa;products: Food, Beverages...&#xa;warehouses: WH-Bandung...&#xa;sales_orders: SO-20260201-001..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="850" width="290" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Invisible wall -->
+        <mxCell id="wall1" value="🔒 INVISIBLE" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];strokeColor=#b85450;fillColor=#f8cecc;fontSize=10;fontStyle=1;fontColor=#b85450;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="830" y="685" width="100" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="wall2" value="🔒 INVISIBLE" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];strokeColor=#b85450;fillColor=#f8cecc;fontSize=10;fontStyle=1;fontColor=#b85450;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="830" y="825" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Models using BelongsToTenant -->
+        <mxCell id="models-list" value="Models Using BelongsToTenant Trait:&#xa;────────────────────────────────&#xa;Product, Category, Supplier, Customer&#xa;SalesOrder, SalesOrderItem&#xa;PurchaseOrder, PurchaseOrderDetail&#xa;StockIn, StockOut, StockOpname&#xa;Batch, BatchMovement&#xa;Warehouse, WarehouseZone, WarehouseRack, WarehouseBin&#xa;Invoice, Payment, Document&#xa;InterWarehouseTransfer&#xa;+ more..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#3F51B5;fontSize=10;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="570" width="310" height="210" as="geometry" />
+        </mxCell>
+
+        <!-- Key Files Reference -->
+        <mxCell id="files-ref" value="📁 Key File Locations:&#xa;─────────────────────&#xa;TenantScope:&#xa;  app/Models/Scopes/TenantScope.php&#xa;&#xa;BelongsToTenant Trait:&#xa;  app/Models/Traits/BelongsToTenant.php&#xa;&#xa;Super-Admin Middleware:&#xa;  app/Http/Middleware/SuperAdminMiddleware.php" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999;fontSize=10;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="920" y="810" width="310" height="190" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

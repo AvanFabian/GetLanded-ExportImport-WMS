@@ -91,7 +91,7 @@ class ImportService
         } catch (\Exception $e) {
             $job->update([
                 'status' => ImportJob::STATUS_FAILED, 
-                'error_log' => array_merge($job->error_log ?? [], [['error' => $e->getMessage(), 'time' => now()->toISOString()]]),
+                'errors' => array_merge($job->errors ?? [], [['error' => $e->getMessage(), 'time' => now()->toISOString()]]),
             ]);
         }
     }
@@ -122,27 +122,52 @@ class ImportService
 
         $batchSize = 100;
         $batchCount = 0;
+        $inTransaction = false;
 
-        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
+            $inTransaction = true;
 
-        foreach ($records as $rowIndex => $record) {
-            try {
-                $mappedData = $this->mapColumns($record, $job->column_mapping);
-                $this->$method($mappedData, $job->company_id);
-                $job->incrementProcessed();
+            foreach ($records as $rowIndex => $record) {
+                try {
+                    $mappedData = $job->column_mapping 
+                        ? $this->mapColumns($record, $job->column_mapping)
+                        : $record;
+                    $this->$method($mappedData, $job->company_id);
+                    $job->incrementProcessed();
 
-                $batchCount++;
-                if ($batchCount >= $batchSize) {
-                    DB::commit();
-                    DB::beginTransaction();
-                    $batchCount = 0;
+                    $batchCount++;
+                    if ($batchCount >= $batchSize) {
+                        DB::commit();
+                        $inTransaction = false;
+                        DB::beginTransaction();
+                        $inTransaction = true;
+                        $batchCount = 0;
+                    }
+                } catch (\Exception $e) {
+                    // Log per-row errors without crashing the entire import
+                    try {
+                        $job->incrementFailed($e->getMessage(), $rowIndex + 2);
+                    } catch (\Throwable $logError) {
+                        // If even error logging fails, don't crash the batch
+                        \Illuminate\Support\Facades\Log::warning("Import row error logging failed", [
+                            'row' => $rowIndex + 2,
+                            'original_error' => $e->getMessage(),
+                            'log_error' => $logError->getMessage(),
+                        ]);
+                    }
                 }
-            } catch (\Exception $e) {
-                $job->incrementFailed($e->getMessage(), $rowIndex + 2);
             }
-        }
 
-        DB::commit();
+            DB::commit();
+            $inTransaction = false;
+        } catch (\Throwable $e) {
+            // Guarantee rollback so we never leave open transactions (which cause DB locks)
+            if ($inTransaction) {
+                try { DB::rollBack(); } catch (\Throwable $rbError) { /* already failing */ }
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -201,10 +226,9 @@ class ImportService
 
         Product::withoutGlobalScopes()->updateOrCreate(
             [
-                'company_id' => $companyId,
                 'code' => trim($code),
             ],
-            $updateData
+            array_merge($updateData, ['company_id' => $companyId])
         );
     }
 

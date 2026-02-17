@@ -194,7 +194,7 @@ class ProductController extends Controller
                 'file_path' => $path,
                 'status' => \App\Models\ImportJob::STATUS_PROCESSING,
                 'total_rows' => 0, // Will be updated by the job
-                'created_by' => auth()->id(),
+                'user_id' => auth()->id(),
             ]);
 
             // Dispatch to queue — this returns immediately
