@@ -64,6 +64,33 @@ class SupplierController extends Controller
         return redirect()->route('suppliers.index')->with('status', 'Supplier deleted');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        if ($request->has('delete_all') && $request->delete_all == '1') {
+            $q = $request->input('q');
+
+            $query = Supplier::query();
+
+            // Re-apply filters
+            $query->when($q, fn($qBuilder) => $qBuilder->where('name', 'like', "%{$q}%"));
+
+            $count = $query->count();
+            $query->delete();
+
+            return back()->with('status', "All {$count} suppliers selected have been deleted.");
+        }
+
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:suppliers,id',
+        ]);
+
+        $count = count($validated['ids']);
+        Supplier::whereIn('id', $validated['ids'])->delete();
+
+        return back()->with('status', "{$count} suppliers deleted successfully");
+    }
+
     public function import(Request $request)
     {
         $request->validate([

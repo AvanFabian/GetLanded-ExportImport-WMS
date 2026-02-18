@@ -178,6 +178,43 @@ class ProductController extends Controller
         return redirect()->route('products.index')->with('status', 'Product deleted successfully');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        if ($request->has('delete_all') && $request->delete_all == '1') {
+            $q = $request->input('q');
+            $categoryId = $request->input('category_id');
+            $warehouseId = $request->input('warehouse_id');
+            $status = $request->input('status');
+
+            $query = Product::query();
+
+            // Re-apply filters
+            $query->when($q, fn($qBuilder) => $qBuilder->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")->orWhere('code', 'like', "%{$q}%");
+            }))
+            ->when($categoryId, fn($qBuilder) => $qBuilder->where('category_id', $categoryId))
+            ->when($warehouseId, fn($qBuilder) => $qBuilder->whereHas('warehouses', function ($sub) use ($warehouseId) {
+                $sub->where('warehouse_id', $warehouseId);
+            }))
+            ->when($status !== null, fn($qBuilder) => $qBuilder->where('status', $status));
+
+            $count = $query->count();
+            $query->delete();
+
+            return back()->with('status', "All {$count} products selected have been deleted.");
+        }
+
+        $validated = $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:products,id',
+        ]);
+
+        $count = count($validated['ids']);
+        Product::whereIn('id', $validated['ids'])->delete();
+
+        return back()->with('status', "{$count} products deleted successfully");
+    }
+
     public function import(Request $request)
     {
         $request->validate([

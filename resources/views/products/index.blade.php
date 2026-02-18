@@ -16,6 +16,14 @@
                </svg>
                {{ __('app.print_label') }}
             </button>
+            <button onclick="bulkDelete()" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+               title="{{ __('app.delete_selected') }}">
+               <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+               </svg>
+               {{ __('app.delete') }}
+            </button>
             <button type="button" @click="showImportModal = true" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                Import
@@ -65,6 +73,20 @@
       </form>
 
       <div class="bg-white rounded shadow overflow-hidden">
+         <!-- Select All Banner -->
+         <div id="selectAllBanner" class="bg-blue-50 p-2 text-center text-sm text-blue-700 hidden border-b border-blue-100">
+            <span id="selectAllText">All {{ $products->count() }} items on this page are selected.</span>
+            <button type="button" onclick="selectAllAcrossPages()" class="font-semibold underline ml-1 hover:text-blue-800">
+               Select all {{ $products->total() }} items in this list
+            </button>
+         </div>
+         <div id="allSelectedBanner" class="bg-blue-100 p-2 text-center text-sm text-blue-800 hidden border-b border-blue-200 font-semibold">
+            All {{ $products->total() }} items are selected.
+            <button type="button" onclick="clearSelection()" class="font-normal underline ml-1 text-blue-700 hover:text-blue-900">
+               Clear selection
+            </button>
+         </div>
+
          <div class="overflow-x-auto">
             <table class="min-w-full">
                <thead class="bg-gray-50">
@@ -171,17 +193,62 @@
       <div id="selectedProductsContainer"></div>
    </form>
 
+   <!-- Hidden form for bulk delete -->
+   <form id="bulkDeleteForm" action="{{ route('products.bulk-destroy') }}" method="POST" style="display: none;">
+      @csrf
+      @method('DELETE')
+      <input type="hidden" name="delete_all" id="deleteAllInput" value="0">
+      <input type="hidden" name="q" value="{{ request('q') }}">
+      <input type="hidden" name="category_id" value="{{ request('category_id') }}">
+      <input type="hidden" name="warehouse_id" value="{{ request('warehouse_id') }}">
+      <input type="hidden" name="status" value="{{ request('status') }}">
+      <div id="deleteProductsContainer"></div>
+   </form>
+
     <script>
        function toggleSelectAll(checkbox) {
           const checkboxes = document.querySelectorAll('.product-checkbox');
           checkboxes.forEach(cb => cb.checked = checkbox.checked);
+
+          const banner = document.getElementById('selectAllBanner');
+          const totalItems = {{ $products->total() }};
+          const pageItems = {{ $products->count() }};
+
+          // Show banner if all visible items are selected AND there are more items in total
+          if (checkbox.checked && totalItems > pageItems) {
+             banner.classList.remove('hidden');
+          } else {
+             banner.classList.add('hidden');
+             clearSelection();
+          }
+       }
+
+       function selectAllAcrossPages() {
+          document.getElementById('selectAllBanner').classList.add('hidden');
+          document.getElementById('allSelectedBanner').classList.remove('hidden');
+          document.getElementById('deleteAllInput').value = '1';
+       }
+
+       function clearSelection() {
+          document.getElementById('selectAllBanner').classList.add('hidden');
+          document.getElementById('allSelectedBanner').classList.add('hidden');
+          document.getElementById('deleteAllInput').value = '0';
+          document.getElementById('selectAll').checked = false;
+          const checkboxes = document.querySelectorAll('.product-checkbox');
+          checkboxes.forEach(cb => cb.checked = false);
        }
 
        function printSelectedLabels() {
           const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+          const deleteAll = document.getElementById('deleteAllInput').value === '1';
 
-          if (checkboxes.length === 0) {
+          if (checkboxes.length === 0 && !deleteAll) {
              alert('{{ __('app.select_at_least_one_product') }}');
+             return;
+          }
+
+          if (deleteAll) {
+             alert('Printing labels for ALL items is not supported in this version. Please select specific items.');
              return;
           }
 
@@ -199,7 +266,43 @@
 
           form.submit();
        }
+
+       function bulkDelete() {
+          const checkboxes = document.querySelectorAll('.product-checkbox:checked');
+          const deleteAll = document.getElementById('deleteAllInput').value === '1';
+
+          if (checkboxes.length === 0 && !deleteAll) {
+             alert('{{ __('app.select_at_least_one_product') }}');
+             return;
+          }
+
+          let message = '{{ __('app.confirm_delete_selected') }}';
+          if (deleteAll) {
+             message = "⚠️ WARNING: You are about to delete ALL {{ $products->total() }} items matching your filter. This cannot be undone. Are you sure?";
+          }
+
+          if (!confirm(message)) {
+             return;
+          }
+
+          const form = document.getElementById('bulkDeleteForm');
+          const container = document.getElementById('deleteProductsContainer');
+          container.innerHTML = '';
+
+          if (!deleteAll) {
+             checkboxes.forEach(checkbox => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = checkbox.value;
+                container.appendChild(input);
+             });
+          }
+
+          form.submit();
+       }
     </script>
+
 
     <!-- Import Modal (Now shares scope with main container) -->
     <div x-show="showImportModal" @keydown.escape.window="showImportModal = false" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
