@@ -26,7 +26,8 @@ RUN printf '#!/bin/sh\nset -e\n\nrole=${CONTAINER_ROLE:-app}\necho "Starting con
     chmod +x /usr/local/bin/start.sh
 
 # Pindahkan kepemilikan kembali ke user www-data
-USER www-data
+# USER www-data removed to allow S6 overlay to initialize as root
+
 
 # Environment variable untuk automasi
 ENV AUTORUN_ENABLED=true
