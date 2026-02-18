@@ -21,6 +21,10 @@ RUN npm install && npm run build
 # 4. Jalankan build untuk Backend (Composer)
 RUN composer install --no-dev --optimize-autoloader
 
+# Copy start script for role switching
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
 # Pindahkan kepemilikan kembali ke user www-data
 USER www-data
 
@@ -29,10 +33,6 @@ ENV AUTORUN_ENABLED=true
 
 # Expose port internal Nginx
 EXPOSE 8080
-
-# Copy start script for role switching
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
 
 # Set cmd to our script
 CMD ["/usr/local/bin/start.sh"]
