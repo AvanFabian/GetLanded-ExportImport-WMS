@@ -21,9 +21,10 @@ RUN npm install && npm run build
 # 4. Jalankan build untuk Backend (Composer)
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy start script for role switching
+# Copy start script for role switching (and fix line endings for Windows)
 COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh && \
+    sed -i 's/\r$//' /usr/local/bin/start.sh
 
 # Pindahkan kepemilikan kembali ke user www-data
 USER www-data
