@@ -3,117 +3,112 @@
 namespace App\Http\Controllers;
 
 use App\Models\Claim;
+use App\Models\SalesOrder;
 use App\Models\ClaimEvidence;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 
 class ClaimController extends Controller
 {
     public function index(Request $request)
     {
-        $claims = Claim::where('company_id', auth()->user()->company_id)
-            ->with(['salesOrder'])
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->latest()
-            ->paginate(20);
+        $companyId = auth()->user()->company_id;
 
-        return Inertia::render('Claims/Index', [
-            'claims' => $claims,
-            'filters' => $request->only(['status']),
-        ]);
+        $claims = Claim::where('company_id', $companyId)
+            ->with(['salesOrder.customer'])
+            ->when($request->search, function ($q, $search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhereHas('salesOrder', fn ($q) => $q->where('so_number', 'like', "%{$search}%"));
+            })
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->claim_type, fn ($q, $t) => $q->where('claim_type', $t))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('claims.index', compact('claims'));
     }
 
-    public function create(Request $request)
+    public function create()
     {
-        return Inertia::render('Claims/Create', [
-            'claimTypes' => Claim::CLAIM_TYPES,
-            'orderId' => $request->order_id,
-        ]);
+        $companyId = auth()->user()->company_id;
+
+        $salesOrders = SalesOrder::where('company_id', $companyId)
+            ->with('customer')
+            ->orderBy('order_date', 'desc')
+            ->get();
+
+        return view('claims.create', compact('salesOrders'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'sales_order_id' => 'required|exists:sales_orders,id',
-            'claim_type' => 'required|in:' . implode(',', array_keys(Claim::CLAIM_TYPES)),
+            'claim_type' => 'required|in:damage,shortage,delay',
             'claimed_amount' => 'required|numeric|min:0.01',
             'insurance_policy_number' => 'nullable|string|max:255',
             'description' => 'required|string',
         ]);
 
-        $claim = Claim::create([
-            'company_id' => auth()->user()->company_id,
-            'sales_order_id' => $validated['sales_order_id'],
-            'claim_type' => $validated['claim_type'],
-            'claimed_amount' => $validated['claimed_amount'],
-            'insurance_policy_number' => $validated['insurance_policy_number'] ?? null,
-            'status' => Claim::STATUS_OPEN,
-            'description' => $validated['description'],
-        ]);
+        $validated['company_id'] = auth()->user()->company_id;
+        $validated['status'] = 'open';
+
+        $claim = Claim::create($validated);
 
         return redirect()->route('claims.show', $claim)
-            ->with('success', 'Claim created successfully.');
+            ->with('success', __('Claim created successfully.'));
     }
 
     public function show(Claim $claim)
     {
-        $this->authorize('view', $claim);
+        $claim->load(['salesOrder.customer', 'evidences']);
 
-        return Inertia::render('Claims/Show', [
-            'claim' => $claim->load(['salesOrder.customer', 'evidences']),
-        ]);
+        return view('claims.show', compact('claim'));
     }
 
     public function uploadEvidence(Request $request, Claim $claim)
     {
-        $this->authorize('update', $claim);
-
-        $validated = $request->validate([
-            'files' => 'required|array|min:1',
-            'files.*' => 'file|mimes:jpg,jpeg,png,pdf|max:5120',
+        $request->validate([
+            'evidence' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:10240',
         ]);
 
-        foreach ($request->file('files') as $file) {
-            $path = $file->store('claims/' . $claim->id);
-            
-            ClaimEvidence::create([
-                'claim_id' => $claim->id,
-                'file_path' => $path,
-                'file_type' => $file->getClientMimeType(),
-            ]);
-        }
+        $path = $request->file('evidence')->store('claim-evidence/' . $claim->id, 'public');
 
-        return back()->with('success', 'Evidence uploaded successfully.');
+        ClaimEvidence::create([
+            'claim_id' => $claim->id,
+            'file_path' => $path,
+            'file_type' => $request->file('evidence')->getClientMimeType(),
+        ]);
+
+        return back()->with('success', __('Evidence uploaded successfully.'));
     }
 
     public function submit(Claim $claim)
     {
-        $this->authorize('update', $claim);
+        $claim->update(['status' => 'submitted']);
 
-        if ($claim->evidences()->count() === 0) {
-            return back()->with('error', 'Please upload at least one evidence file before submitting.');
-        }
-
-        $claim->update(['status' => Claim::STATUS_SUBMITTED]);
-
-        return back()->with('success', 'Claim submitted to insurance.');
+        return back()->with('success', __('Claim submitted for review.'));
     }
 
     public function settle(Request $request, Claim $claim)
     {
-        $this->authorize('update', $claim);
-
         $validated = $request->validate([
             'settled_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:settled,rejected',
         ]);
 
         $claim->update([
+            'status' => 'settled',
             'settled_amount' => $validated['settled_amount'],
-            'status' => $validated['status'],
         ]);
 
-        return back()->with('success', 'Claim ' . $validated['status'] . '.');
+        return back()->with('success', __('Claim settled.'));
+    }
+
+    public function reject(Claim $claim)
+    {
+        $claim->update(['status' => 'rejected']);
+
+        return back()->with('success', __('Claim rejected.'));
     }
 }
