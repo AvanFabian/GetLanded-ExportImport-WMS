@@ -30,8 +30,12 @@ return new class extends Migration
         // This enables Product::upsert() to detect conflicts on (company_id, code)
         Schema::table('products', function (Blueprint $table) {
             // Drop the old non-unique index on code alone (if exists)
+            // Also check for the default unique index name 'products_code_unique'
             if (Schema::hasIndex('products', 'idx_products_code')) {
                 $table->dropIndex('idx_products_code');
+            }
+            if (Schema::hasIndex('products', 'products_code_unique')) {
+                $table->dropUnique('products_code_unique');
             }
 
             // Add composite unique index
