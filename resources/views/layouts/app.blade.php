@@ -62,7 +62,7 @@
          @include('layouts.sidebar')
 
          <!-- Main Content -->
-         <main class="flex-1 overflow-y-auto">
+         <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
             <!-- Flash Messages -->
             <!-- Flash Messages (SweetAlert2) -->
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -107,6 +107,11 @@
        </div>
     </footer>
    </div>
+
+   {{-- Floating Progress Bar for Background Jobs --}}
+   @auth
+      @include('components.floating-progress')
+   @endauth
 
    {{-- Welcome Tour for New Users --}}
    @auth

@@ -19,8 +19,10 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             CurrencySeeder::class,
-            // WarehouseSeeder::class, // Disabled for manual import testing
-            // DemoDataSeeder::class,  // Disabled for manual import testing
+            // WarehouseSeeder::class, // Covered by Phase3/General
+            // DemoDataSeeder::class,  // Replaced by new seeders
+            Phase3Seeder::class,
+            GeneralSeeder::class,
         ]);
     }
 }

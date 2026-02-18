@@ -36,16 +36,24 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
 
     // Master data
     Route::resource('categories', App\Http\Controllers\CategoryController::class);
-    Route::resource('suppliers', App\Http\Controllers\SupplierController::class);
-    Route::post('suppliers/import', [App\Http\Controllers\SupplierController::class, 'import'])->name('suppliers.import');
-    Route::resource('products', App\Http\Controllers\ProductController::class);
+
+    // Products
+    Route::post('products/print-labels', [App\Http\Controllers\ProductController::class, 'printLabels'])->name('products.print-labels');
+    Route::delete('products/bulk-destroy', [App\Http\Controllers\ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     Route::post('products/import', [App\Http\Controllers\ProductController::class, 'import'])->name('products.import');
-    Route::get('products-export', [App\Http\Controllers\ProductController::class, 'export'])->name('products.export');
+    Route::get('products/export', [App\Http\Controllers\ProductController::class, 'export'])->name('products.export');
+    Route::get('products/label/{product}', [App\Http\Controllers\ProductController::class, 'printLabel'])->name('products.label');
+    Route::resource('products', App\Http\Controllers\ProductController::class);
 
     // Product Variants (nested routes)
     Route::resource('products.variants', App\Http\Controllers\ProductVariantController::class)
         ->except(['show'])
         ->shallow();
+
+    // Suppliers
+    Route::post('suppliers/import', [App\Http\Controllers\SupplierController::class, 'import'])->name('suppliers.import');
+    Route::delete('suppliers/bulk-destroy', [App\Http\Controllers\SupplierController::class, 'bulkDestroy'])->name('suppliers.bulk-destroy');
+    Route::resource('suppliers', App\Http\Controllers\SupplierController::class);
 
     // Warehouses
     Route::resource('warehouses', App\Http\Controllers\WarehouseController::class);
@@ -102,6 +110,60 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     Route::post('invoices/{invoice}/record-payment', [App\Http\Controllers\InvoiceController::class, 'recordPayment'])->name('invoices.record-payment');
     Route::get('invoices/{invoice}/pdf', [App\Http\Controllers\InvoiceController::class, 'viewPdf'])->name('invoices.pdf');
     Route::get('invoices/{invoice}/download', [App\Http\Controllers\InvoiceController::class, 'downloadPdf'])->name('invoices.download');
+
+    // Payments & AR
+    Route::get('payments/aging', [App\Http\Controllers\PaymentController::class, 'aging'])->name('payments.aging');
+    Route::resource('payments', App\Http\Controllers\PaymentController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('payments/{payment}/allocate', [App\Http\Controllers\PaymentController::class, 'allocate'])->name('payments.allocate');
+
+    // Sales Returns
+    Route::resource('sales-returns', App\Http\Controllers\SalesReturnController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('sales-returns/{salesReturn}/approve', [App\Http\Controllers\SalesReturnController::class, 'approve'])->name('sales-returns.approve');
+    Route::post('sales-returns/{salesReturn}/process', [App\Http\Controllers\SalesReturnController::class, 'process'])->name('sales-returns.process');
+
+    // Claims
+    Route::resource('claims', App\Http\Controllers\ClaimController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('claims/{claim}/upload-evidence', [App\Http\Controllers\ClaimController::class, 'uploadEvidence'])->name('claims.upload-evidence');
+    Route::post('claims/{claim}/submit', [App\Http\Controllers\ClaimController::class, 'submit'])->name('claims.submit');
+    Route::post('claims/{claim}/settle', [App\Http\Controllers\ClaimController::class, 'settle'])->name('claims.settle');
+    Route::post('claims/{claim}/reject', [App\Http\Controllers\ClaimController::class, 'reject'])->name('claims.reject');
+
+    // Supplier Payments
+    Route::resource('supplier-payments', App\Http\Controllers\SupplierPaymentController::class)->only(['index', 'create', 'store', 'show']);
+    
+    // Payment Reconciliation
+    Route::get('reconciliation', [App\Http\Controllers\ReconciliationController::class, 'index'])->name('reconciliation.index');
+    Route::patch('reconciliation/{payment}', [App\Http\Controllers\ReconciliationController::class, 'reconcile'])->name('reconciliation.update');
+    Route::delete('reconciliation/{payment}', [App\Http\Controllers\ReconciliationController::class, 'unreconcile'])->name('reconciliation.destroy');
+
+    // FTA Schemes
+    Route::resource('fta-schemes', App\Http\Controllers\FtaSchemeController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('fta-schemes/{ftaScheme}/rates', [App\Http\Controllers\FtaSchemeController::class, 'storeRate'])->name('fta-schemes.rates.store');
+    Route::delete('fta-schemes/{ftaScheme}/rates/{rate}', [App\Http\Controllers\FtaSchemeController::class, 'destroyRate'])->name('fta-schemes.rates.destroy');
+
+    // HS Codes
+    Route::get('api/hs-codes/search', [App\Http\Controllers\HsCodeController::class, 'search'])->name('api.hs-codes.search');
+
+    // Outbound Shipments
+    Route::resource('outbound-shipments', App\Http\Controllers\OutboundShipmentController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('outbound-shipments/{outboundShipment}/status', [App\Http\Controllers\OutboundShipmentController::class, 'updateStatus'])->name('outbound-shipments.update-status');
+    Route::get('outbound-shipments/{outboundShipment}/invoice-pdf', [App\Http\Controllers\OutboundShipmentController::class, 'downloadInvoice'])->name('outbound-shipments.invoice-pdf');
+    Route::get('outbound-shipments/{outboundShipment}/packing-list-pdf', [App\Http\Controllers\OutboundShipmentController::class, 'downloadPackingList'])->name('outbound-shipments.packing-list-pdf');
+    Route::post('outbound-shipments/{outboundShipment}/expenses', [App\Http\Controllers\OutboundShipmentController::class, 'addExpense'])->name('outbound-shipments.add-expense');
+    Route::delete('outbound-shipments/{outboundShipment}/expenses/{expense}', [App\Http\Controllers\OutboundShipmentController::class, 'removeExpense'])->name('outbound-shipments.remove-expense');
+
+    // Container Management
+    Route::get('containers', [App\Http\Controllers\ContainerController::class, 'index'])->name('containers.index');
+    Route::get('containers/{container}', [App\Http\Controllers\ContainerController::class, 'show'])->name('containers.show');
+    Route::post('containers/{container}/stuffing', [App\Http\Controllers\ContainerController::class, 'stuffing'])->name('containers.stuffing');
+    Route::post('containers/{container}/seal', [App\Http\Controllers\ContainerController::class, 'seal'])->name('containers.seal');
+    Route::delete('container-items/{containerItem}', [App\Http\Controllers\ContainerController::class, 'removeItem'])->name('container-items.destroy');
+
+    // Customs & Compliance
+    Route::resource('customs', App\Http\Controllers\CustomsDeclarationController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('customs/{custom}/status', [App\Http\Controllers\CustomsDeclarationController::class, 'updateStatus'])->name('customs.update-status');
+    Route::get('customs-permits', [App\Http\Controllers\CustomsDeclarationController::class, 'permits'])->name('customs.permits');
+    Route::post('customs-permits', [App\Http\Controllers\CustomsDeclarationController::class, 'storePermit'])->name('customs.store-permit');
 
     // Location Management (Zones, Racks, Bins)
     Route::resource('zones', App\Http\Controllers\WarehouseZoneController::class);
@@ -203,6 +265,9 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     // Global Search
     Route::get('api/search', [App\Http\Controllers\GlobalSearchController::class, 'search'])->name('api.search');
     Route::get('api/deep-search', [App\Http\Controllers\GlobalSearchController::class, 'deepSearch'])->name('api.deep-search');
+
+    // Active Background Jobs (for floating progress bar)
+    Route::get('api/active-jobs', [App\Http\Controllers\ImportController::class, 'activeJobs'])->name('api.active-jobs');
 
     // Reports (Phase M)
     Route::get('reports/inventory-aging', [App\Http\Controllers\GlobalSearchController::class, 'agingReport'])->name('reports.inventory-aging');

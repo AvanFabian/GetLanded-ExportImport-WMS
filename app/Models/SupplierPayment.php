@@ -15,21 +15,37 @@ class SupplierPayment extends Model
         'company_id',
         'supplier_id',
         'stock_in_id',
-        'payment_date',
-        'amount',
-        'currency_code',
-        'exchange_rate',
-        'base_currency_amount',
+        'amount_owed',
+        'amount_paid',
+        'due_date',
+        'payment_status',
         'payment_method',
-        'reference',
-        'notes',
+        'currency_code',
+        'bank_reference',
+        'lc_number',
+        'lc_expiry_date',
+        'lc_issuing_bank',
+        'lc_expiry_date',
+        'lc_issuing_bank',
+        'payment_notes',
+        'reconciled_at',
+        'bank_statement_ref',
+    ];
+
+    const PAYMENT_METHODS = [
+        'bank_transfer' => 'Bank Transfer (TT)',
+        'letter_of_credit' => 'Letter of Credit (L/C)',
+        'advance_payment' => 'Advance Payment (T/T in Advance)',
+        'open_account' => 'Open Account',
+        'cash' => 'Cash',
     ];
 
     protected $casts = [
-        'payment_date' => 'date',
-        'amount' => 'decimal:2',
-        'exchange_rate' => 'decimal:8',
-        'base_currency_amount' => 'decimal:2',
+        'due_date' => 'date',
+        'lc_expiry_date' => 'date',
+        'reconciled_at' => 'datetime',
+        'amount_owed' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
     ];
 
     public function company(): BelongsTo
@@ -49,12 +65,13 @@ class SupplierPayment extends Model
 
     protected static function booted(): void
     {
-        static::saved(function ($payment) {
-            // Update supplier outstanding balance
-            $totalPaid = static::where('supplier_id', $payment->supplier_id)
-                ->sum('base_currency_amount');
-            
-            $payment->supplier->update(['total_paid' => $totalPaid]);
+        static::saving(function ($payment) {
+            // Auto-calculate payment status
+            $payment->payment_status = match (true) {
+                $payment->amount_paid >= $payment->amount_owed => 'paid',
+                $payment->amount_paid > 0 => 'partial',
+                default => 'unpaid',
+            };
         });
     }
 }

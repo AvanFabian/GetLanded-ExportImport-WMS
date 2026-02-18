@@ -14,6 +14,7 @@ class Product extends Model
     use LogsActivity, BelongsToTenant;
 
     protected $fillable = [
+        'company_id',
         'code',
         'name',
         'description',

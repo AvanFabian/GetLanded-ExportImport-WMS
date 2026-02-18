@@ -129,4 +129,18 @@ class ImportController extends Controller
              'total' => $job->total_rows,
         ]);
     }
+
+    /**
+     * Return all active (processing/pending) import jobs for the floating progress bar.
+     */
+    public function activeJobs()
+    {
+        $jobs = ImportJob::where('company_id', auth()->user()->company_id)
+            ->whereIn('status', [ImportJob::STATUS_PROCESSING, ImportJob::STATUS_PENDING])
+            ->select(['id', 'type', 'status', 'total_rows', 'processed_rows', 'failed_rows'])
+            ->latest()
+            ->get();
+
+        return response()->json($jobs);
+    }
 }

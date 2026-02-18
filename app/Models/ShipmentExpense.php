@@ -12,6 +12,7 @@ class ShipmentExpense extends Model
 
     protected $fillable = [
         'inbound_shipment_id',
+        'outbound_shipment_id',
         'name',
         'amount',
         'currency_code',
@@ -23,9 +24,14 @@ class ShipmentExpense extends Model
         'amount' => 'decimal:2',
     ];
 
-    public function shipment(): BelongsTo
+    public function inboundShipment(): BelongsTo
     {
         return $this->belongsTo(InboundShipment::class, 'inbound_shipment_id');
+    }
+
+    public function outboundShipment(): BelongsTo
+    {
+        return $this->belongsTo(OutboundShipment::class, 'outbound_shipment_id');
     }
 
     /**

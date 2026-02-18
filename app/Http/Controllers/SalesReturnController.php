@@ -3,39 +3,47 @@
 namespace App\Http\Controllers;
 
 use App\Models\SalesReturn;
-use App\Models\SalesReturnItem;
 use App\Models\SalesOrder;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
 class SalesReturnController extends Controller
 {
     public function index(Request $request)
     {
-        $returns = SalesReturn::where('company_id', auth()->user()->company_id)
-            ->with(['salesOrder', 'approver'])
-            ->when($request->status, fn($q, $s) => $q->where('status', $s))
-            ->latest()
-            ->paginate(20);
+        $companyId = auth()->user()->company_id;
 
-        return Inertia::render('SalesReturns/Index', [
-            'returns' => $returns,
-            'filters' => $request->only(['status']),
-        ]);
+        $returns = SalesReturn::where('company_id', $companyId)
+            ->with(['salesOrder.customer'])
+            ->when($request->search, function ($q, $search) {
+                $q->where('return_number', 'like', "%{$search}%")
+                  ->orWhereHas('salesOrder', fn ($q) => $q->where('so_number', 'like', "%{$search}%"));
+            })
+            ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->latest('return_date')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('sales-returns.index', compact('returns'));
     }
 
-    public function create(Request $request)
+    public function create()
     {
-        $order = null;
-        if ($request->order_id) {
-            $order = SalesOrder::with('items.product', 'items.batch')
-                ->findOrFail($request->order_id);
-        }
+        $companyId = auth()->user()->company_id;
 
-        return Inertia::render('SalesReturns/Create', [
-            'order' => $order,
-        ]);
+        $salesOrders = SalesOrder::where('company_id', $companyId)
+            ->whereIn('status', ['delivered', 'confirmed'])
+            ->with('customer')
+            ->orderBy('order_date', 'desc')
+            ->get();
+
+        $products = Product::where('company_id', $companyId)
+            ->where('status', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('sales-returns.create', compact('salesOrders', 'products'));
     }
 
     public function store(Request $request)
@@ -46,27 +54,26 @@ class SalesReturnController extends Controller
             'reason' => 'required|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.batch_id' => 'nullable|exists:batches,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        return DB::transaction(function () use ($validated) {
-            $creditAmount = collect($validated['items'])->sum(fn($i) => $i['quantity'] * $i['unit_price']);
+        $companyId = auth()->user()->company_id;
+        $creditAmount = collect($validated['items'])->sum(fn ($i) => $i['quantity'] * $i['unit_price']);
 
+        $return = DB::transaction(function () use ($validated, $companyId, $creditAmount) {
             $return = SalesReturn::create([
-                'company_id' => auth()->user()->company_id,
+                'company_id' => $companyId,
                 'sales_order_id' => $validated['sales_order_id'],
-                'return_number' => SalesReturn::generateReturnNumber(),
+                'return_number' => 'RET-' . date('Ymd') . '-' . str_pad(SalesReturn::where('company_id', $companyId)->count() + 1, 4, '0', STR_PAD_LEFT),
                 'return_date' => $validated['return_date'],
                 'credit_amount' => $creditAmount,
                 'reason' => $validated['reason'],
-                'status' => SalesReturn::STATUS_PENDING,
+                'status' => 'pending',
             ]);
 
             foreach ($validated['items'] as $item) {
-                SalesReturnItem::create([
-                    'sales_return_id' => $return->id,
+                $return->items()->create([
                     'product_id' => $item['product_id'],
                     'batch_id' => $item['batch_id'] ?? null,
                     'quantity' => $item['quantity'],
@@ -74,43 +81,39 @@ class SalesReturnController extends Controller
                 ]);
             }
 
-            return redirect()->route('sales-returns.show', $return)
-                ->with('success', 'Sales return created successfully.');
+            return $return;
         });
+
+        return redirect()->route('sales-returns.show', $return)
+            ->with('success', __('Sales return created successfully.'));
     }
 
     public function show(SalesReturn $salesReturn)
     {
-        $this->authorize('view', $salesReturn);
+        $salesReturn->load(['salesOrder.customer', 'items.product', 'items.batch', 'approver']);
 
-        return Inertia::render('SalesReturns/Show', [
-            'return' => $salesReturn->load(['salesOrder.customer', 'items.product', 'items.batch', 'approver']),
-        ]);
+        return view('sales-returns.show', compact('salesReturn'));
     }
 
     public function approve(SalesReturn $salesReturn)
     {
-        $this->authorize('update', $salesReturn);
-
         $salesReturn->update([
-            'status' => SalesReturn::STATUS_APPROVED,
+            'status' => 'approved',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Sales return approved.');
+        return back()->with('success', __('Sales return approved.'));
     }
 
     public function process(SalesReturn $salesReturn)
     {
-        $this->authorize('update', $salesReturn);
-
-        if ($salesReturn->status !== SalesReturn::STATUS_APPROVED) {
-            return back()->with('error', 'Return must be approved before processing.');
+        if ($salesReturn->status !== 'approved') {
+            return back()->with('error', __('Only approved returns can be processed.'));
         }
 
         $salesReturn->process();
 
-        return back()->with('success', 'Sales return processed. Credit note applied and batches quarantined.');
+        return back()->with('success', __('Sales return processed. Credit note applied.'));
     }
 }

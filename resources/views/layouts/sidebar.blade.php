@@ -141,6 +141,37 @@
                 </div>
             </div>
 
+            {{-- Exim & Logistics Section --}}
+            <div class="pt-4">
+                <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Exim & Logistics') }}</p>
+                <div class="mt-2 space-y-1">
+                    <a href="{{ route('outbound-shipments.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('outbound-shipments.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>🚢</span><span>{{ __('Outbound Shipments') }}</span>
+                    </a>
+                    <a href="{{ route('containers.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('containers.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>📦</span><span>{{ __('Containers') }}</span>
+                    </a>
+                    <a href="{{ route('customs.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('customs.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>🛃</span><span>{{ __('Customs & Compliance') }}</span>
+                    </a>
+                    <a href="{{ route('payments.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('payments.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>💳</span><span>{{ __('Payments & AR') }}</span>
+                    </a>
+                    <a href="{{ route('sales-returns.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('sales-returns.*') || request()->routeIs('claims.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>↩️</span><span>{{ __('Sales Returns & Claims') }}</span>
+                    </a>
+                    <a href="{{ route('supplier-payments.index') }}" @click="sidebarOpen = false"
+                       class="flex items-center gap-3 py-3 px-4 rounded-lg transition touch-manipulation {{ request()->routeIs('supplier-payments.*') ? 'bg-emerald-600 text-white' : 'hover:bg-gray-100 text-gray-700' }}">
+                        <span>💰</span><span>{{ __('Supplier Payments') }}</span>
+                    </a>
+                </div>
+            </div>
+
             {{-- Reports Section --}}
             <div class="pt-4">
                 <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ __('Reports') }}</p>

@@ -43,5 +43,41 @@ class PdfService
         return $pdf->stream($filename);
     }
 
-    // ... other methods
+    /**
+     * Generate Export Commercial Invoice PDF from OutboundShipment.
+     */
+    public function generateExportInvoice($shipment)
+    {
+        $shipment->load(['salesOrder.customer', 'salesOrder.items.product', 'containers', 'company']);
+
+        $company = $shipment->company;
+        $documentType = 'Commercial Invoice';
+        $documentNumber = $shipment->shipment_number;
+        $isVoided = false;
+
+        $pdf = Pdf::loadView('pdf.export-commercial-invoice', compact(
+            'shipment', 'company', 'documentType', 'documentNumber', 'isVoided'
+        ));
+
+        return $pdf;
+    }
+
+    /**
+     * Generate Export Packing List PDF from OutboundShipment.
+     */
+    public function generateExportPackingList($shipment)
+    {
+        $shipment->load(['salesOrder.customer', 'salesOrder.items.product', 'containers.items.product', 'company']);
+
+        $company = $shipment->company;
+        $documentType = 'Packing List';
+        $documentNumber = $shipment->shipment_number;
+        $isVoided = false;
+
+        $pdf = Pdf::loadView('pdf.export-packing-list', compact(
+            'shipment', 'company', 'documentType', 'documentNumber', 'isVoided'
+        ));
+
+        return $pdf;
+    }
 }

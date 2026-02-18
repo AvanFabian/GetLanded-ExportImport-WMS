@@ -40,6 +40,9 @@ class ProcessImportJob implements ShouldQueue
      */
     public function handle(ImportService $importService): void
     {
+        // Increase memory limit for large file imports
+        ini_set('memory_limit', '512M');
+
         $importJob = ImportJob::withoutGlobalScopes()->find($this->importJobId);
 
         if (!$importJob) {
