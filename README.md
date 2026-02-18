@@ -152,7 +152,46 @@ php artisan db:seed --class=UserSeeder
 
 ---
 
-## 🏗 Architecture
+## 🏗 Architecture & Workflows
+
+### System Topology
+```mermaid
+graph TD
+    Client[Client Browser / Mobile] -->|HTTPS| Web[Web Server (Nginx)]
+    Web -->|Proxies| App[Laravel 12 App]
+    
+    subgraph "Application Core"
+        App --> Auth[Auth & Tenant Scope]
+        Auth --> Controllers
+        Controllers --> Services[Domain Services]
+        Services --> Models[Eloquent Models]
+    end
+    
+    subgraph "Infrastructure"
+        Models -->|Query| DB[(MySQL 8.0)]
+        Services -->|Cache/Session| Redis[(Redis)]
+        Services -->|Async Jobs| Queue[Queue Workers]
+    end
+    
+    Queue -->|Background Process| Services
+```
+
+### Core Business Flow
+```mermaid
+flowchart LR
+    PO[Purchase Order] -->|Approve| Inbound[Inbound Shipment]
+    Inbound -->|Receive| QC{Quality Check}
+    QC -->|Pass| Good[Good Stock]
+    QC -->|Fail| Bad[Quarantine]
+    
+    Good -->|Putaway Strategy| Bin[Bin Location]
+    Bin -->|Update| Stock[Available Stock]
+    
+    subgraph "Financial Engine"
+        Landed[Landed Cost] -.->|Allocate| Stock
+        WAC[Weighted Avg Cost] -.->|Recalculate| Stock
+    end
+```
 
 We follow **Domain-Driven Design (DDD)** principles wrapped in a Service-Oriented structure.
 
