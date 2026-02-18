@@ -42,7 +42,7 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     Route::delete('products/bulk-destroy', [App\Http\Controllers\ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     Route::post('products/import', [App\Http\Controllers\ProductController::class, 'import'])->name('products.import');
     Route::get('products/export', [App\Http\Controllers\ProductController::class, 'export'])->name('products.export');
-    Route::get('products/label/{product}', [App\Http\Controllers\ProductController::class, 'printLabel'])->name('products.label');
+    Route::get('products/label/{product}', [App\Http\Controllers\ProductController::class, 'printLabel'])->name('products.print-label');
     Route::resource('products', App\Http\Controllers\ProductController::class);
 
     // Product Variants (nested routes)
