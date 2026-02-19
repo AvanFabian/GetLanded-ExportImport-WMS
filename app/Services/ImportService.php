@@ -38,7 +38,12 @@ class ImportService
 
     protected function parseCsv(string $filePath): array
     {
-        $csv = Reader::createFromPath(Storage::path($filePath), 'r');
+        // Enforce local disk
+        if (!Storage::disk('local')->exists($filePath)) {
+            throw new \Exception("File \"{$filePath}\" does not exist on local disk.");
+        }
+
+        $csv = Reader::createFromPath(Storage::disk('local')->path($filePath), 'r');
         $csv->setHeaderOffset(0);
 
         $headers = $csv->getHeader();
@@ -51,7 +56,7 @@ class ImportService
 
         // Efficient counting for CSV without consuming the main stream
         $totalRows = 0;
-        $handle = fopen(Storage::path($filePath), 'r');
+        $handle = fopen(Storage::disk('local')->path($filePath), 'r');
         if ($handle) {
             while (!feof($handle)) {
                 if (fgets($handle) !== false) {
@@ -71,8 +76,13 @@ class ImportService
 
     protected function parseExcel(string $filePath): array
     {
+        // Enforce local disk
+        if (!Storage::disk('local')->exists($filePath)) {
+            throw new \Exception("File \"{$filePath}\" does not exist on local disk.");
+        }
+
         // Only load first 10 rows for preview — avoids OOM on large files
-        $fullPath = Storage::path($filePath);
+        $fullPath = Storage::disk('local')->path($filePath);
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fullPath);
         $reader->setReadDataOnly(true);
 
@@ -116,6 +126,11 @@ class ImportService
     protected function countExcelRows(string $fullPath): int
     {
         try {
+            // Ensure we're using the local disk path if it's a relative path
+            if (!file_exists($fullPath) && Storage::disk('local')->exists($fullPath)) {
+                $fullPath = Storage::disk('local')->path($fullPath);
+            }
+
             $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fullPath);
             /** @var \PhpOffice\PhpSpreadsheet\Reader\BaseReader $reader */
             $reader->setReadDataOnly(true);

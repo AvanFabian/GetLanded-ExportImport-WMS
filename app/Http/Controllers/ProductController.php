@@ -222,7 +222,7 @@ class ProductController extends Controller
         ]);
 
         try {
-            $path = $request->file('file')->store('imports');
+            $path = $request->file('file')->store('imports', 'local');
 
             $stats = app(\App\Services\ImportService::class)->parseFile($path);
             $totalRows = $stats['total_rows'] ?? 0;
