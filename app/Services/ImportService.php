@@ -49,10 +49,13 @@ class ImportService
             $sample[] = $record;
         }
 
+        // Efficient counting: iterator_count is reliable for large streams
+        $totalRows = iterator_count($csv->getRecords());
+        
         return [
             'headers' => $headers,
             'sample' => $sample,
-            'total_rows' => $csv->count(),
+            'total_rows' => $totalRows,
         ];
     }
 
@@ -123,8 +126,13 @@ class ImportService
         if ($job->total_rows <= 0) {
             try {
                 $stats = $this->parseFile($job->file_path);
-                $job->update(['total_rows' => $stats['total_rows'] ?? 0]);
-                $job->refresh(); // Load the updated count
+                $total = $stats['total_rows'] ?? 0;
+                
+                Log::info("ImportService: Calculated total rows as {$total} for job #{$job->id}");
+                
+                $job->total_rows = $total;
+                $job->save();
+                $job->refresh();
             } catch (\Exception $e) {
                 Log::warning("ImportService: Could not calculate total rows for job #{$job->id}: " . $e->getMessage());
             }
