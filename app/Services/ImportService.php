@@ -51,7 +51,12 @@ class ImportService
         // If it's on default disk (S3/R2) but not local, download to temp
         if (Storage::exists($filePath)) {
             $stream = Storage::readStream($filePath);
-            $tempPath = tempnam(sys_get_temp_dir(), 'import_');
+            
+            // Generate temp file WITH original extension for Excel auto-detection
+            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+            $tempDir = sys_get_temp_dir();
+            $tempPath = $tempDir . DIRECTORY_SEPARATOR . 'import_' . uniqid() . '.' . $extension;
+            
             file_put_contents($tempPath, stream_get_contents($stream));
             return [$tempPath, true];
         }
