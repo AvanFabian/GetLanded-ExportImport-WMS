@@ -122,12 +122,18 @@ class CurrencyService
                 }
             }
             
-            Log::error('Failed to fetch rates from AwesomeAPI or invalid response');
+            Log::error('Currency API failure', [
+                'provider' => 'AwesomeAPI',
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'url' => $url
+            ]);
             return $this->useCachedRates();
 
         } catch (\Exception $e) {
             Log::critical('Currency rate fetch global failure', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return $this->useCachedRates();
         }

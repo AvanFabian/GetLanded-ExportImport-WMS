@@ -10,6 +10,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Healthcheck for production monitoring
+Route::get('/healthcheck', function () {
+    return response('OK', 200)->header('Content-Type', 'text/plain');
+});
+
 // Legal Pages
 Route::get('/terms', fn() => view('legal.terms'))->name('terms');
 Route::get('/privacy', fn() => view('legal.privacy'))->name('privacy');
