@@ -21,15 +21,34 @@ RUN npm install && npm run build
 # 4. Jalankan build untuk Backend (Composer)
 RUN composer install --no-dev --optimize-autoloader
 
-# Create start script inline to avoid Windows line ending issues
-RUN printf '#!/bin/sh\nset -e\n\nrole=${CONTAINER_ROLE:-app}\necho "Starting container with role: $role"\n\nif [ "$role" = "app" ]; then\n    echo "Running migrations..."\n    php artisan migrate --force\n    echo "Caching config..."\n    php artisan config:cache\n    php artisan route:cache\n    php artisan view:cache\n    echo "Starting S6 Supervisor (Nginx+FPM)..."\n    exec /init\nelif [ "$role" = "worker" ]; then\n    echo "Running Queue Worker..."\n    exec php artisan queue:work --verbose --tries=3 --timeout=90\nelif [ "$role" = "scheduler" ]; then\n    echo "Running Scheduler..."\n    while [ true ]; do\n      php artisan schedule:run --verbose --no-interaction &\n      sleep 60\n    done\nelse\n    echo "Unknown role: $role"\n    exit 1\nfi\n' > /usr/local/bin/start.sh && \
-    chmod +x /usr/local/bin/start.sh
+# Create entrypoint script to handle role switching and migrations
+RUN printf '#!/bin/sh\n\
+set -e\n\
+role=${CONTAINER_ROLE:-app}\n\
+echo "Entrypoint script running for role: $role"\n\
+\n\
+if [ "$role" = "app" ]; then\n\
+    echo "Running migrations and caching..."\n\
+    php artisan migrate --force\n\
+    php artisan config:cache\n\
+    php artisan route:cache\n\
+    php artisan view:cache\n\
+fi\n\
+\n\
+if [ "$role" = "worker" ]; then\n\
+    echo "Hijacking entrypoint for Queue Worker..."\n\
+    exec php artisan queue:work --verbose --tries=3 --timeout=90\n\
+elif [ "$role" = "scheduler" ]; then\n\
+    echo "Hijacking entrypoint for Scheduler..."\n\
+    exec php artisan schedule:work\n\
+fi\n' > /etc/entrypoint.d/99-laravel-setup.sh && \
+    chmod +x /etc/entrypoint.d/99-laravel-setup.sh
 
 # Environment variable for automation (legacy)
 ENV AUTORUN_ENABLED=true
 
-# Expose port internal Nginx
+# Expose port internal Nginx (only applicable for app role)
 EXPOSE 8080
 
-# Execute our role-switcher
-CMD ["/usr/local/bin/start.sh"]
+# Default command handled by the base image entrypoint (which will run our script in /etc/entrypoint.d)
+# We do NOT override CMD anymore to avoid breaking Nginx initialization
