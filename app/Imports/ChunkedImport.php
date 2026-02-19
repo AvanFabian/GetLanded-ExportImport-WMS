@@ -117,7 +117,11 @@ class ChunkedImport implements ToCollection, WithChunkReading, WithHeadingRow, W
             DB::commit();
         } catch (\Throwable $e) {
             try { DB::rollBack(); } catch (\Throwable $rb) {}
-            Log::error("ChunkedImport chunk failed: {$e->getMessage()}");
+            Log::error("ChunkedImport chunk failed: {$e->getMessage()}", [
+                'job_id' => $this->job->id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e; // Ensure the main ProcessImportJob catches this
         }
 
         // Flush progress to DB once per chunk (not per row)
