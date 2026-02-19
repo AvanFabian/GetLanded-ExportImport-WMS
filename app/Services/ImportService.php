@@ -156,9 +156,12 @@ class ImportService
      */
     public function process(ImportJob $job): void
     {
-        // Ensure total_rows is set for accurate progress tracking
         if ($job->total_rows <= 0) {
             try {
+                if (!Storage::disk('local')->exists($job->file_path)) {
+                    throw new \Exception("Import file \"{$job->file_path}\" not found on local disk. If using multiple containers (app/worker), ensure they share a persistent volume for 'storage/app/imports'.");
+                }
+
                 $stats = $this->parseFile($job->file_path);
                 $total = $stats['total_rows'] ?? 0;
                 
@@ -167,9 +170,20 @@ class ImportService
                 $job->total_rows = $total;
                 $job->save();
                 $job->refresh();
-            } catch (\Exception $e) {
-                Log::warning("ImportService: Could not calculate total rows for job #{$job->id}: " . $e->getMessage());
+            } catch (\Throwable $e) {
+                Log::error("ImportService: Failed to initialize job #{$job->id}: " . $e->getMessage());
+                $job->update([
+                    'status' => ImportJob::STATUS_FAILED,
+                    'errors' => [['error' => $e->getMessage(), 'time' => now()->toISOString()]]
+                ]);
+                return; // Stop processing
             }
+        }
+
+        if ($job->total_rows <= 0) {
+            Log::warning("ImportService: Job #{$job->id} has 0 rows. Skipping.");
+            $job->complete();
+            return;
         }
 
         $job->update(['status' => ImportJob::STATUS_PROCESSING]);
