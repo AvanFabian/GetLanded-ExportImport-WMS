@@ -119,6 +119,17 @@ class ImportService
      */
     public function process(ImportJob $job): void
     {
+        // Ensure total_rows is set for accurate progress tracking
+        if ($job->total_rows <= 0) {
+            try {
+                $stats = $this->parseFile($job->file_path);
+                $job->update(['total_rows' => $stats['total_rows'] ?? 0]);
+                $job->refresh(); // Load the updated count
+            } catch (\Exception $e) {
+                Log::warning("ImportService: Could not calculate total rows for job #{$job->id}: " . $e->getMessage());
+            }
+        }
+
         $job->update(['status' => ImportJob::STATUS_PROCESSING]);
 
         try {
@@ -281,6 +292,9 @@ class ImportService
         if (isset($data['selling_price']))  $updateData['selling_price'] = $this->cleanCurrency($data['selling_price']);
         if (isset($data['min_stock']))      $updateData['min_stock'] = $this->cleanWeight($data['min_stock']);
 
+        // Ensure the product is not soft-deleted if it already exists
+        $updateData['deleted_at'] = null;
+
         Product::withoutGlobalScopes()->updateOrCreate(
             [
                 'company_id' => $companyId,
@@ -330,6 +344,7 @@ class ImportService
                     'name' => trim($data['name']),
                     'updated_at' => $now,
                     'created_at' => $now,
+                    'deleted_at' => null,
                 ];
 
                 // Only include fields that exist in the data
