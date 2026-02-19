@@ -176,15 +176,25 @@ class ImportService
 
         try {
             $extension = pathinfo($job->file_path, PATHINFO_EXTENSION);
-            
             if ($extension === 'xlsx') {
                 $this->processExcel($job);
             } else {
                 $this->processCsv($job);
             }
 
+            // Verify if any rows were actually processed
+            $job->refresh();
+            if ($job->processed_rows === 0 && $job->total_rows > 0) {
+               Log::warning("ImportService: Job #{$job->id} completed but 0 rows were processed. Possible file access or mapping issue.");
+            }
+
             $job->complete();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error("ImportService: Critical failure in job #{$job->id}: " . $e->getMessage(), [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
             $job->update([
                 'status' => ImportJob::STATUS_FAILED, 
                 'errors' => array_merge($job->errors ?? [], [['error' => $e->getMessage(), 'time' => now()->toISOString()]]),
@@ -194,7 +204,8 @@ class ImportService
 
     protected function processCsv(ImportJob $job): void
     {
-        $csv = Reader::createFromPath(Storage::path($job->file_path), 'r');
+        Log::info("ImportService: Starting CSV process for job #{$job->id}");
+        $csv = Reader::createFromPath(Storage::disk('local')->path($job->file_path), 'r');
         $csv->setHeaderOffset(0);
         $this->iteratorProcess($csv->getRecords(), $job);
     }
@@ -211,9 +222,10 @@ class ImportService
         // Only ~500 rows are in memory at any time
         $chunkedImport = new ChunkedImport($job, $this, $importMethod);
 
+        Log::info("ImportService: Starting Excel process for job #{$job->id}");
         Excel::import(
             $chunkedImport,
-            Storage::path($job->file_path)
+            Storage::disk('local')->path($job->file_path)
         );
     }
 
