@@ -160,7 +160,79 @@ class ImportService
         }
     }
     
-    // ... public function process ... (no change needed to signature, but internal calls change)
+    /**
+     * Process import job with column mapping
+     */
+    public function process(ImportJob $job): void
+    {
+        // Check if file exists on default disk
+        if (!Storage::exists($job->file_path)) {
+            $msg = "Import file \"{$job->file_path}\" not found on default disk (S3/R2).";
+            Log::error($msg);
+            $job->update([
+                'status' => ImportJob::STATUS_FAILED, 
+                'errors' => [['error' => $msg, 'time' => now()->toISOString()]]
+            ]);
+            return;
+        }
+
+        // Ensure total_rows is set for accurate progress tracking
+        if ($job->total_rows <= 0) {
+            try {
+                // parseFile should handle the download internally now
+                $stats = $this->parseFile($job->file_path);
+                $total = $stats['total_rows'] ?? 0;
+                
+                Log::info("ImportService: Calculated total rows as {$total} for job #{$job->id}");
+                
+                $job->total_rows = $total;
+                $job->save();
+                $job->refresh();
+            } catch (\Throwable $e) {
+                Log::error("ImportService: Failed to initialize job #{$job->id}: " . $e->getMessage());
+                $job->update([
+                    'status' => ImportJob::STATUS_FAILED,
+                    'errors' => [['error' => $e->getMessage(), 'time' => now()->toISOString()]]
+                ]);
+                return; // Stop processing
+            }
+        }
+
+        if ($job->total_rows <= 0) {
+            Log::warning("ImportService: Job #{$job->id} has 0 rows. Skipping.");
+            $job->complete();
+            return;
+        }
+
+        $job->update(['status' => ImportJob::STATUS_PROCESSING]);
+
+        try {
+            $extension = pathinfo($job->file_path, PATHINFO_EXTENSION);
+            if ($extension === 'xlsx') {
+                $this->processExcel($job);
+            } else {
+                $this->processCsv($job);
+            }
+
+            // Verify if any rows were actually processed
+            $job->refresh();
+            if ($job->processed_rows === 0 && $job->total_rows > 0) {
+               Log::warning("ImportService: Job #{$job->id} completed but 0 rows were processed. Possible file access or mapping issue.");
+            }
+
+            $job->complete();
+        } catch (\Throwable $e) {
+            Log::error("ImportService: Critical failure in job #{$job->id}: " . $e->getMessage(), [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            $job->update([
+                'status' => ImportJob::STATUS_FAILED, 
+                'errors' => array_merge($job->errors ?? [], [['error' => $e->getMessage(), 'time' => now()->toISOString()]]),
+            ]);
+        }
+    }
 
     protected function processCsv(ImportJob $job): void
     {
