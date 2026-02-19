@@ -38,12 +38,12 @@ class ImportService
 
     protected function parseCsv(string $filePath): array
     {
-        // Enforce local disk
-        if (!Storage::disk('local')->exists($filePath)) {
-            throw new \Exception("File \"{$filePath}\" does not exist on local disk.");
+        // Enforce default disk
+        if (!Storage::exists($filePath)) {
+            throw new \Exception("File \"{$filePath}\" does not exist on default disk.");
         }
 
-        $csv = Reader::createFromPath(Storage::disk('local')->path($filePath), 'r');
+        $csv = Reader::createFromPath(Storage::path($filePath), 'r');
         $csv->setHeaderOffset(0);
 
         $headers = $csv->getHeader();
@@ -56,7 +56,7 @@ class ImportService
 
         // Efficient counting for CSV without consuming the main stream
         $totalRows = 0;
-        $handle = fopen(Storage::disk('local')->path($filePath), 'r');
+        $handle = fopen(Storage::path($filePath), 'r');
         if ($handle) {
             while (!feof($handle)) {
                 if (fgets($handle) !== false) {
@@ -76,13 +76,13 @@ class ImportService
 
     protected function parseExcel(string $filePath): array
     {
-        // Enforce local disk
-        if (!Storage::disk('local')->exists($filePath)) {
-            throw new \Exception("File \"{$filePath}\" does not exist on local disk.");
+        // Enforce default disk
+        if (!Storage::exists($filePath)) {
+            throw new \Exception("File \"{$filePath}\" does not exist on default disk.");
         }
 
         // Only load first 10 rows for preview — avoids OOM on large files
-        $fullPath = Storage::disk('local')->path($filePath);
+        $fullPath = Storage::path($filePath);
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fullPath);
         $reader->setReadDataOnly(true);
 
@@ -126,9 +126,9 @@ class ImportService
     protected function countExcelRows(string $fullPath): int
     {
         try {
-            // Ensure we're using the local disk path if it's a relative path
-            if (!file_exists($fullPath) && Storage::disk('local')->exists($fullPath)) {
-                $fullPath = Storage::disk('local')->path($fullPath);
+            // Ensure we're using the default disk path if it's a relative path
+            if (!file_exists($fullPath) && Storage::exists($fullPath)) {
+                $fullPath = Storage::path($fullPath);
             }
 
             $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fullPath);
@@ -156,9 +156,9 @@ class ImportService
      */
     public function process(ImportJob $job): void
     {
-        // ALWAYS check if file exists locally before doing anything
-        if (!Storage::disk('local')->exists($job->file_path)) {
-            $msg = "Import file \"{$job->file_path}\" not found on local disk. If on Docker/Coolify, ensure 'getlanded-prod' and 'getlanded-worker' share the volume '/var/www/html/storage/app/imports'.";
+        // ALWAYS check if file exists (on default disk) before doing anything
+        if (!Storage::exists($job->file_path)) {
+            $msg = "Import file \"{$job->file_path}\" not found on default disk. If using S3/R2, check your credentials.";
             Log::error($msg);
             $job->update([
                 'status' => ImportJob::STATUS_FAILED,
@@ -170,8 +170,8 @@ class ImportService
         // Ensure total_rows is set for accurate progress tracking
         if ($job->total_rows <= 0) {
             try {
-                if (!Storage::disk('local')->exists($job->file_path)) {
-                    throw new \Exception("Import file \"{$job->file_path}\" not found on local disk. If using multiple containers (app/worker), ensure they share a persistent volume for 'storage/app/imports'.");
+                if (!Storage::exists($job->file_path)) {
+                    throw new \Exception("Import file \"{$job->file_path}\" not found.");
                 }
 
                 $stats = $this->parseFile($job->file_path);
@@ -231,7 +231,7 @@ class ImportService
     protected function processCsv(ImportJob $job): void
     {
         Log::info("ImportService: Starting CSV process for job #{$job->id}");
-        $csv = Reader::createFromPath(Storage::disk('local')->path($job->file_path), 'r');
+        $csv = Reader::createFromPath(Storage::path($job->file_path), 'r');
         $csv->setHeaderOffset(0);
         $this->iteratorProcess($csv->getRecords(), $job);
     }
@@ -251,7 +251,7 @@ class ImportService
         Log::info("ImportService: Starting Excel process for job #{$job->id}");
         Excel::import(
             $chunkedImport,
-            Storage::disk('local')->path($job->file_path)
+            Storage::path($job->file_path)
         );
     }
 
