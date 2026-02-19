@@ -71,7 +71,9 @@ class ChunkedImport implements ToCollection, WithChunkReading, WithHeadingRow, W
 
                 if (!empty($preparedRows)) {
                     try {
-                        $result = $this->importService->$batchMethod($preparedRows, $this->job->company_id);
+                        // Current offset is the number of rows already processed in the job
+                        $offset = $this->job->fresh()->processed_rows ?? 0;
+                        $result = $this->importService->$batchMethod($preparedRows, $this->job->company_id, $offset);
                         $this->processedInBatch += $result['processed'] ?? count($preparedRows);
                         $this->failedInBatch += $result['failed'] ?? 0;
                         if (!empty($result['errors'])) {

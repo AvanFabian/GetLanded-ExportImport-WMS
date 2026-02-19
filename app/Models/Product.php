@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     use LogsActivity, BelongsToTenant;
 
     protected $fillable = [
@@ -36,6 +36,7 @@ class Product extends Model
         'dimension_unit',
         'net_weight',
         'cbm_volume',
+        'deleted_at',
     ];
 
     /**

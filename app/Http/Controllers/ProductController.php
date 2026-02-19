@@ -224,13 +224,16 @@ class ProductController extends Controller
         try {
             $path = $request->file('file')->store('imports');
 
+            $stats = app(\App\Services\ImportService::class)->parseFile($path);
+            $totalRows = $stats['total_rows'] ?? 0;
+
             // Create an ImportJob record for tracking
             $job = \App\Models\ImportJob::create([
                 'company_id' => auth()->user()->company_id,
                 'type' => 'products',
                 'file_path' => $path,
                 'status' => \App\Models\ImportJob::STATUS_PROCESSING,
-                'total_rows' => 0, // Will be updated by the job
+                'total_rows' => $totalRows,
                 'user_id' => auth()->id(),
             ]);
 

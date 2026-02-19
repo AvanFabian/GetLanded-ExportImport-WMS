@@ -49,9 +49,19 @@ class ImportService
             $sample[] = $record;
         }
 
-        // Efficient counting: iterator_count is reliable for large streams
-        $totalRows = iterator_count($csv->getRecords());
-        
+        // Efficient counting for CSV without consuming the main stream
+        $totalRows = 0;
+        $handle = fopen(Storage::path($filePath), 'r');
+        if ($handle) {
+            while (!feof($handle)) {
+                if (fgets($handle) !== false) {
+                    $totalRows++;
+                }
+            }
+            fclose($handle);
+        }
+        $totalRows = max(0, $totalRows - 1); // Subtract header row
+
         return [
             'headers' => $headers,
             'sample' => $sample,
@@ -107,10 +117,19 @@ class ImportService
     {
         try {
             $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fullPath);
+            /** @var \PhpOffice\PhpSpreadsheet\Reader\BaseReader $reader */
             $reader->setReadDataOnly(true);
-            /** @var \PhpOffice\PhpSpreadsheet\Reader\Xlsx|\PhpOffice\PhpSpreadsheet\Reader\Csv $reader */
+            
             $info = $reader->listWorksheetInfo($fullPath);
-            return max(0, ($info[0]['totalRows'] ?? 1) - 1); // Subtract header row
+            if (!empty($info) && isset($info[0]['totalRows'])) {
+                return max(0, $info[0]['totalRows'] - 1);
+            }
+
+            // Fallback for readers that don't support listWorksheetInfo well (like some CSV/custom)
+            $spreadsheet = $reader->load($fullPath);
+            $count = $spreadsheet->getActiveSheet()->getHighestRow();
+            unset($spreadsheet);
+            return max(0, $count - 1);
         } catch (\Throwable $e) {
             Log::warning("Could not count Excel rows: {$e->getMessage()}");
             return 0;
@@ -320,9 +339,10 @@ class ImportService
      *
      * @param array $rows Array of mapped row data
      * @param int $companyId
+     * @param int $startRow The starting row index for this batch (for unique code generation)
      * @return array{processed: int, failed: int, errors: array}
      */
-    public function importProductsBatch(array $rows, int $companyId): array
+    public function importProductsBatch(array $rows, int $companyId, int $startRow = 0): array
     {
         // Preload category cache once for the entire batch
         if (empty($this->categoryCache)) {
@@ -344,7 +364,7 @@ class ImportService
                     throw new \Exception("Product Name is required");
                 }
 
-                $code = $data['code'] ?? $data['sku'] ?? 'AUT-' . str_pad($index + 1, 6, '0', STR_PAD_LEFT);
+                $code = $data['code'] ?? $data['sku'] ?? 'AUT-' . str_pad($startRow + $index + 1, 6, '0', STR_PAD_LEFT);
 
                 $row = [
                     'company_id' => $companyId,
