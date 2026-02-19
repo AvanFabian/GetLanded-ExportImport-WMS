@@ -156,6 +156,18 @@ class ImportService
      */
     public function process(ImportJob $job): void
     {
+        // ALWAYS check if file exists locally before doing anything
+        if (!Storage::disk('local')->exists($job->file_path)) {
+            $msg = "Import file \"{$job->file_path}\" not found on local disk. If on Docker/Coolify, ensure 'getlanded-prod' and 'getlanded-worker' share the volume '/var/www/html/storage/app/imports'.";
+            Log::error($msg);
+            $job->update([
+                'status' => ImportJob::STATUS_FAILED,
+                'errors' => [['error' => $msg, 'time' => now()->toISOString()]]
+            ]);
+            return;
+        }
+
+        // Ensure total_rows is set for accurate progress tracking
         if ($job->total_rows <= 0) {
             try {
                 if (!Storage::disk('local')->exists($job->file_path)) {
