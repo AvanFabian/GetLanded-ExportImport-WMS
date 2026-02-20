@@ -122,7 +122,7 @@ class CurrencyService
                 }
             }
             
-            Log::error('Currency API failure', [
+            Log::channel('stderr')->error('Currency API failure', [
                 'provider' => 'AwesomeAPI',
                 'status' => $response->status(),
                 'body' => $response->body(),
@@ -131,7 +131,7 @@ class CurrencyService
             return $this->useCachedRates();
 
         } catch (\Exception $e) {
-            Log::critical('Currency rate fetch global failure', [
+            Log::channel('stderr')->critical('Currency rate fetch global failure', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
