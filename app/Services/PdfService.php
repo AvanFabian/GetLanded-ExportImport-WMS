@@ -17,13 +17,10 @@ class PdfService
 
         $pdf = Pdf::loadView('pdf.invoice', compact('order'));
         
-        // Build filename
-        $filename = 'Invoice-' . $order->so_number . '.pdf';
-
         // Revert locale
         App::setLocale($originalLocale);
 
-        return $pdf->stream($filename);
+        return $pdf;
     }
 
     public function generatePackingList($order)

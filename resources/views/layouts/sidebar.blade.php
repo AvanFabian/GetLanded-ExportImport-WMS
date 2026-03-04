@@ -16,7 +16,7 @@
 
     {{-- Sidebar Panel --}}
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-           class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r shadow-xl transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 md:shadow-none md:z-auto overflow-y-auto">
+           class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r shadow-xl transform transition-transform duration-200 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0 md:shadow-none md:z-auto overflow-y-auto flex-shrink-0">
         
         {{-- Mobile Header with Close --}}
         <div class="flex items-center justify-between p-4 border-b md:hidden bg-gradient-to-r from-emerald-700 to-emerald-800 text-white">
