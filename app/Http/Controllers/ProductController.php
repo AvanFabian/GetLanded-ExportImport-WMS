@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Category;
 use App\Models\Warehouse;
+use App\Models\Category;
+use App\Models\Brand;
+use App\Services\ImportService;
+use App\AI\Agents\ColumnMapperAgent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Exports\ProductsExport;
@@ -215,23 +219,91 @@ class ProductController extends Controller
         return back()->with('status', "{$count} products deleted successfully");
     }
 
-    public function import(Request $request)
+    public function analyzeImport(Request $request)
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls|max:10240',
         ]);
 
+        // AI call can take 30+ seconds; override the default PHP max_execution_time
+        set_time_limit(120);
+
         try {
-            $path = $request->file('file')->store('imports');
+            // Save file temporarily to disk so we can pass it to ImportService and the next request
+            $path = $request->file('file')->store('imports_temp');
+            $stats = app(ImportService::class)->parseFile($path);
+
+            $headers = $stats['headers'] ?? [];
+            if (empty($headers)) {
+                throw new \Exception('No headers found in the file.');
+            }
+
+            // === AI Column Mapping ===
+            // Call the AI Agent to map the columns using the free OpenRouter model
+            $agentResponse = ColumnMapperAgent::make()->prompt(json_encode([
+                'headers' => $headers,
+                'sample_row' => array_values($stats['sample'][0] ?? [])
+            ]));
+
+            // Parse the AI's JSON text response into a [header => db_column] array
+            $mapping = ColumnMapperAgent::parseMappingFromText($agentResponse->text);
+
+            return view('products.import-preview', compact('path', 'stats', 'mapping'));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('analyzeImport failed: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return back()->with('error', 'Analysis Failed: ' . $e->getMessage());
+        }
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required_without:is_smart_import|mimes:xlsx,csv,xls|max:10240',
+            'is_smart_import' => 'nullable|boolean',
+            'analyzed_file_path' => 'nullable|string',
+            'mapping' => 'nullable|array'
+        ]);
+
+        try {
+            // Determine if using existing file from smart import or a new uploaded file
+            if ($request->filled('is_smart_import') && $request->filled('analyzed_file_path')) {
+                $path = $request->analyzed_file_path;
+            } else {
+                $path = $request->file('file')->store('imports');
+            }
 
             $stats = app(\App\Services\ImportService::class)->parseFile($path);
             $totalRows = $stats['total_rows'] ?? 0;
+            
+            // Filter mapping to remove empty values ('')
+            $rawMapping = $request->mapping ? array_filter($request->mapping) : null;
+            $mapping = null;
+
+            if ($rawMapping) {
+                // mapColumns() expects: { db_column => source_column_in_record }
+                // CSV records from League CSV use the original header as key;
+                // Maatwebsite Excel (WithHeadingRow) slugifies headers automatically.
+                // So we store: { 'name' => 'nama_produk', 'sku' => 'kode_barang' }
+                $mapping = [];
+                $headers = array_values($stats['headers'] ?? []);
+
+                foreach ($rawMapping as $index => $dbColumn) {
+                    if (isset($headers[$index]) && !empty($dbColumn)) {
+                        $slugifiedHeader = \Illuminate\Support\Str::slug($headers[$index], '_');
+                        $mapping[$dbColumn] = $slugifiedHeader; // target => source
+                    }
+                }
+            }
 
             // Create an ImportJob record for tracking
             $job = \App\Models\ImportJob::create([
                 'company_id' => auth()->user()->company_id,
                 'type' => 'products',
                 'file_path' => $path,
+                'column_mapping' => $mapping,
                 'status' => \App\Models\ImportJob::STATUS_PROCESSING,
                 'total_rows' => $totalRows,
                 'user_id' => auth()->id(),
@@ -240,9 +312,14 @@ class ProductController extends Controller
             // Dispatch to queue — this returns immediately
             \App\Jobs\ProcessImportJob::dispatch($job->id, auth()->user()->company_id);
 
-            return back()->with('success', __('Import started in background. Check the Import Center for progress.'));
-        } catch (\Exception $e) {
-            return back()->with('error', 'Import Failed: ' . $e->getMessage());
+            return redirect()->route('products.index')
+                ->with('success', __('Import started in background. Check the Import Center for progress.'));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Import failed: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            return redirect()->route('products.index')->with('error', 'Import Failed: ' . $e->getMessage());
         }
     }
 

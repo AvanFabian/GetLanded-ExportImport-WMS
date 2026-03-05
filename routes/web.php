@@ -45,6 +45,7 @@ Route::middleware(['auth', 'throttle:web'])->group(function () {
     // Products
     Route::post('products/print-labels', [App\Http\Controllers\ProductController::class, 'printLabels'])->name('products.print-labels');
     Route::delete('products/bulk-destroy', [App\Http\Controllers\ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
+    Route::post('products/import/analyze', [App\Http\Controllers\ProductController::class, 'analyzeImport'])->name('products.import.analyze');
     Route::post('products/import', [App\Http\Controllers\ProductController::class, 'import'])->name('products.import');
     Route::get('products/export', [App\Http\Controllers\ProductController::class, 'export'])->name('products.export');
     Route::get('products/label/{product}', [App\Http\Controllers\ProductController::class, 'printLabel'])->name('products.print-label');

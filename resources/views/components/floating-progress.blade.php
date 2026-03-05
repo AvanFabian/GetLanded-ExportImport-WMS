@@ -141,16 +141,33 @@ function floatingProgress() {
 
                 // Detect completed jobs (were active before, now gone)
                 const currentIds = new Set(data.map(j => j.id));
-                this.previousJobIds.forEach(id => {
+                this.previousJobIds.forEach(async id => {
                     if (!currentIds.has(id)) {
-                        // Job was active, now gone — must be completed or failed
-                        const prev = this.jobs.find(j => j.id === id);
-                        if (prev) {
-                            this.completedJobs.push({...prev, status: 'completed', progress: 100});
-                            // Auto-remove after 5 seconds
-                            setTimeout(() => {
-                                this.completedJobs = this.completedJobs.filter(j => j.id !== id);
-                            }, 5000);
+                        // Job was active, now gone. Fetch final stats so we don't say "0 rows processed".
+                        try {
+                            const progRes = await fetch(`/imports/${id}/progress`, {
+                                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                            });
+                            if (progRes.ok) {
+                                const progData = await progRes.json();
+                                const prev = this.jobs.find(j => j.id === id) || { id: id, type: 'products' }; // Fallback type
+                                
+                                this.completedJobs.push({
+                                    ...prev, 
+                                    status: progData.status || 'completed', 
+                                    progress: 100,
+                                    processed_rows: progData.processed || 0,
+                                    total_rows: progData.total || 0,
+                                    failed_rows: progData.failed || 0
+                                });
+                                
+                                // Auto-remove after 5 seconds
+                                setTimeout(() => {
+                                    this.completedJobs = this.completedJobs.filter(j => j.id !== id);
+                                }, 5000);
+                            }
+                        } catch (e) {
+                            // Silently ignore
                         }
                     }
                 });

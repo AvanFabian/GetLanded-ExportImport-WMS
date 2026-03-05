@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL; // Tambahkan ini
+use Illuminate\Support\Facades\Http; // Add this line
 class AppServiceProvider extends ServiceProvider
 {
     /**
