@@ -1,28 +1,30 @@
-# Menggunakan image PHP 8.3 FPM Nginx yang stabil
+# Stage 1: Build Frontend Assets
+FROM node:20-slim AS node-builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 2: PHP Application
 FROM serversideup/php:8.4-fpm-nginx
 
-# Atur direktori kerja
+# Set working directory
 WORKDIR /var/www/html
 
-# Switch ke root untuk instalasi sistem
+# Switch to root for system-level setup
 USER root
 
-# 1. Instal dependencies, Node.js, dan ekstensi PHP
-RUN apt-get update && apt-get install -y ca-certificates curl gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update \
-    && apt-get install -y nodejs \
-    && install-php-extensions gd intl
+# 1. Install PHP extensions (using the pre-installed helper in serversideup images)
+RUN install-php-extensions gd intl
 
-# 2. Copy file project
+# 2. Copy project files
 COPY --chown=www-data:www-data . .
 
-# 3. Jalankan build untuk Frontend (Vite)
-RUN npm install && npm run build
+# 3. Copy built assets from the node-builder stage
+COPY --from=node-builder --chown=www-data:www-data /app/public/build ./public/build
 
-# 4. Jalankan build untuk Backend (Composer)
+# 4. Install Backend dependencies (Composer)
 RUN composer install --no-dev --optimize-autoloader
 
 # Create entrypoint script to handle role switching and migrations
@@ -48,11 +50,8 @@ elif [ "$role" = "scheduler" ]; then\n\
 fi\n' > /etc/entrypoint.d/99-laravel-setup.sh && \
     chmod +x /etc/entrypoint.d/99-laravel-setup.sh
 
-# Environment variable for automation (legacy)
+# Environment variable for automation
 ENV AUTORUN_ENABLED=true
 
-# Expose port internal Nginx (only applicable for app role)
+# Expose Nginx port
 EXPOSE 8080
-
-# Default command handled by the base image entrypoint (which will run our script in /etc/entrypoint.d)
-# We do NOT override CMD anymore to avoid breaking Nginx initialization
