@@ -49,9 +49,9 @@ class FullDemoSeeder extends Seeder
     {
         $this->command->info('🚀 FullDemoSeeder — Clearing products & seeding all features...');
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $this->disableForeignKeys();
         $this->clearProductData();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        $this->enableForeignKeys();
 
         DB::beginTransaction();
         try {
@@ -1062,5 +1062,27 @@ class FullDemoSeeder extends Seeder
         $this->command->info('  Payments     : ' . DB::table('payments')->where('company_id', $this->companyId)->count());
         $this->command->info('  Outbound Ship: ' . DB::table('outbound_shipments')->where('company_id', $this->companyId)->count());
         $this->command->info('  Customs Decl : ' . DB::table('customs_declarations')->where('company_id', $this->companyId)->count());
+    }
+
+    private function disableForeignKeys(): void
+    {
+        $driver = DB::getDriverName();
+        match ($driver) {
+            'mysql' => DB::statement('SET FOREIGN_KEY_CHECKS=0'),
+            'sqlite' => DB::statement('PRAGMA foreign_keys = OFF'),
+            'pgsql' => DB::statement("SET session_replication_role = 'replica'"),
+            default => null,
+        };
+    }
+
+    private function enableForeignKeys(): void
+    {
+        $driver = DB::getDriverName();
+        match ($driver) {
+            'mysql' => DB::statement('SET FOREIGN_KEY_CHECKS=1'),
+            'sqlite' => DB::statement('PRAGMA foreign_keys = ON'),
+            'pgsql' => DB::statement("SET session_replication_role = 'origin'"),
+            default => null,
+        };
     }
 }
