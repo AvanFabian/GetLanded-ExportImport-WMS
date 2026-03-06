@@ -15,16 +15,6 @@ Route::get('/healthcheck', function () {
     return response('OK', 200)->header('Content-Type', 'text/plain');
 });
 
-// TEMPORARY: Seeder for Render Free Tier (Delete after use)
-Route::get('/init-demo-data', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'FullDemoSeeder', '--force' => true]);
-        return "Database Seeded Successfully! <br><br><b>Output:</b><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
-    } catch (\Throwable $e) {
-        return "Error Seeding Database: " . $e->getMessage();
-    }
-});
-
 // Legal Pages
 Route::get('/terms', fn() => view('legal.terms'))->name('terms');
 Route::get('/privacy', fn() => view('legal.privacy'))->name('privacy');
