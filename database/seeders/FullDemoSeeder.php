@@ -103,8 +103,18 @@ class FullDemoSeeder extends Seeder
             'products',
         ];
 
-        foreach ($tables as $table) {
-            if (Schema::hasTable($table)) {
+        // Filter out tables that don't exist
+        $existingTables = array_filter($tables, fn($t) => Schema::hasTable($t));
+
+        if (DB::getDriverName() === 'pgsql') {
+            // For PostgreSQL, TRUNCATE with CASCADE is the best way to handle foreign keys 
+            // in managed environments where we don't have superuser/session_replication_role permissions.
+            $tableList = implode(', ', array_map(fn($t) => "\"$t\"", $existingTables));
+            if (!empty($tableList)) {
+                DB::statement("TRUNCATE TABLE $tableList RESTART IDENTITY CASCADE");
+            }
+        } else {
+            foreach ($existingTables as $table) {
                 DB::table($table)->truncate();
             }
         }
@@ -1067,22 +1077,30 @@ class FullDemoSeeder extends Seeder
     private function disableForeignKeys(): void
     {
         $driver = DB::getDriverName();
-        match ($driver) {
-            'mysql' => DB::statement('SET FOREIGN_KEY_CHECKS=0'),
-            'sqlite' => DB::statement('PRAGMA foreign_keys = OFF'),
-            'pgsql' => DB::statement("SET session_replication_role = 'replica'"),
-            default => null,
-        };
+        try {
+            match ($driver) {
+                'mysql' => DB::statement('SET FOREIGN_KEY_CHECKS=0'),
+                'sqlite' => DB::statement('PRAGMA foreign_keys = OFF'),
+                'pgsql' => null, // Skip for PG here as it requires superuser usually
+                default => null,
+            };
+        } catch (\Throwable $e) {
+            $this->command->warn('Warning: Could not disable foreign keys globally: ' . $e->getMessage());
+        }
     }
 
     private function enableForeignKeys(): void
     {
         $driver = DB::getDriverName();
-        match ($driver) {
-            'mysql' => DB::statement('SET FOREIGN_KEY_CHECKS=1'),
-            'sqlite' => DB::statement('PRAGMA foreign_keys = ON'),
-            'pgsql' => DB::statement("SET session_replication_role = 'origin'"),
-            default => null,
-        };
+        try {
+            match ($driver) {
+                'mysql' => DB::statement('SET FOREIGN_KEY_CHECKS=1'),
+                'sqlite' => DB::statement('PRAGMA foreign_keys = ON'),
+                'pgsql' => null, // Skip for PG
+                default => null,
+            };
+        } catch (\Throwable $e) {
+            // Silently ignore
+        }
     }
 }
