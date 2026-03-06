@@ -39,6 +39,9 @@ if [ "$role" = "app" ]; then\n\
     php artisan config:cache\n\
     php artisan route:cache\n\
     php artisan view:cache\n\
+    \n\
+    echo "Starting background queue worker..."\n\
+    php artisan queue:work --verbose --tries=3 --timeout=90 &\n\
 fi\n\
 \n\
 if [ "$role" = "worker" ]; then\n\
